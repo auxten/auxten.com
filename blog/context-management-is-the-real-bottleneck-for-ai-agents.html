@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Context Management Is the Real Bottleneck for AI Agents — auxten</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">auxten<span class="dot">.</span></a>
+      <div class="nav-links">
+        <a href="/#projects">Projects</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/#about">About</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="post-header">
+    <h1>Context Management Is the Real Bottleneck for AI Agents</h1>
+    <p class="post-meta">2026-02-23</p>
+  </div>
+
+  <article class="post-content">
+    <h1 id="context-management-is-the-real-bottleneck-for-ai-agents">Context Management Is the Real Bottleneck for AI Agents</h1>
+<p><img alt="Cover" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/cover.png" /></p>
+<p>Ever since Anthropic released MCP (Model Context Protocol), I've felt that this company has a uniquely sharp perspective on the model-to-user relationship. MCP gave agents a standardized way to <em>access</em> external tools and data. Then came Skills — reusable bundles of instructions and workflows that promised to make agents more "capable." Together, they represent two sides of the same coin: MCP expands what the agent can <em>do</em>; Skills shape how the agent <em>thinks</em>.</p>
+<p>But after spending serious time building with both, I've arrived at a somewhat contrarian take: <strong>the bottleneck isn't capability — it's context quality.</strong> Most of what people add to their agent's context is noise, not signal. And the maturity of your project determines which side of that line any given piece of context falls on.</p>
+<p><img alt="Signal vs Noise in AI Agent Context" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/signal-vs-noise-context.png" /></p>
+<h2 id="a-maturity-model-for-agent-context">A Maturity Model for Agent Context</h2>
+<p>Before I get into specifics, let me frame the core idea. The value of any piece of context depends on <em>where you are</em> in your project lifecycle:</p>
+<p><strong>Early stage</strong> — You're still exploring. Requirements are fuzzy, architecture is undecided. At this point, generic best-practice guidance (TDD workflows, clarification prompts, structured planning) is genuinely valuable. It provides scaffolding when you don't have your own.</p>
+<p><strong>Growth stage</strong> — Your project has taken shape. You have established patterns, specific constraints, non-obvious domain knowledge. Generic guidance starts <em>competing</em> with your hard-won project context for the model's attention.</p>
+<p><strong>Mature stage</strong> — You know exactly what you're building. Your <code>.claude.md</code>, Cursor rules, or Skills encode deep project-specific knowledge. At this point, generic context isn't just unhelpful — it actively degrades performance by diluting the signal the model needs.</p>
+<p>The mistake most people make is treating context as universally good. It isn't. <strong>Context has a shelf life, and its value is relative to what else is in the window.</strong></p>
+<h2 id="the-absolutely-correct-but-utterly-useless-prompt-problem">The "Absolutely Correct but Utterly Useless" Prompt Problem</h2>
+<p>Before Skills became a thing, social media was flooded with people sharing magic prompts — "add this one line and your model's productivity goes up 10x!" My gut told me this was overblown, and after months of heavy coding with LLMs, I'm more certain than ever.</p>
+<p>Here's the analogy: imagine a tech lead whose entire guidance to you is "write bug-free code, always consider edge cases, keep your code maintainable." These are all <em>correct</em> statements. They're also completely useless for your actual work. They carry zero information — they're the kind of universally true platitudes that apply to every project and every engineer. Which edge cases? Maintainable by what standard? For what audience? Without project-specific context, these instructions are noise shaped like signal.</p>
+<p><img alt="The Useless Tech Lead Analogy" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/useless-tech-lead-analogy.png" /></p>
+<p>Now, I should be precise about this analogy. When a tech lead tells a <em>human</em> engineer to "consider edge cases," it's useless because the human already knows they should — the instruction carries zero new information. With LLMs, the situation is subtly different: a generic instruction like "always consider edge cases" <em>can</em> measurably shift model behavior, because the model is statistically weighting its next token based on what's in context. So generic instructions aren't literally zero-information to a model the way they are to a human.</p>
+<p>But here's the catch: that behavioral nudge comes at a real cost. Every token of generic guidance occupies space that could hold project-specific context. And as your project matures, the marginal value of "consider edge cases" drops toward zero while the value of "our payment API returns 429 when rate-limited — always implement exponential backoff with a 3-retry cap" only increases. The generic version makes the model <em>think about</em> edge cases in the abstract; the specific version tells it <em>exactly which edge case matters and how to handle it</em>. <strong>The opportunity cost is what makes generic context harmful at scale.</strong></p>
+<h2 id="what-actually-matters-project-specific-context">What Actually Matters: Project-Specific Context</h2>
+<p>What you <em>should</em> be doing is extracting the <strong>key differentiators</strong> of your specific project through your interactions with the model. What makes your product unique? What are the non-obvious constraints the model needs to pay attention to? <em>That's</em> the real context worth preserving.</p>
+<p>Whether you crystallize this into a <code>.claude.md</code> file, Cursor's MDC rules, or a proper Skill — the point is the same: <strong>good context adds genuine information density.</strong> It tells the model something it couldn't have inferred on its own.</p>
+<p>Some examples of high-value context:
+- Architectural decisions and their <em>rationale</em> ("We chose event sourcing because...")
+- Non-obvious constraints ("The billing service has a 100ms SLA, so never add synchronous calls to it")
+- Project-specific naming conventions and patterns that deviate from common defaults
+- Known pitfalls ("Don't use <code>datetime.now()</code> — everything goes through our <code>TimeService</code> for testability")</p>
+<h2 id="depth-first-vs-breadth-first-when-generic-skills-backfire">Depth-First vs. Breadth-First: When Generic Skills Backfire</h2>
+<p>This brings me to Superpowers, a very popular Skill in the community. The name alone tells you the author understands what people <em>want</em>. I gave it a real shot.</p>
+<p>After using it on projects where I already had well-established context, I noticed something immediately: <strong>the model became rigid.</strong> With a smart model like Opus, there are situations where the right technical choice is overwhelmingly obvious. But with Superpowers loaded, the model would insist on presenting Option 1 / Option 2 / Option 3 and asking me to choose — even when anyone with basic dev experience would know the answer instantly. Ask the model <em>without</em> Superpowers and it would confidently pick the right approach on its own.</p>
+<p><img alt="BFS vs DFS in AI Agent Decision Making" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/bfs-vs-dfs-agent.png" /></p>
+<p>To put this in algorithmic terms: the generic guidance was <strong>forcing breadth-first search where depth-first was clearly appropriate.</strong> Let me unpack this metaphor because I think it's central to understanding context management:</p>
+<p><strong>Breadth-first</strong> means the agent explores all possible approaches at each level before going deeper into any one of them. This is the right strategy when the problem space is genuinely uncertain — when you don't know which direction is correct and need to survey options before committing. Early-stage projects, ambiguous requirements, greenfield architecture decisions — BFS is exactly what you want here.</p>
+<p><strong>Depth-first</strong> means the agent commits to the most promising path and follows it to a conclusion. This is the right strategy when the correct approach is clear from context — when your project rules, architecture, and constraints already point strongly in one direction. Mature projects with rich context need DFS.</p>
+<p>The problem with generic Skills on mature projects is that they force BFS unconditionally. The model burns tokens presenting options you don't need, asking questions you've already answered (in context it can't prioritize because it's buried under generic instructions), and performing "exploration" that adds no value. <strong>A good context management strategy should enable the agent to choose between BFS and DFS based on the specificity of available context.</strong></p>
+<p>To be clear: I'm not saying Superpowers is inherently bad. Its TDD workflow guidance and clarification prompting are genuinely valuable at the right stage. The tension arises specifically when you've graduated past that stage — when rich, project-specific context already exists and you know precisely what you want.</p>
+<h2 id="the-attention-problem-why-bigger-context-windows-wont-save-us">The Attention Problem: Why Bigger Context Windows Won't Save Us</h2>
+<p>A common hope is that ever-larger context windows will solve everything. I don't think so.</p>
+<p>Even with massive context limits, models still have an <strong>attention problem.</strong> Research on transformer behavior (notably the "lost in the middle" phenomenon documented by Liu et al., 2023) shows that model attention isn't uniformly distributed across context — it follows a U-shaped curve, with stronger attention to content near the beginning and end of the window, and weaker attention to content in the middle. This means that simply having <em>room</em> for both generic and specific context doesn't mean the model will weight them appropriately.</p>
+<p>If you fill the window with generic guidance, your project-specific context can end up in a low-attention zone. Its effective weight drops — not because the model "forgot" it, but because the attention mechanism deprioritizes it relative to surrounding content. This isn't abstract information theory; it's a measurable property of how transformers process long contexts.</p>
+<p>More tokens don't solve an allocation problem. <strong>The right approach is less context of higher relevance, not more context of mixed quality.</strong></p>
+<h2 id="a-hierarchy-of-context">A Hierarchy of Context</h2>
+<p>Through practice, I've come to think of context management in four distinct layers, each with different lifespans, volumes, and priority levels:</p>
+<p><img alt="The Context Hierarchy Pyramid" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/context-hierarchy-pyramid.png" /></p>
+<p><strong>Layer 1: Tool Output</strong> (highest volume, lowest priority, transient)</p>
+<p>The raw outputs from tool calls — file reads, grep results, terminal output, API responses. In a single Cursor or Claude Code session, this can easily consume tens of thousands of tokens. It's essential in the moment but loses value rapidly. Systems should aggressively summarize or discard this layer once the model has extracted what it needs.</p>
+<p><strong>Layer 2: Conversation History</strong> (high volume, medium-low priority, session-scoped)</p>
+<p>The back-and-forth between you and the agent within a session. This includes your clarifications, the model's intermediate reasoning, and the accumulated decisions. It provides continuity within a task but shouldn't persist beyond it in raw form.</p>
+<p><strong>Layer 3: Project Context</strong> (low volume, high priority, persistent)</p>
+<p>Your <code>.claude.md</code>, MDC rules, Skills — the distilled knowledge about your specific project. This is the most valuable context per token. It should be compact, precise, and actively maintained. This layer is what the model should weight most heavily for architectural and design decisions.</p>
+<p><strong>Layer 4: Current Instructions</strong> (lowest volume, highest priority, immediate)</p>
+<p>Your direct instruction for the task at hand. "Refactor this function to use async/await." "Add error handling to the payment flow." This is what the model should execute on <em>right now</em>, informed by Layer 3, supported by Layers 1–2.</p>
+<p>The key insight is that <strong>these layers should have different retention policies and attention weights.</strong> Current systems treat all context equally — first in, first attended — which is exactly wrong. We need systems that can:
+- Aggressively compress or evict Layer 1 (tool output) after extraction
+- Summarize Layer 2 (conversation history) at natural breakpoints
+- Always foreground Layer 3 (project context) and Layer 4 (current instructions)</p>
+<p>This isn't just a nice-to-have. As agents take on longer, multi-step tasks, the inability to manage context hierarchically becomes the primary failure mode.</p>
+<h2 id="the-future-storage-retrieval-not-bigger-windows">The Future: Storage + Retrieval, Not Bigger Windows</h2>
+<p>Where I think this is heading involves two fundamental capabilities:</p>
+<p><img alt="The Future: Storage + Retrieval" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/future-storage-retrieval.png" /></p>
+<p><strong>Persistent storage.</strong> At the extreme end, you'd want something like a data warehouse — think ClickHouse — to permanently store every conversation you've ever had with your IDE agents. Your full history with Cursor, Claude Code, all of it, persisted and queryable. Not as raw chat logs, but as structured, indexed knowledge: what decisions were made, what patterns emerged, what failed and why.</p>
+<p><strong>Intelligent retrieval.</strong> A model (or a dedicated subsystem) needs to compress and summarize past context, and then <em>search</em> through historical context when it senses something relevant might exist. Imagine the agent encountering a payment integration bug and automatically retrieving the conversation from three weeks ago where you solved a similar issue with the same API. This could be a dedicated Skill, an MCP server backed by a vector database, or a built-in capability — but the agent needs to <strong>proactively recall</strong> relevant past context without being explicitly told to look.</p>
+<p>This is, fundamentally, a <strong>search engine problem.</strong> We're circling back to the classic paradigm of indexing, ranking, and retrieval — but applied to agent memory and context management. The techniques are well-understood: embeddings for semantic similarity, inverted indexes for keyword matching, ranking models for relevance scoring. What's new is applying them to the unique structure of agent conversations — a mix of code, natural language, tool outputs, and implicit decisions.</p>
+<p>MCP is actually well-positioned here. A context management MCP server could expose <code>store_context</code>, <code>search_context</code>, and <code>summarize_context</code> as tools — giving any agent a standardized way to build long-term memory. This is where MCP's real potential lies: not just connecting agents to external APIs, but giving them persistent, searchable memory.</p>
+<h2 id="closing-thought">Closing Thought</h2>
+<p>Everything I've discussed here applies to using LLMs for serious production work — not casual Q&amp;A. But I believe if we can solve context management for the hardest engineering problems, the simpler use cases will be trivially handled.</p>
+<p>To sum up: expanding model context windows alone won't solve our engineering challenges. We need robust mechanisms for <strong>storing</strong> context, intelligent methods for <strong>retrieving</strong> it, and hierarchical systems for <strong>prioritizing</strong> it. The pieces already exist — persistent storage at scale, world-class search and retrieval, massive AI infrastructure. What's missing is someone putting them together with agent context as the first-class use case.</p>
+<p>The company that solves agent memory will own the next decade of developer tools. And when I think about who already has all the pieces, the list is very short.</p>
+  </article>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>&copy; 2009&ndash;2026 Auxten Wang &middot; Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+    </div>
+  </footer>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

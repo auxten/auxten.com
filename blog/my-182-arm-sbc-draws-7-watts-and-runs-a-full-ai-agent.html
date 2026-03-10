@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My $182 ARM SBC draws 7 watts and runs a full AI agent — auxten</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">auxten<span class="dot">.</span></a>
+      <div class="nav-links">
+        <a href="/#projects">Projects</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/#about">About</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="post-header">
+    <h1>My $182 ARM SBC draws 7 watts and runs a full AI agent</h1>
+    <p class="post-meta">2026-02-26</p>
+  </div>
+
+  <article class="post-content">
+    <h1 id="my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent-with-browser-automation-heres-every-stupid-problem-i-hit-getting-there">My $182 ARM SBC draws 7 watts and runs a full AI agent with browser automation. Here's every stupid problem I hit getting there.</h1>
+<p>So I had this Rock 5B (RK3588, 16GB RAM, 1TB NVMe) sitting around running headless Ubuntu 22.04. Thought it'd be fun to turn it into a self-hosted OpenClaw box with WhatsApp integration and remote desktop.</p>
+<p><img alt="Rock 5B front with fan and HDMI dummy plug" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/rock5-front.jpeg" />
+<img alt="Rock 5B back with WD Blue SN550 1TB NVMe" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/rock5-back.jpeg" /></p>
+<h2 id="the-good-part">The Good Part</h2>
+<p>Installed XFCE4 + xrdp + Chromium in parallel via SSH. Chromium even came from a Rockchip-specific PPA with hardware-accelerated video decoding (<code>+rkmpp1</code> build). Nice.</p>
+<p>xrdp was up quickly. Chromium took a bit longer because of dpkg lock contention with the other installs. Node.js 22 install? Timed out waiting for the lock and just gave up. First sign of trouble.</p>
+<p>Side note on the RDP client: on macOS, you need Microsoft's RDP app. Except they renamed it to <strong>"Windows App."</strong> A macOS app for connecting to a Linux machine, called "Windows App." Searching "remote desktop" or "RDP" or even "Microsoft Remote Desktop" on the Mac App Store won't find it. You have to search "Windows App." The app itself is great though — smooth, supports dynamic resolution, clipboard sync. Just... the name.</p>
+<h2 id="the-nodejs-version-war">The Node.js Version War</h2>
+<p>Re-ran the nodesource setup for Node 22. It "succeeded." Except it installed... Node 16.</p>
+<p>Turns out the Rockchip multimedia PPA had pinned <code>nodejs 16.15.1+j-2</code> at <strong>priority 1001</strong>, steamrolling nodesource's Node 22 at priority 600. Had to force it:</p>
+<div class="highlight"><pre><span></span><code>sudo apt install -y nodejs=22.22.0-1nodesource1
+</code></pre></div>
+
+<h2 id="the-broken-npm-saga">The Broken npm Saga</h2>
+<p>Installed OpenClaw with <code>npm install -g openclaw@latest</code>. Worked fine. Went to do something else with npm later — "command not found."</p>
+<div class="highlight"><pre><span></span><code>$ file /usr/bin/npm
+/usr/bin/npm: broken symbolic link to ../lib/node_modules/npm/bin/npm-cli.js
+</code></pre></div>
+
+<p>When the rockchip PPA's Node 16 was replaced by nodesource's Node 22, the old npm got deleted but the new package's 2,500+ files <strong>silently failed to extract</strong> due to directory conflicts. <code>dpkg --verify nodejs</code> showed the entire corepack tree as <code>missing</code>.</p>
+<p><code>sudo apt install --reinstall nodejs=22.22.0-1nodesource1</code> fixed it. Classic "why does <code>node --version</code> work but <code>npm --version</code> doesn't" moment.</p>
+<h2 id="openclaw-gateway-you-must-explicitly-tell-me-to-exist">OpenClaw Gateway: "You Must Explicitly Tell Me To Exist"</h2>
+<p>Installed the gateway daemon. It immediately crashed:</p>
+<div class="highlight"><pre><span></span><code>Gateway start blocked: set gateway.mode=local (current: unset)
+</code></pre></div>
+
+<p>Fair enough. Set it. Then it started but probe showed "RPC timeout." The gateway needs a moment to fully initialize before it responds to health checks. Not documented anywhere I could find.</p>
+<h2 id="the-whatsapp-plugin-siccing-an-ai-on-a-zod-schema-bug">The WhatsApp Plugin: Siccing an AI on a Zod Schema Bug</h2>
+<p>This is where things got truly spicy.</p>
+<p>OpenClaw ships with 37 plugins. Only 4 load by default. WhatsApp is disabled. Every way to enable it fails:</p>
+<ul>
+<li><code>openclaw channels login --channel whatsapp</code> → "Unsupported channel"</li>
+<li><code>openclaw plugins enable whatsapp</code> → <code>Config validation failed: channels.whatsapp: Unrecognized key: "enabled"</code></li>
+</ul>
+<p>I pointed Cursor (AI coding assistant) at the Rock 5B over SSH and told it to figure it out. To its credit, it dug <em>deep</em> — traced the error to a missing <code>enabled</code> field in the compiled Zod schema (<code>WhatsAppConfigSchema</code> uses <code>.strict()</code> but forgot to declare <code>enabled</code>, while <code>WhatsAppAccountSchema</code> has it). The gateway tries to auto-enable WhatsApp, writes <code>enabled: true</code>, gets rejected by its own validation, and silently gives up. Every restart. A beautiful self-contradicting infinite loop.</p>
+<p>Cursor patched the Zod schema across 6 bundle files. Config validation stopped complaining. But then it found the real problem: the stock plugins ship as raw TypeScript in the <code>extensions/</code> directory with empty <code>node_modules/</code> and <code>workspace:*</code> dev dependencies. The <code>jiti</code> TypeScript loader chain is broken on ARM64. Config says <code>enabled: true</code>, but the plugin never actually registers in the runtime.</p>
+<p>After increasingly deep rabbit holes, Cursor gave me the pragmatic recommendation: <strong>just downgrade</strong>.</p>
+<div class="highlight"><pre><span></span><code>sudo npm install -g openclaw@2026.2.13
+</code></pre></div>
+
+<p>WhatsApp loaded immediately. QR code scan worked first try. Sometimes the best engineering decision — even for an AI — is knowing when to stop fighting a bug.</p>
+<h2 id="the-2-hardware-fix-nobody-talks-about">The $2 Hardware Fix Nobody Talks About</h2>
+<p>The Rock 5B was running headless, which causes all sorts of X server weirdness — inconsistent resolution, rendering glitches, xrdp frame buffer issues. Solution: a <strong>$2 HDMI dummy plug</strong> (3 SGD at a local electronics store).</p>
+<p>It's just a tiny dongle with an HPD pull-up resistor and an I2C EEPROM holding EDID data. Plug it in, GPU thinks a 1080p monitor is connected, X server initializes a clean frame buffer. Everything downstream becomes more stable.</p>
+<p>Also: XFCE has a <strong>Presentation Mode</strong> toggle right on the battery icon in the taskbar. One click disables all sleep/lock/DPMS. No config files, no systemd tweaks. For a 24/7 automation box, this is all you need.</p>
+<h2 id="the-surprise-chrome-doesnt-exist-on-linux-arm64-but-chromium-cdp-is-rock-solid">The Surprise: Chrome Doesn't Exist on Linux ARM64, but Chromium CDP Is Rock Solid</h2>
+<p>Here's something I didn't expect: <strong>Google Chrome has no official Linux ARM64 build.</strong> Not "coming soon." Not "beta." Just... doesn't exist. The Chromium dev mailing list has threads about this going back to 2015. Google's reasons: limited ARM build infrastructure, no CI bots for ARM64 Linux, not a priority platform. Meanwhile Vivaldi has shipped ARM64 Linux builds for years, so it's clearly a business decision, not a technical limitation.</p>
+<p>Fortunately the Rockchip PPA provides a <strong>patched Chromium 114</strong> with RK3588 MPP hardware video decoding support. And here's the real surprise: <strong>CDP (Chrome DevTools Protocol) stability on this setup is genuinely excellent.</strong> Better than some x86 cloud VMs I've used. Here's my theory on why:</p>
+<p><strong>The HDMI dummy plug enables headed mode — don't use headless.</strong> OpenClaw runs Chromium with a real window, not headless. This matters more than you'd think: headless mode is a CAPTCHA magnet. Anti-bot systems have gotten very good at fingerprinting headless browsers (<code>navigator.webdriver</code>, missing plugins, weird WebGL signatures) — it's basically a "I am a robot" sign on your forehead. Headed mode with real display parameters renders identically to a normal user's browser. The dummy plug gives X server stable resolution and refresh rate, so the compositor never gets confused. $2 to sidestep the entire headless detection problem space.</p>
+<p><strong>Chromium 114 dodges the GPU driver minefield.</strong> The RK3588's Mali G610 has known issues with newer Chromium versions (130+) — <code>failed to load driver: rockchip</code> errors, broken GPU process initialization. Chromium 114 predates these regressions, falls back gracefully to software rendering, and <em>just works</em>. No half-broken hardware acceleration is better than half-broken hardware acceleration.</p>
+<p><strong>CDP doesn't need GPU.</strong> DOM manipulation, network interception, cookie management, screenshots — all CPU/IO bound. The RK3588's four Cortex-A76 cores handle Chromium's main thread easily. 16GB RAM means no OOM kills. NVMe means no profile I/O bottleneck.</p>
+<p><strong>big.LITTLE is accidentally perfect for browser automation.</strong> Browsers are bursty: mostly idle waiting for network, occasionally CPU-intensive for parsing and JS execution. The RK3588 scheduler parks work on A55 efficiency cores during idle, switches to A76 performance cores for computation. This matches browser automation workloads almost perfectly.</p>
+<p><strong>Single-purpose hardware has zero contention.</strong> No noisy neighbors, no GC pauses from competing JVMs, no CPU throttling. The CDP WebSocket connection stays low-latency and stable indefinitely.</p>
+<p>The stability isn't any single factor — it's multiple "accidental" advantages stacking up. An old-enough Chromium avoiding GPU bugs. A $2 dummy plug enabling headed mode. ARM big.LITTLE matching browser workloads. Dedicated hardware eliminating contention. Sometimes "not bleeding edge" is the sweet spot.</p>
+<h2 id="actually-this-thing-is-fast">Actually, This Thing Is Fast</h2>
+<p>I want to push back on the "it's just an SBC" framing. The RK3588's four Cortex-A76 cores at 2.4GHz are roughly on par with an Intel i5-8250U. Running Chromium + OpenClaw + full XFCE desktop, CPU sits under 5% most of the time, spiking to maybe 30-40% during heavy JS execution. 16GB RAM is overkill — the whole stack uses 1-2GB. The 1TB NVMe performs identically to desktop hardware.</p>
+<p>For browser automation specifically, this machine isn't "adequate." It's <strong>overpowered</strong>.</p>
+<p>And the power draw? I measured it. The whole system — SBC + NVMe + HDMI dummy plug + XFCE desktop + Chromium + OpenClaw gateway — pulls <strong>7 watts steady state</strong>. That's not idle. That's the running system with everything loaded. When OpenClaw opens Chromium and actively browses websites, it goes up to... <strong>8 watts</strong>. One extra watt for active browser automation.</p>
+<p><img alt="Power meter showing 7W" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/rock5-7w.jpeg" /></p>
+<p>Seven watts. An entire computer running a desktop environment, a browser, and an AI agent, drawing less power than an LED light bulb. Compare that to an Intel N100 mini PC at 10-30W, or an i5 NUC at 15-60W.</p>
+<p>Fun aside: the Rock 5B has a PD negotiation bug where the PMIC can't handshake to 10V/20V on boot, so it stays at 5V. At 5V/3A you get 15W max. I used to compile <a href="https://github.com/chdb-io/chdb">chDB</a> (ClickHouse embedded) on this board which pulls 20W+ at full 8-core load — instant undervoltage reboot. Had to use a PD trigger/decoy board to force 20V output. Lost that gadget in a move, but at 7W for OpenClaw, 15W headroom is plenty. Low power workloads accidentally sidestep a hardware bug.</p>
+<p>Quick napkin math:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rock 5B 16GB</td>
+<td>~$110</td>
+</tr>
+<tr>
+<td>1TB NVMe</td>
+<td>~$60</td>
+</tr>
+<tr>
+<td>HDMI dummy plug</td>
+<td>$2</td>
+</tr>
+<tr>
+<td>USB-C PD charger</td>
+<td>~$10</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>~$182</strong></td>
+</tr>
+</tbody>
+</table>
+<p>A comparable ARM VPS (4 core / 16GB / 1TB) runs $40-80/month. The Rock 5B pays for itself in 3-5 months, then it's basically free to run (electricity cost is under $1/month). Plus your data stays local — for something like OpenClaw that handles personal messages and browser sessions, that matters.</p>
+<h2 id="tldr">TL;DR</h2>
+<p><strong>Final cost: ~$182 in hardware and mass psychological scars from reading minified Zod schemas.</strong></p>
+<p>The Rock 5B is now a fully operational self-hosted OpenClaw box with WhatsApp, Chromium browser automation, and remote desktop. It runs 24/7, sips power, and the CDP connection hasn't dropped once in days. Honestly the most reliable browser automation setup I've run, and it's a ~$100 SBC with a $2 fake monitor drawing less power than a desk lamp.</p>
+<p><img alt="The final setup: XFCE desktop over RDP with htop, OpenClaw status, and Chromium" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/xfce-desktop.png" />
+<em>The final setup via RDP: htop showing 8 cores barely awake, OpenClaw gateway running, Chromium browsing normally. Note "Presentation mode" toggle in the top right.</em></p>
+<p><img alt="htop showing near-idle system" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/htop.png" />
+<em>htop detail: 8 cores all single-digit %, 854MB/15.3GB RAM, load average 0.04. This machine is bored.</em></p>
+<p><img alt="Rock 5B tucked behind a Synology NAS" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/hereisit.jpeg" />
+<em>The final resting place: Rock 5B leaning against my Synology NAS, freeloading off its exhaust fans. I didn't bother configuring PWM to spin up the board's own fan — at 7W the SoC runs cool. The hottest part is actually the NVMe SSD on the back, and the NAS exhaust blows right onto it. Free cooling from the neighbor.</em></p>
+<p><img alt="OpenClaw responding via Telegram" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/chat.png" />
+<em>The payoff: asked the "Rock5b" bot on Telegram to "find out who is auxten." It autonomously opened Chromium, searched the web, and returned a full summary. All on a 7W SBC sitting behind my NAS.</em></p>
+<p>For anyone running home automation, AI agents, or browser automation — an ARM SBC might genuinely be the ideal form factor. Not "good enough for the price," but actually better than cloud or x86 alternatives for this specific workload. The low power, zero contention, always-on nature of the hardware matches the always-on nature of the software perfectly.</p>
+<p><strong>Edit:</strong> If you're considering this setup, go straight to OpenClaw v2026.2.13 and save yourself the Zod schema therapy session. Buy the HDMI dummy plug ($2). And don't fight the Rockchip PPA's Node.js pinning — force-install from nodesource immediately.</p>
+<p><strong>Edit 2:</strong> Shameless plug (literally) — if you'd rather run OpenClaw on a Mac Mini instead of an SBC, you hit the same problems: sleep prevention, virtual display, audio routing. I built <a href="https://macmate.app/">MacMate</a> to solve exactly this. It's a native macOS app that does what XFCE Presentation Mode + HDMI dummy plug do on Linux, but without the hardware. Virtual displays via CGVirtualDisplay API, awake management, audio loopback — $18 one-time. Full disclosure: this is my own product. That said, you'd be trading 7W power draw for... whatever a Mac Mini pulls. Can't win them all.</p>
+  </article>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>&copy; 2009&ndash;2026 Auxten Wang &middot; Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+    </div>
+  </footer>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

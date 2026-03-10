@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — auxten</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">auxten<span class="dot">.</span></a>
+      <div class="nav-links">
+        <a href="/#projects">Projects</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/#about">About</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <h1>Blog</h1>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="section-inner">
+      <div class="blog-list">
+        <a href="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent.html" class="blog-item">
+          <time>2026-02-26</time>
+          <span>My $182 ARM SBC draws 7 watts and runs a full AI agent</span>
+        </a>
+        <a href="/blog/context-management-is-the-real-bottleneck-for-ai-agents.html" class="blog-item">
+          <time>2026-02-23</time>
+          <span>Context Management Is the Real Bottleneck for AI Agents</span>
+        </a>
+        <a href="/blog/potential-of-mcp-in-database-applications.html" class="blog-item">
+          <time>2025-06-05</time>
+          <span>Potential of MCP in Database Applications is still underestimated</span>
+        </a>
+        <a href="/blog/vector-databases-a-traditional-database-developers-perspective.html" class="blog-item">
+          <time>2025-01-16</time>
+          <span>Vector Databases: A Traditional Database Developer's Perspective</span>
+        </a>
+        <a href="/blog/clickhouse-on-pandas-dataframe.html" class="blog-item">
+          <time>2024-08-15</time>
+          <span>ClickHouse on Pandas DataFrame</span>
+        </a>
+        <a href="/blog/chdb-is-joining-clickhouse.html" class="blog-item">
+          <time>2024-03-07</time>
+          <span>chDB is joining ClickHouse</span>
+        </a>
+        <a href="/blog/the-birth-of-chdb.html" class="blog-item">
+          <time>2023-07-08</time>
+          <span>The birth of chDB</span>
+        </a>
+        <a href="/blog/how-i-made-apache-superset-a-macos-app.html" class="blog-item">
+          <time>2022-05-30</time>
+          <span>How I made Apache Superset a macOS App</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>© 2009–2026 auxten · Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+    </div>
+  </footer>
+
+  <script src="/theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>auxten — Database Guy</title>
+  <meta name="description" content="Auxten Wang — Database engineer at ClickHouse, creator of chDB. Open source, databases, RecSys, and AI agents.">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">auxten<span class="dot">.</span></a>
+      <div class="nav-links">
+        <a href="/#projects">Projects</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/#about">About</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="hero-greeting">Hi, I'm</p>
+        <h1 class="hero-name"><span class="name-auxten" data-tooltip="Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried when registering Gmail — every real name was taken. It stuck, and now it's more me than my real name.">Auxten</span> Wang</h1>
+        <p class="hero-tagline">AI & Database Guy</p>
+        <p class="hero-desc">Technical Director at <strong>ClickHouse</strong>. Creator of <a href="https://github.com/chdb-io/chdb">chDB</a> — an in-process OLAP engine that was <a href="https://clickhouse.com/blog/chdb-joins-clickhouse-family">acquired by ClickHouse</a> in 2024. I build databases, recommendation systems, and tools that make complex things simple.</p>
+        <div class="hero-social">
+          <a href="https://github.com/auxten" target="_blank" rel="noopener" aria-label="GitHub">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
+          <a href="https://twitter.com/auxten" target="_blank" rel="noopener" aria-label="Twitter / X">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://www.reddit.com/user/auxten" target="_blank" rel="noopener" aria-label="Reddit">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/auxten/" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="https://medium.com/@auxten" target="_blank" rel="noopener" aria-label="Medium">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
+          </a>
+          <a href="https://news.ycombinator.com/user?id=auxten" target="_blank" rel="noopener" aria-label="Hacker News">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M0 24V0h24v24H0zM6.951 5.896l4.112 7.708v5.064h1.583v-4.972l4.148-7.799h-1.749l-2.457 4.875c-.372.745-.688 1.434-.688 1.434s-.297-.708-.651-1.434L8.831 5.896h-1.88z"/></svg>
+          </a>
+          <a href="https://www.zhihu.com/people/auxten" target="_blank" rel="noopener" aria-label="Zhihu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5.721 0C2.251 0 0 2.25 0 5.719V18.28C0 21.751 2.252 24 5.721 24h12.56C21.751 24 24 21.75 24 18.281V5.72C24 2.249 21.75 0 18.281 0zm1.964 4.078c-.271.73-.272 1.047-.272 1.047h4.777s.27-1.424-.535-1.047c-.804.376-3.97 0-3.97 0zm-1.388 2.26s-.38 4.108-.675 5.636c-.296 1.528-1.27 3.806-1.27 3.806l1.795-.46s.584-1.78.771-2.74c.188-.962.379-2.26.379-2.26h1.938l-.1 5.669h1.572l.123-5.669h1.665l-.417 3.592s-.052.707.466.692c.519-.016 1.141-.107 1.141-.107l.35-4.178H9.174l.083-1.06h4.994s.064-.86-.417-1.06c-.48-.198-5.537.14-5.537.14zm8.45.413s-.756 4.628-.756 5.04c0 .414.295 2.606 2.905 3.404 2.609.799 3.597-.7 3.772-1.138.175-.44.527-1.898.527-1.898l-1.69-.373s-.261 1.35-.524 1.68c-.263.333-.8.737-1.793.396-.994-.34-1.32-1.283-1.32-1.283l3.744-1.085-.257-1.27s-.352-1.726-.615-2.123c-.263-.396-1.408-1.478-2.79-1.478-1.382 0-1.203.128-1.203.128zm1.273 1.658c.475.016 1.065.348 1.3.702.236.354.588 1.803.588 1.803l-3.183.89s.26-1.298.507-1.89c.248-.593.314-1.52.788-1.505z"/></svg>
+          </a>
+          <a href="https://t.me/auxten" target="_blank" rel="noopener" aria-label="Telegram">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+          </a>
+          <a href="mailto:auxtenwpc@gmail.com" aria-label="Email">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="hero-avatar">
+        <img src="/head.png" alt="Auxten Wang" width="200" height="200">
+      </div>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <section class="section" id="projects">
+    <div class="section-inner">
+      <h2 class="section-title">Open Source Projects</h2>
+      <div class="projects-grid">
+
+        <a href="https://github.com/chdb-io/chdb" target="_blank" rel="noopener" class="project-card featured">
+          <div class="project-badge">Acquired by ClickHouse</div>
+          <div class="project-logo">
+            <img src="/img/chdb-light.png" alt="chDB" class="logo-light">
+            <img src="/img/chdb-dark.png" alt="chDB" class="logo-dark">
+          </div>
+          <h3>chDB</h3>
+          <div class="project-stars">2,630 stars</div>
+          <p>In-process OLAP SQL engine powered by ClickHouse. Supports 60+ data formats, 334 SQL functions, and runs embedded in Python, Go, Rust, Node.js, Bun, and more — zero infrastructure needed.</p>
+          <div class="project-tags">
+            <span>C++</span><span>Python</span><span>ClickHouse</span><span>OLAP</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/CovenantSQL/CovenantSQL" target="_blank" rel="noopener" class="project-card">
+          <div class="project-badge">Cofounder & CTO</div>
+          <div class="project-logo"><img src="/img/covenantsql.png" alt="CovenantSQL"></div>
+          <h3>CovenantSQL</h3>
+          <div class="project-stars">1,528 stars</div>
+          <p>A decentralized, Byzantine Fault Tolerant SQL database with blockchain features. DPoS + BFT-Raft consensus, immutable audit trail, column-level ACL — an open source alternative to Amazon QLDB.</p>
+          <div class="project-tags">
+            <span>Go</span><span>Blockchain</span><span>SQL</span><span>BFT</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/auxten/go-sqldb" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/go-sqldb.svg" alt="go-sqldb"></div>
+          <h3>go-sqldb</h3>
+          <div class="project-stars">846 stars</div>
+          <p>A pure Go SQL database in ~2000 lines. B+Tree storage, volcano model planner, SQL parser — built from scratch for database theory research.</p>
+          <div class="project-tags">
+            <span>Go</span><span>SQL</span><span>B+Tree</span><span>Educational</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/auxten/postgresql-parser" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/postgresql-parser.svg" alt="postgresql-parser"></div>
+          <h3>postgresql-parser</h3>
+          <div class="project-stars">313 stars</div>
+          <p>Pure Go PostgreSQL parser supporting SQL:2011 down to SQL-92. Used by Atlas, ByteBase, and other production tools.</p>
+          <div class="project-tags">
+            <span>Go</span><span>PostgreSQL</span><span>Parser</span><span>AST</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/auxten/go-ctr" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/go-ctr.svg" alt="go-ctr"></div>
+          <h3>go-ctr</h3>
+          <div class="project-stars">236 stars</div>
+          <p>Deep learning recommendation framework in Go. DeepFM, DNN, Deep Interest Network — with Item2vec embeddings and MovieLens benchmarks.</p>
+          <div class="project-tags">
+            <span>Go</span><span>RecSys</span><span>Deep Learning</span>
+          </div>
+        </a>
+
+        <a href="https://botschat.app" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/botschat.png" alt="BotsChat"></div>
+          <h3>BotsChat</h3>
+          <div class="project-stars">Open Source · Apache 2.0</div>
+          <p>Slack-like messaging for AI agents with E2E encryption. Channels, sessions, threads, cron scheduling, debug panel — on Web, macOS, and iOS.</p>
+          <div class="project-tags">
+            <span>App</span><span>AI Agents</span><span>E2E Encrypted</span>
+          </div>
+        </a>
+
+        <a href="https://macmate.app" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/macmate.png" alt="MacMate"></div>
+          <h3>MacMate</h3>
+          <div class="project-stars">macOS Native</div>
+          <p>Menu-bar companion for headless Mac deployment. Virtual display, audio router, awake manager, system monitor — built for AI agent operations.</p>
+          <div class="project-tags">
+            <span>macOS</span><span>Swift</span><span>Headless</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/auxten/clickmem" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/clickmem.svg" alt="clickmem"></div>
+          <h3>clickmem</h3>
+          <div class="project-stars">13 stars</div>
+          <p>Three-layer memory system for AI agents. Hybrid semantic + keyword search, local-first with LAN sharing, built on chDB and local embeddings.</p>
+          <div class="project-tags">
+            <span>Python</span><span>MCP</span><span>AI Agents</span>
+          </div>
+        </a>
+
+        <a href="https://github.com/auxten/gingko" target="_blank" rel="noopener" class="project-card">
+          <div class="project-logo"><img src="/img/gingko.svg" alt="gingko"></div>
+          <h3>gingko</h3>
+          <div class="project-stars">82 stars</div>
+          <p>P2P file distribution tool, SCP-compatible. Designed for fast cluster-wide file transfer at scale.</p>
+          <div class="project-tags">
+            <span>C++</span><span>P2P</span><span>Infrastructure</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section" id="about">
+    <div class="section-inner">
+      <h2 class="section-title">About</h2>
+      <div class="about-content">
+        <p>I'm <strong>Auxten Wang</strong>, a database engineer and open source builder based in <strong>Singapore</strong>.</p>
+        <p>I created <strong>chDB</strong> — an embedded ClickHouse engine that lets you run full OLAP SQL anywhere without infrastructure. It started from a simple need: running ClickHouse in Jupyter Notebooks for ML model training instead of waiting on slow Hive clusters. chDB was <strong>acquired by ClickHouse Inc.</strong> in 2024, and I now work there full-time growing the project and its ecosystem across 7+ language bindings.</p>
+        <p>Before ClickHouse, I was <strong>Principal Engineer at Shopee</strong>, <strong>Cofounder & CTO of CovenantSQL</strong> (decentralized BFT database, 1,500+ stars), and <strong>RecSys & Infra Director at 4Paradigm</strong>. Earlier in my career, I was Technical Director at <strong>eLong</strong>, built cluster control for 30,000 servers at <strong>Qihoo 360</strong>, and created <strong>Gingko</strong> — Baidu's P2P dataset distribution system — writing 90% of the C++ code. Started my journey as an intern at <strong>Douban</strong> in 2009.</p>
+        <p>Lately, I've been exploring the intersection of <strong>databases and AI agents</strong> — building memory systems, RAG pipelines, and MCP integrations powered by ClickHouse.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Press & Talks -->
+  <section class="section" id="press">
+    <div class="section-inner">
+      <h2 class="section-title">Press & Talks</h2>
+
+      <h3 class="press-subhead">Conference Talks</h3>
+      <div class="press-list">
+        <a href="https://www.instagram.com/p/DTxTCE7FfCQ/" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">PythonAsia 2026</span>
+          <span class="press-title">Speaker (Upcoming)</span>
+        </a>
+        <a href="https://drive.google.com/file/d/12H8ywmHjpYCHQQznDM2KcL4dCwBy2qFm/view" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">HackOMania 2026</span>
+          <span class="press-title">Judge — Singapore</span>
+        </a>
+        <a href="https://www.youtube.com/watch?v=e_yL0dlX6k4" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">EuroPython 2024</span>
+          <span class="press-title">chDB — The Blazing Fast SQL Engine for Data Science (Video)</span>
+        </a>
+        <a href="https://medium.com/@covenant_labs/covenantsql-data-security-cstc-conference-sharing-ed14be362b79" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">CSTC 2018</span>
+          <span class="press-title">CovenantSQL — The Highly Available Database on the Internet</span>
+        </a>
+      </div>
+
+      <h3 class="press-subhead">Coverage</h3>
+      <div class="press-list">
+        <a href="https://x.com/ClickHouseDB/status/2012034690715472340" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">ClickHouse (X)</span>
+          <span class="press-title">Featured by ClickHouse official account</span>
+        </a>
+        <a href="https://clickhouse.com/blog/chdb-joins-clickhouse-family" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">ClickHouse Blog</span>
+          <span class="press-title">chDB joins the ClickHouse family</span>
+        </a>
+        <a href="https://blog.logrocket.com/top-7-blockchain-based-databases/" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">LogRocket</span>
+          <span class="press-title">Top 7 blockchain-based databases (feat. CovenantSQL)</span>
+        </a>
+        <a href="https://dbdb.io/db/chdb" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">CMU DB of DBs</span>
+          <span class="press-title">chDB — cataloged by Carnegie Mellon</span>
+        </a>
+        <a href="https://dbdb.io/db/covenantsql" target="_blank" rel="noopener" class="press-item">
+          <span class="press-source">CMU DB of DBs</span>
+          <span class="press-title">CovenantSQL — cataloged by Carnegie Mellon</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Career Timeline -->
+  <section class="section" id="journey">
+    <div class="section-inner">
+      <h2 class="section-title">Journey</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker marker-orange"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2024 — Now</span>
+            <h3>ClickHouse — Technical Director</h3>
+            <p>chDB acquired. Building the embedded ClickHouse ecosystem full-time, remote from Singapore.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-blue"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2021 — 2024</span>
+            <h3>Shopee — Principal Engineer</h3>
+            <p>ML platforms, databases, and recommendation systems at scale. Beijing.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-purple"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2018 — 2022</span>
+            <h3>CovenantSQL — Cofounder & CTO</h3>
+            <p>Built a decentralized BFT SQL database — open source Amazon QLDB alternative. 1,500+ GitHub stars.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-pink"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2016 — 2018</span>
+            <h3>4Paradigm — RecSys & Infra Director</h3>
+            <p>Led recommendation systems and infrastructure at one of China's leading AI companies.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-green"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2015 — 2016</span>
+            <h3>eLong — Technical Director</h3>
+            <p>Led engineering teams. Founded eLong's internal tech university.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-orange"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2012 — 2015</span>
+            <h3>Qihoo 360 — Technical Manager</h3>
+            <p>Ops dev, wireless security research. Created 360 Traffic Guard. Designed cluster control for 30,000 servers.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-blue"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2010 — 2012</span>
+            <h3>Baidu — OP Engineer</h3>
+            <p>Built Gingko — Baidu's P2P large dataset distribution system in C++ with libevent. Designed architecture and wrote 90% of the code.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-marker marker-purple"></div>
+          <div class="timeline-content">
+            <span class="timeline-date">2009</span>
+            <h3>Douban — Intern</h3>
+            <p>Built an automated web testing framework with Python, Selenium, and Xvfb.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog Preview -->
+  <section class="section" id="blog-preview">
+    <div class="section-inner">
+      <h2 class="section-title">Recent Posts</h2>
+      <div class="blog-list">
+        <a href="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent.html" class="blog-item">
+          <time>2026-02-26</time>
+          <span>My $182 ARM SBC draws 7 watts and runs a full AI agent</span>
+        </a>
+        <a href="/blog/context-management-is-the-real-bottleneck-for-ai-agents.html" class="blog-item">
+          <time>2026-02-23</time>
+          <span>Context Management Is the Real Bottleneck for AI Agents</span>
+        </a>
+        <a href="/blog/potential-of-mcp-in-database-applications.html" class="blog-item">
+          <time>2025-06-05</time>
+          <span>Potential of MCP in Database Applications is still underestimated</span>
+        </a>
+        <a href="/blog/vector-databases-a-traditional-database-developers-perspective.html" class="blog-item">
+          <time>2025-01-16</time>
+          <span>Vector Databases: A Traditional Database Developer's Perspective</span>
+        </a>
+        <a href="/blog/clickhouse-on-pandas-dataframe.html" class="blog-item">
+          <time>2024-08-15</time>
+          <span>ClickHouse on Pandas DataFrame</span>
+        </a>
+      </div>
+      <a href="/blog.html" class="view-all">View all posts →</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>© 2009–2026 Auxten Wang · Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+    </div>
+  </footer>
+
+  <script src="/theme.js"></script>
+</body>
+</html>
