@@ -56,6 +56,7 @@ TEMPLATE = """<!DOCTYPE html>
       <a href="/" class="nav-logo">auxten<span class="dot">.</span></a>
       <div class="nav-links">
         <a href="/#projects">Projects</a>
+        <a href="/#press">Talks</a>
         <a href="/blog.html">Blog</a>
         <a href="/#about">About</a>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
