@@ -26,6 +26,21 @@ TEMPLATE = """<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title} — auxten</title>
+  <meta name="description" content="{title} — A blog post by Auxten Wang">
+  <meta name="author" content="Auxten Wang">
+  <link rel="canonical" href="https://auxten.com/blog/{slug}.html">
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="{title} — auxten">
+  <meta property="og:description" content="{title} — A blog post by Auxten Wang">
+  <meta property="og:url" content="https://auxten.com/blog/{slug}.html">
+  <meta property="og:image" content="https://auxten.com/head.jpg">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@auxten">
+  <meta name="twitter:title" content="{title} — auxten">
+  <meta name="twitter:description" content="{title} — A blog post by Auxten Wang">
+  <meta name="twitter:image" content="https://auxten.com/head.jpg">
   <link rel="icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -191,8 +206,17 @@ def convert_post(folder_name, slug):
             title=title,
             date=date_short,
             content=html_content,
+            slug=slug,
         ))
     print(f"  OK: {slug}.html ({len(html_content)} chars)")
+
+    # Write markdown version for AI agents (llms.txt convention)
+    md_out_path = os.path.join(OUT_DIR, slug + ".md")
+    with open(md_out_path, "w", encoding="utf-8") as f:
+        f.write(f"# {title}\n\n")
+        f.write(f"*{date_short} — by Auxten Wang*\n\n")
+        f.write(body)
+    print(f"  OK: {slug}.md")
 
 
 def main():

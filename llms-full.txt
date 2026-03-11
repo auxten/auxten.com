@@ -1,0 +1,139 @@
+# auxten.com — Full Content
+
+> Personal website of Auxten Wang (Pengcheng Wang), Technical Director at ClickHouse, creator of chDB.
+
+---
+
+## About
+
+I'm Auxten Wang, a database engineer and open source builder based in Singapore.
+
+I created chDB — an embedded ClickHouse engine that lets you run full OLAP SQL anywhere without infrastructure. It started from a simple need: running ClickHouse in Jupyter Notebooks for ML model training instead of waiting on slow Hive clusters. chDB was acquired by ClickHouse Inc. in 2024, and I now work there full-time growing the project and its ecosystem across 7+ language bindings.
+
+Before ClickHouse, I was Principal Engineer at Shopee, Cofounder & CTO of CovenantSQL (decentralized BFT database, 1,500+ stars), and RecSys & Infra Director at 4Paradigm. Earlier in my career, I was Technical Director at eLong, built cluster control for 30,000 servers at Qihoo 360, and created Gingko — Baidu's P2P dataset distribution system — writing 90% of the C++ code. Started my journey as an intern at Douban in 2009.
+
+Lately, I've been exploring the intersection of databases and AI agents — building memory systems, RAG pipelines, and MCP integrations powered by ClickHouse.
+
+Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried when registering Gmail — every real name was taken. It stuck, and now it's more me than my real name.
+
+---
+
+## Open Source Projects
+
+### chDB
+- URL: https://github.com/chdb-io/chdb
+- Stars: 2,630+
+- Status: Acquired by ClickHouse in 2024
+- Description: In-process OLAP SQL engine powered by ClickHouse. Supports 60+ data formats, 334 SQL functions, and runs embedded in Python, Go, Rust, Node.js, Bun, and more — zero infrastructure needed.
+- Tags: C++, Python, ClickHouse, OLAP
+
+### CovenantSQL
+- URL: https://github.com/CovenantSQL/CovenantSQL
+- Stars: 1,528+
+- Role: Cofounder & CTO
+- Description: A decentralized, Byzantine Fault Tolerant SQL database with blockchain features. DPoS + BFT-Raft consensus, immutable audit trail, column-level ACL — an open source alternative to Amazon QLDB.
+- Tags: Go, Blockchain, SQL, BFT
+
+### go-sqldb
+- URL: https://github.com/auxten/go-sqldb
+- Stars: 846+
+- Description: A pure Go SQL database in ~2000 lines. B+Tree storage, volcano model planner, SQL parser — built from scratch for database theory research.
+- Tags: Go, SQL, B+Tree, Educational
+
+### postgresql-parser
+- URL: https://github.com/auxten/postgresql-parser
+- Stars: 313+
+- Description: Pure Go PostgreSQL parser supporting SQL:2011 down to SQL-92. Used by Atlas, ByteBase, and other production tools.
+- Tags: Go, PostgreSQL, Parser, AST
+
+### go-ctr
+- URL: https://github.com/auxten/go-ctr
+- Stars: 236+
+- Description: Deep learning recommendation framework in Go. DeepFM, DNN, Deep Interest Network — with Item2vec embeddings and MovieLens benchmarks.
+- Tags: Go, RecSys, Deep Learning
+
+### BotsChat
+- URL: https://botschat.app
+- License: Open Source, Apache 2.0
+- Description: Slack-like messaging for AI agents with E2E encryption. Channels, sessions, threads, cron scheduling, debug panel — on Web, macOS, and iOS.
+- Tags: App, AI Agents, E2E Encrypted
+
+### MacMate
+- URL: https://macmate.app
+- Platform: macOS Native
+- Description: Menu-bar companion for headless Mac deployment. Virtual display, audio router, awake manager, system monitor — built for AI agent operations.
+- Tags: macOS, Swift, Headless
+
+### clickmem
+- URL: https://github.com/auxten/clickmem
+- Type: MCP Server
+- Description: Three-layer memory system for AI agents. Hybrid semantic + keyword search, local-first with LAN sharing, built on chDB and local embeddings.
+- Tags: Python, MCP, AI Agents
+
+### gingko
+- URL: https://github.com/auxten/gingko
+- Origin: Built at Baidu
+- Description: P2P file distribution tool, SCP-compatible. Designed for fast cluster-wide file transfer at scale.
+- Tags: C++, P2P, Infrastructure
+
+---
+
+## Conference Talks
+
+- **PythonAsia 2026**: How I Put a Rocket Engine into Python: Porting ClickHouse for High-Performance Apps
+- **CH Meetup SG 2026**: The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame
+- **OpenClaw SG 2026**: Organizer & Speaker — How I Manage My One-Man Company with OpenClaw
+- **HackOMania SG 2026**: Hackathon Judge — Singapore
+- **SoftCon 2025** (Beijing): How Database Architecture Advances Are Driving Next-Gen AI Systems
+- **DTCC 2025**: ClickHouse Advances and Applications in AI
+- **EuroPython 2024**: chDB — The Blazing Fast SQL Engine for Data Science (Video: https://www.youtube.com/watch?v=e_yL0dlX6k4)
+- **KubeCon HK 2024**: Live Demo of chDB at the ClickHouse Booth
+- **CSTC 2018**: CovenantSQL — The Highly Available Database on the Internet
+
+## Media Coverage
+
+- ClickHouse (X): Featured by ClickHouse official account (https://x.com/ClickHouseDB/status/2012034690715472340)
+- ClickHouse Blog: chDB joins the ClickHouse family (https://clickhouse.com/blog/chdb-joins-clickhouse-family)
+- LogRocket: Top 7 blockchain-based databases (feat. CovenantSQL)
+- CMU DB of DBs: chDB cataloged by Carnegie Mellon (https://dbdb.io/db/chdb)
+- CMU DB of DBs: CovenantSQL cataloged by Carnegie Mellon (https://dbdb.io/db/covenantsql)
+
+---
+
+## Career Timeline
+
+- **2024 — Now**: ClickHouse — Technical Director. chDB acquired. Building the embedded ClickHouse ecosystem full-time, remote from Singapore.
+- **2021 — 2024**: Shopee — Principal Engineer. ML platforms, databases, and recommendation systems at scale. Beijing.
+- **2018 — 2022**: CovenantSQL — Cofounder & CTO. Built a decentralized BFT SQL database — open source Amazon QLDB alternative. 1,500+ GitHub stars.
+- **2016 — 2018**: 4Paradigm — RecSys & Infra Director. Led recommendation systems and infrastructure at one of China's leading AI companies.
+- **2015 — 2016**: eLong — Technical Director. Led engineering teams. Founded eLong's internal tech university.
+- **2012 — 2015**: Qihoo 360 — Technical Manager. Ops dev, wireless security research. Created 360 Traffic Guard. Designed cluster control for 30,000 servers.
+- **2010 — 2012**: Baidu — OP Engineer. Built Gingko — Baidu's P2P large dataset distribution system in C++ with libevent. Designed architecture and wrote 90% of the code.
+- **2009**: Douban — Intern. Built an automated web testing framework with Python, Selenium, and Xvfb.
+
+---
+
+## Blog Posts
+
+- [My $182 ARM SBC Draws 7 Watts and Runs a Full AI Agent](https://auxten.com/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent.html) — 2026-02-26
+- [Context Management Is the Real Bottleneck for AI Agents](https://auxten.com/blog/context-management-is-the-real-bottleneck-for-ai-agents.html) — 2026-02-23
+- [Potential of MCP in Database Applications](https://auxten.com/blog/potential-of-mcp-in-database-applications.html) — 2025-06-05
+- [Vector Databases: A Traditional Database Developer's Perspective](https://auxten.com/blog/vector-databases-a-traditional-database-developers-perspective.html) — 2025-01-16
+- [ClickHouse on Pandas DataFrame](https://auxten.com/blog/clickhouse-on-pandas-dataframe.html) — 2024-08-15
+- [chDB is joining ClickHouse](https://auxten.com/blog/chdb-is-joining-clickhouse.html) — 2024-03-07
+- [The birth of chDB](https://auxten.com/blog/the-birth-of-chdb.html) — 2023-07-08
+- [How I Made Apache Superset a macOS App](https://auxten.com/blog/how-i-made-apache-superset-a-macos-app.html) — 2022-05-30
+
+---
+
+## Contact
+
+- GitHub: https://github.com/auxten
+- Twitter/X: https://twitter.com/auxten
+- Reddit: https://www.reddit.com/user/auxten
+- LinkedIn: https://www.linkedin.com/in/auxten/
+- Medium: https://medium.com/@auxten
+- Hacker News: https://news.ycombinator.com/user?id=auxten
+- Zhihu: https://www.zhihu.com/people/auxten
+- Telegram: https://t.me/auxten
+- Email: auxtenwpc@gmail.com

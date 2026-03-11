@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://auxten.com/sitemap.xml
+
+# AI Agent Content
+# See https://auxten.com/llms.txt for a summary
+# See https://auxten.com/llms-full.txt for full content

@@ -1,0 +1,43 @@
+# auxten.com
+
+> Personal website of Auxten Wang (Pengcheng Wang), Technical Director at ClickHouse, creator of chDB.
+
+## About
+
+Auxten Wang is a database engineer and open source builder based in Singapore. He created chDB — an embedded ClickHouse engine acquired by ClickHouse Inc. in 2024. He builds databases, AI agent tools, and recommendation systems.
+
+## Links
+
+- Website: https://auxten.com
+- GitHub: https://github.com/auxten
+- Twitter/X: https://twitter.com/auxten
+- LinkedIn: https://www.linkedin.com/in/auxten/
+- Email: auxtenwpc@gmail.com
+- Blog: https://auxten.com/blog.html
+
+## Projects
+
+- [chDB](https://github.com/chdb-io/chdb): In-process OLAP SQL engine powered by ClickHouse. 2,630+ stars. Acquired by ClickHouse.
+- [CovenantSQL](https://github.com/CovenantSQL/CovenantSQL): Decentralized BFT SQL database. 1,528+ stars.
+- [go-sqldb](https://github.com/auxten/go-sqldb): Pure Go SQL database in ~2000 lines. 846+ stars.
+- [postgresql-parser](https://github.com/auxten/postgresql-parser): Pure Go PostgreSQL parser. 313+ stars.
+- [go-ctr](https://github.com/auxten/go-ctr): Deep learning recommendation framework in Go. 236+ stars.
+- [BotsChat](https://botschat.app): Slack-like messaging for AI agents with E2E encryption.
+- [MacMate](https://macmate.app): Menu-bar companion for headless Mac deployment.
+- [clickmem](https://github.com/auxten/clickmem): Three-layer memory system for AI agents. MCP server.
+- [gingko](https://github.com/auxten/gingko): P2P file distribution tool, built at Baidu.
+
+## Blog Posts
+
+- [My $182 ARM SBC Draws 7 Watts and Runs a Full AI Agent](https://auxten.com/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent.html) (2026-02-26)
+- [Context Management Is the Real Bottleneck for AI Agents](https://auxten.com/blog/context-management-is-the-real-bottleneck-for-ai-agents.html) (2026-02-23)
+- [Potential of MCP in Database Applications](https://auxten.com/blog/potential-of-mcp-in-database-applications.html) (2025-06-05)
+- [Vector Databases: A Traditional Database Developer's Perspective](https://auxten.com/blog/vector-databases-a-traditional-database-developers-perspective.html) (2025-01-16)
+- [ClickHouse on Pandas DataFrame](https://auxten.com/blog/clickhouse-on-pandas-dataframe.html) (2024-08-15)
+- [chDB is joining ClickHouse](https://auxten.com/blog/chdb-is-joining-clickhouse.html) (2024-03-07)
+- [The birth of chDB](https://auxten.com/blog/the-birth-of-chdb.html) (2023-07-08)
+- [How I Made Apache Superset a macOS App](https://auxten.com/blog/how-i-made-apache-superset-a-macos-app.html) (2022-05-30)
+
+## For Full Content
+
+See [llms-full.txt](https://auxten.com/llms-full.txt) for the complete text content of this website.
