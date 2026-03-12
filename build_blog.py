@@ -286,6 +286,14 @@ def convert_direct_post(md_path, title, date_short, slug):
             break
     body = "\n".join(lines[start:])
 
+    # Add ClickHouse blog links to the Links section at the bottom (before italic strip)
+    body = body.replace(
+        '- *[Building chDB DataStore with AI](https://github.com/chdb-io/chdb/pull/496) — Multi-agent pipeline for pandas compatibility*',
+        '- *[Building chDB DataStore with AI](https://github.com/chdb-io/chdb/pull/496) — Multi-agent pipeline for pandas compatibility*\n'
+        '- *[The Journey to Zero-Copy](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog*\n'
+        '- *[chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex) — ClickHouse Blog*'
+    )
+
     # Fix italic list items: "- *[link](url) — desc*" -> proper list items
     body = re.sub(r'^- \*(.+)\*$', r'- \1', body, flags=re.MULTILINE)
     # Fix "*Links:*" prefix to be a proper heading
@@ -306,7 +314,8 @@ def convert_direct_post(md_path, title, date_short, slug):
     body = body.replace(
         '![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](chdb-dataframe-benchmark.png)',
         '![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](chdb-dataframe-benchmark.webp)\n\n'
-        '*Source: [The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog*'
+        '*Source: [The Journey to Zero-Copy](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog. '
+        'See also: [chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex)*'
     )
 
     # Fix image paths: relative images -> /blog/slug/image.png

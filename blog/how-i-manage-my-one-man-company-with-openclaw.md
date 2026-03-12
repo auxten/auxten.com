@@ -27,7 +27,7 @@ Then Cursor appeared. Then Claude Code. Suddenly the AI was *inside* your editor
 
 ![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.webp)
 
-*Source: [The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog*
+*Source: [The Journey to Zero-Copy](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog. See also: [chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex)*
 
 It worked remarkably well. And then a thought hit me: if AI agents can write, review, and iterate on code inside my IDE... can they do it *without* me? Can they run on a dedicated machine, 24/7?
 
@@ -310,3 +310,5 @@ If I could go back to the beginning, I'd tell myself five things:
 - [HandsOn](https://github.com/auxten/handson) — IP-KVM MCP interface for hardware control
 - [OpenClaw restart loop fix PR](https://github.com/openclaw/openclaw/pull/41007) — Submitted by my OpenClaw agent
 - [Building chDB DataStore with AI](https://github.com/chdb-io/chdb/pull/496) — Multi-agent pipeline for pandas compatibility
+- [The Journey to Zero-Copy](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog
+- [chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex) — ClickHouse Blog

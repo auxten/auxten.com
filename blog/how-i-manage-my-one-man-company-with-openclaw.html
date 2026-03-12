@@ -65,7 +65,7 @@
 <p>Then we graduated to describing entire files — imports, class structures, error handling, the works. The AI got better at holding context, and we got better at prompting.</p>
 <p>Then Cursor appeared. Then Claude Code. Suddenly the AI was <em>inside</em> your editor. It could see your codebase, run your tests, fix its own bugs. When we were building <a href="https://github.com/chdb-io/chdb/pull/496">chDB v4's DataStore</a> — a pandas-compatible layer that lets you swap one import line and get ClickHouse speed — we built a full multi-agent pipeline: test generator, bug fixer, architect, reviewer, benchmark runner, all orchestrated by Python scripts.</p>
 <p><img alt="chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations" src="/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.webp" /></p>
-<p><em>Source: <a href="https://clickhouse.com/blog/chdb-journey-to-zero-copy">The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame</a> — ClickHouse Blog</em></p>
+<p><em>Source: <a href="https://clickhouse.com/blog/chdb-journey-to-zero-copy">The Journey to Zero-Copy</a> — ClickHouse Blog. See also: <a href="https://clickhouse.com/blog/chdb.4-0-pandas-hex">chDB 4.0 — Pandas Hex</a></em></p>
 <p>It worked remarkably well. And then a thought hit me: if AI agents can write, review, and iterate on code inside my IDE... can they do it <em>without</em> me? Can they run on a dedicated machine, 24/7?</p>
 <p>I decided to buy a Mac Mini.</p>
 <hr />
@@ -268,6 +268,8 @@
 <li><a href="https://github.com/auxten/handson">HandsOn</a> — IP-KVM MCP interface for hardware control</li>
 <li><a href="https://github.com/openclaw/openclaw/pull/41007">OpenClaw restart loop fix PR</a> — Submitted by my OpenClaw agent</li>
 <li><a href="https://github.com/chdb-io/chdb/pull/496">Building chDB DataStore with AI</a> — Multi-agent pipeline for pandas compatibility</li>
+<li><a href="https://clickhouse.com/blog/chdb-journey-to-zero-copy">The Journey to Zero-Copy</a> — ClickHouse Blog</li>
+<li><a href="https://clickhouse.com/blog/chdb.4-0-pandas-hex">chDB 4.0 — Pandas Hex</a> — ClickHouse Blog</li>
 </ul>
     </article>
   </div>
