@@ -344,6 +344,26 @@ def convert_direct_post(md_path, title, date_short, slug):
     })
     html_content = md.convert(body)
 
+    # Convert <p><img alt="..."></p> to <figure><img><figcaption></figure>
+    # Skip generic alt texts like "image-2026..." or simple logos
+    def img_to_figure(m):
+        full = m.group(0)
+        alt = re.search(r'alt="([^"]*)"', full)
+        if not alt:
+            return full
+        alt_text = alt.group(1)
+        # Skip generic or trivial alt texts
+        if not alt_text or alt_text.startswith('image-') or alt_text in ('chDB logo',):
+            return full
+        img_tag = re.search(r'<img[^>]+>', full).group(0)
+        return f'<figure>{img_tag}<figcaption>{alt_text}</figcaption></figure>'
+
+    html_content = re.sub(
+        r'<p>(<img[^>]+>)\s*</p>',
+        img_to_figure,
+        html_content
+    )
+
     # Write HTML output
     out_path = os.path.join(OUT_DIR, slug + ".html")
     with open(out_path, "w", encoding="utf-8") as f:
