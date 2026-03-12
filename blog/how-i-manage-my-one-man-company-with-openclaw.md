@@ -25,6 +25,8 @@ Then we graduated to describing entire files — imports, class structures, erro
 
 Then Cursor appeared. Then Claude Code. Suddenly the AI was *inside* your editor. It could see your codebase, run your tests, fix its own bugs. When we were building [chDB v4's DataStore](https://github.com/chdb-io/chdb/pull/496) — a pandas-compatible layer that lets you swap one import line and get ClickHouse speed — we built a full multi-agent pipeline: test generator, bug fixer, architect, reviewer, benchmark runner, all orchestrated by Python scripts.
 
+![chDB DataStore multi-agent pipeline — test generator, bug fixer, reviewer, all orchestrated by Python](/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-ai-loop.jpg)
+
 ![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.webp)
 
 *Source: [The Journey to Zero-Copy](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog. See also: [chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex)*

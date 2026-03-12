@@ -310,9 +310,10 @@ def convert_direct_post(md_path, title, date_short, slug):
         '<img src="chdb-logo.png" alt="chDB logo" style="max-width: 200px;">'
     )
 
-    # Replace benchmark image with webp and add ClickHouse blog link
+    # Add multi-agent pipeline screenshot and replace benchmark image with webp
     body = body.replace(
         '![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](chdb-dataframe-benchmark.png)',
+        '![chDB DataStore multi-agent pipeline — test generator, bug fixer, reviewer, all orchestrated by Python](chdb-ai-loop.jpg)\n\n'
         '![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](chdb-dataframe-benchmark.webp)\n\n'
         '*Source: [The Journey to Zero-Copy](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog. '
         'See also: [chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex)*'
