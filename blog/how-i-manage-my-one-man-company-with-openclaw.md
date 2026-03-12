@@ -45,9 +45,7 @@ The machine was literally still being shipped when OpenClaw launched.
 
 So I built nothing from scratch. The day the Mac Mini arrived, I installed OpenClaw — which happened to be the very first day the project was publicly available. Sometimes timing just works out like that.
 
-ClickHouse is a wonderful employer. My boss always gives me an incredibly open and free working environment, and my colleagues are all really nice. Even though we're fully remote and basically only see each other in person at our biannual offsites, whenever you ask a question in the group chat, someone will jump in to help. I still remember telling my boss I wanted to try fine-tuning an NL2SQL model — it was just an idea at the time, and I might need to rent an 8×A100 machine. My boss Yury didn't ask too many questions and just approved it. ClickHouse also provides us with enterprise subscriptions for pretty much every AI coding tool, so I have access to all the major models.
-
-A few years ago, I remember hearing a rumor about Google's hiring philosophy: "Hire the best people, give them ordinary things to do." I've adopted a similar habit — I always try to use the best model when coding. Every time I give another model a chance, I end up realizing I've wasted my time. So the very first time I deployed OpenClaw, I set Opus as the default — it's what I'd been using in Cursor and Claude Code, and I already trusted it deeply. Recently, on a friend's recommendation, I also tried GPT 5.4. Honestly, maybe Opus and I just have a deeper friendship ;-p
+One thing that made this possible: ClickHouse gives its engineers a remarkably free working environment — enterprise subscriptions for every AI coding tool, and the kind of trust where you can say "I want to rent 8×A100s for a fine-tuning experiment" and your boss just approves it. So when I deployed OpenClaw, I set Opus as the default model from day one — it's what I'd been using in Cursor and Claude Code, and I already trusted it deeply.
 
 ![OpenClaw on Mac Mini — 24/7 agent handling code, social media, App Store, and more](/blog/how-i-manage-my-one-man-company-with-openclaw/openclaw-mac-mini-setup.png)
 
@@ -77,12 +75,7 @@ MacMate is now a real product. $18, one-time purchase. Born entirely from the pa
 
 ## My AI Got Its Own Twitter Account
 
-With the infrastructure finally working, I started exploring what OpenClaw was actually good at:
-
-- Many people use it to organize their email. Hmm, maybe I don't get that much email, but I always felt that was a bit too dangerous — your primary email has basically become your internet passport number.
-- Some people use it to summarize news and send daily digests. I use Grok for that, and so far it does a pretty good job.
-
-My answer probably won't surprise anyone: **social media operations**.
+With the infrastructure finally working, I started exploring what OpenClaw was actually good at. Many people use it for email triage or news digests, but for me the answer was obvious: **social media operations**.
 
 I registered several X accounts — some for AI news aggregation, others for promoting my open-source projects. Then I put OpenClaw to work: finding potential users, writing product articles, publishing release notes and changelogs, engaging in relevant discussions.
 
@@ -193,7 +186,7 @@ Update: I've since added Qwen 3.5 4B–9B models for L2 memory refinement. No mo
 
 ## The Button Software Couldn't Click
 
-You think the story ends here? It doesn't.
+With memory solved, I thought the system was finally complete. Then macOS found a new way to humble me.
 
 One day, OpenClaw pushed an update that refactored its permission system. After the update, a pile of macOS permission dialogs popped up on the Mac Mini: "Allow OpenClaw to control this computer," "Allow access to Documents," "Allow access to Downloads"...
 

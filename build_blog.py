@@ -327,6 +327,37 @@ def convert_direct_post(md_path, title, date_short, slug):
         ''
     )
 
+    # --- Transition fixes ---
+
+    # Fix 1: "Mac Mini Was Still in the Mail" — condense the company/model digression
+    body = body.replace(
+        'ClickHouse is a wonderful employer. My boss always gives me an incredibly open and free working environment, and my colleagues are all really nice. Even though we\'re fully remote and basically only see each other in person at our biannual offsites, whenever you ask a question in the group chat, someone will jump in to help. I still remember telling my boss I wanted to try fine-tuning an NL2SQL model — it was just an idea at the time, and I might need to rent an 8×A100 machine. My boss Yury didn\'t ask too many questions and just approved it. ClickHouse also provides us with enterprise subscriptions for pretty much every AI coding tool, so I have access to all the major models.\n'
+        '\n'
+        'A few years ago, I remember hearing a rumor about Google\'s hiring philosophy: "Hire the best people, give them ordinary things to do." I\'ve adopted a similar habit — I always try to use the best model when coding. Every time I give another model a chance, I end up realizing I\'ve wasted my time. So the very first time I deployed OpenClaw, I set Opus as the default — it\'s what I\'d been using in Cursor and Claude Code, and I already trusted it deeply. Recently, on a friend\'s recommendation, I also tried GPT 5.4. Honestly, maybe Opus and I just have a deeper friendship ;-p',
+        'One thing that made this possible: ClickHouse gives its engineers a remarkably free working environment — enterprise subscriptions for every AI coding tool, and the kind of trust where you can say "I want to rent 8×A100s for a fine-tuning experiment" and your boss just approves it. So when I deployed OpenClaw, I set Opus as the default model from day one — it\'s what I\'d been using in Cursor and Claude Code, and I already trusted it deeply.'
+    )
+
+    # Fix 2: "My AI Got Its Own Twitter Account" — trim the rejected-options list
+    body = body.replace(
+        'With the infrastructure finally working, I started exploring what OpenClaw was actually good at:\n'
+        '\n'
+        '- Many people use it to organize their email. Hmm, maybe I don\'t get that much email, but I always felt that was a bit too dangerous — your primary email has basically become your internet passport number.\n'
+        '- Some people use it to summarize news and send daily digests. I use Grok for that, and so far it does a pretty good job.\n'
+        '\n'
+        'My answer probably won\'t surprise anyone: **social media operations**.',
+        'With the infrastructure finally working, I started exploring what OpenClaw was actually good at. Many people use it for email triage or news digests, but for me the answer was obvious: **social media operations**.'
+    )
+
+    # Fix 3: Add transition from ClickMem to "The Button Software Couldn't Click"
+    body = body.replace(
+        '## The Button Software Couldn\'t Click\n'
+        '\n'
+        'You think the story ends here? It doesn\'t.',
+        '## The Button Software Couldn\'t Click\n'
+        '\n'
+        'With memory solved, I thought the system was finally complete. Then macOS found a new way to humble me.'
+    )
+
     # Fix italic list items: "- *[link](url) — desc*" -> proper list items
     body = re.sub(r'^- \*(.+)\*$', r'- \1', body, flags=re.MULTILINE)
     # Fix "*Links:*" prefix to be a proper heading
