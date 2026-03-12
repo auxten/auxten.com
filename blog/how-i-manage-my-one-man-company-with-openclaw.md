@@ -108,7 +108,7 @@ So I let OpenClaw handle App Store submissions — preparing metadata, generatin
 
 But that was the moment it stopped feeling like a tool and started feeling like a coworker. Not because it was sentient or anything magical. But because it had started **learning its own shortcuts**. I'd originally only used fastlane in the project to upload app metadata. My OpenClaw discovered I could extend its usage much further — until all I needed to say was: "Hey, ship a new version."
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/image-20260311212423985.png" alt="image-20260311212423985" style="zoom:25%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/image-20260311212423985.png" alt="image-20260311212423985" style="max-width: 100%;" />
 
 ---
 
@@ -128,9 +128,9 @@ Why Cloudflare? Because it's incredible for indie developers. Workers, D1, R2, D
 
 Now I have separate channels organized by project, visible scheduled task management, end-to-end encryption, and a proper UI with buttons.
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-thread.png" alt="BotsChat thread view — separate channels keep topics organized" style="zoom:20%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-thread.png" alt="BotsChat thread view — separate channels keep topics organized" style="max-width: 100%;" />
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-cron.png" alt="Cron task management — finally I can see what's running in the background" style="zoom:20%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-cron.png" alt="Cron task management — finally I can see what's running in the background" style="max-width: 100%;" />
 
 The workflow that eventually crystallized: **I use Cursor and Claude Code to build new things, and OpenClaw to keep them alive.** The tight feedback loop of IDE-native AI is irreplaceable for greenfield work. But once the architecture stabilizes, I hand it to OpenClaw for the long tail — bug fixes, dependency updates, small iterations, the endless stream of minor improvements that keep software from rotting.
 
@@ -206,13 +206,13 @@ What if I built a hardware device — a tiny board that pretends to be a physica
 
 So I powered up this Rock 5B dev board that had been collecting dust for six months, set up passwordless SSH, and told my Cursor to install my second OpenClaw on this [$182 Rock 5B SBC](https://github.com/auxten/handson), just to see what would happen. The entire system — SBC, NVMe, HDMI dummy plug, XFCE desktop, Chromium, OpenClaw gateway — draws **7 watts**. Less than an LED light bulb.
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-7w-power.jpeg" alt="7 watts — the entire system running OpenClaw + Chromium + XFCE desktop" style="zoom:10%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-7w-power.jpeg" alt="7 watts — the entire system running OpenClaw + Chromium + XFCE desktop" style="max-width: 80%;" />
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-xfce-desktop.png" alt="XFCE desktop over RDP: htop, OpenClaw gateway, Chromium browsing normally" style="zoom:25%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-xfce-desktop.png" alt="XFCE desktop over RDP: htop, OpenClaw gateway, Chromium browsing normally" style="max-width: 100%;" />
 
 I also set up mutual passwordless SSH between the Rock 5B and my Mac Mini. Now I never have to worry about OpenClaw crashing after an upgrade — as long as one Claw is still alive, it can find a way to fix the other. Claw helps Claw.
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-openclaw-telegram-chat.png" alt="OpenClaw on Rock 5B responding via Telegram — find out who is auxten" style="zoom:25%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-openclaw-telegram-chat.png" alt="OpenClaw on Rock 5B responding via Telegram — find out who is auxten" style="max-width: 100%;" />
 
 I almost forgot about the keyboard/mouse/display emulation. So next I checked this board's spec sheet, and it actually has everything I need:
 
@@ -220,7 +220,7 @@ I almost forgot about the keyboard/mouse/display emulation. So next I checked th
 - A Micro HDMI *input* (it looks like USB-C but definitely isn't). Yes, this board somehow has an HDMI input on top of its two HDMI outputs!
 - A CPU with hardware video decoding — the mighty RK3588. RockChip Rocks! RockChip YES!
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/40pin5v.jpeg" style="zoom:10%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/40pin5v.jpeg" style="max-width: 80%;" />
 
 Clicking permission dialogs might not be an everyday need — most people can just remote in — but I decided to open-source the whole thing anyway: [HandsOn](https://github.com/auxten/handson) — a unified MCP interface for controlling any computer at any level, from BIOS to desktop. Multiple backends: macOS native (Peekaboo), Rock 5B, PiKVM, NanoKVM. Regardless of which backend is connected, the AI agent sees the same set of tools.
 
@@ -299,11 +299,12 @@ If I could go back to the beginning, I'd tell myself five things:
 
 # Keep Building, Keep Fresh.
 
-*Links:*
-- *[chDB](https://github.com/chdb-io/chdb) — In-process OLAP engine (big data SQLite)*
-- *[BotsChat](https://botschat.app) — Agent control panel on Cloudflare*
-- *[MacMate](https://macmate.app) — Virtual display + anti-sleep for headless Mac*
-- *[ClickMem](https://github.com/auxten/clickmem) — Unified agent memory (chDB + Qwen3)*
-- *[HandsOn](https://github.com/auxten/handson) — IP-KVM MCP interface for hardware control*
-- *[OpenClaw restart loop fix PR](https://github.com/openclaw/openclaw/pull/41007) — Submitted by my OpenClaw agent*
-- *[Building chDB DataStore with AI](https://github.com/chdb-io/chdb/pull/496) — Multi-agent pipeline for pandas compatibility*
+**Links:**
+
+- [chDB](https://github.com/chdb-io/chdb) — In-process OLAP engine (big data SQLite)
+- [BotsChat](https://botschat.app) — Agent control panel on Cloudflare
+- [MacMate](https://macmate.app) — Virtual display + anti-sleep for headless Mac
+- [ClickMem](https://github.com/auxten/clickmem) — Unified agent memory (chDB + Qwen3)
+- [HandsOn](https://github.com/auxten/handson) — IP-KVM MCP interface for hardware control
+- [OpenClaw restart loop fix PR](https://github.com/openclaw/openclaw/pull/41007) — Submitted by my OpenClaw agent
+- [Building chDB DataStore with AI](https://github.com/chdb-io/chdb/pull/496) — Multi-agent pipeline for pandas compatibility

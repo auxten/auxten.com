@@ -254,6 +254,16 @@ def convert_direct_post(md_path, title, date_short, slug):
             break
     body = "\n".join(lines[start:])
 
+    # Fix italic list items: "- *[link](url) — desc*" -> proper list items
+    body = re.sub(r'^- \*(.+)\*$', r'- \1', body, flags=re.MULTILINE)
+    # Fix "*Links:*" prefix to be a proper heading
+    body = body.replace('*Links:*\n', '**Links:**\n\n')
+
+    # Convert zoom styles to percentage max-width for better rendering
+    body = re.sub(r'style="zoom:\s*(\d+)%;\s*"',
+                  lambda m: f'style="max-width: {min(int(m.group(1)) * 8, 100)}%;"',
+                  body)
+
     # Fix image paths: relative images -> /blog/slug/image.png
     body = re.sub(
         r'!\[([^\]]*)\]\((?!/|http)([^)]+)\)',

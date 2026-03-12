@@ -108,7 +108,7 @@
 <p>Trust is a funny thing. Once you see your AI handle one task well, you can't help but wonder: what else can I hand off?</p>
 <p>So I let OpenClaw handle App Store submissions — preparing metadata, generating screenshots, actually submitting for Apple review. It worked. Then it started writing its own <em>skills</em> — reusable automation procedures it could invoke later without me spelling out every step. Of course, a lot of this was really thanks to fastlane, which papers over the terrible UX of Apple's App Store Connect.</p>
 <p>But that was the moment it stopped feeling like a tool and started feeling like a coworker. Not because it was sentient or anything magical. But because it had started <strong>learning its own shortcuts</strong>. I'd originally only used fastlane in the project to upload app metadata. My OpenClaw discovered I could extend its usage much further — until all I needed to say was: "Hey, ship a new version."</p>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/image-20260311212423985.png" alt="image-20260311212423985" style="zoom:25%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/image-20260311212423985.png" alt="image-20260311212423985" style="max-width: 100%;" /></p>
 <hr />
 <h2 id="whatsapp-was-terrible">WhatsApp Was Terrible</h2>
 <p>For all this to work, I needed a channel to communicate with my agent. The default was WhatsApp. It was terrible.</p>
@@ -118,8 +118,8 @@
 <p><img alt="BotsChat architecture — Cloudflare Workers + D1 + R2 + Durable Objects" src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-architecture.png" /></p>
 <p>Why Cloudflare? Because it's incredible for indie developers. Workers, D1, R2, Durable Objects — I've deployed dozens of small apps on it, and it's still on the free tier. Honestly, if you're a solo developer and you're not on Cloudflare, you're overpaying.</p>
 <p>Now I have separate channels organized by project, visible scheduled task management, end-to-end encryption, and a proper UI with buttons.</p>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-thread.png" alt="BotsChat thread view — separate channels keep topics organized" style="zoom:20%;" /></p>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-cron.png" alt="Cron task management — finally I can see what's running in the background" style="zoom:20%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-thread.png" alt="BotsChat thread view — separate channels keep topics organized" style="max-width: 100%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/botschat-cron.png" alt="Cron task management — finally I can see what's running in the background" style="max-width: 100%;" /></p>
 <p>The workflow that eventually crystallized: <strong>I use Cursor and Claude Code to build new things, and OpenClaw to keep them alive.</strong> The tight feedback loop of IDE-native AI is irreplaceable for greenfield work. But once the architecture stabilizes, I hand it to OpenClaw for the long tail — bug fixes, dependency updates, small iterations, the endless stream of minor improvements that keep software from rotting.</p>
 <hr />
 <h2 id="the-agent-that-debugs-itself">The Agent That Debugs Itself</h2>
@@ -159,17 +159,17 @@
 <p>This concept has actually been around in server rooms forever. It's called <strong>IP-KVM</strong> — a small device that registers itself as a real USB HID, captures video output, and exposes everything over the network, accessible through a browser. It can even emulate a USB drive, reboot the computer, enter BIOS to change the boot device (I'd bet there aren't more than 100 OpenClaw instances in the world that have operated a BIOS), and auto-install an OS!</p>
 </blockquote>
 <p>So I powered up this Rock 5B dev board that had been collecting dust for six months, set up passwordless SSH, and told my Cursor to install my second OpenClaw on this <a href="https://github.com/auxten/handson">$182 Rock 5B SBC</a>, just to see what would happen. The entire system — SBC, NVMe, HDMI dummy plug, XFCE desktop, Chromium, OpenClaw gateway — draws <strong>7 watts</strong>. Less than an LED light bulb.</p>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-7w-power.jpeg" alt="7 watts — the entire system running OpenClaw + Chromium + XFCE desktop" style="zoom:10%;" /></p>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-xfce-desktop.png" alt="XFCE desktop over RDP: htop, OpenClaw gateway, Chromium browsing normally" style="zoom:25%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-7w-power.jpeg" alt="7 watts — the entire system running OpenClaw + Chromium + XFCE desktop" style="max-width: 80%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-xfce-desktop.png" alt="XFCE desktop over RDP: htop, OpenClaw gateway, Chromium browsing normally" style="max-width: 100%;" /></p>
 <p>I also set up mutual passwordless SSH between the Rock 5B and my Mac Mini. Now I never have to worry about OpenClaw crashing after an upgrade — as long as one Claw is still alive, it can find a way to fix the other. Claw helps Claw.</p>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-openclaw-telegram-chat.png" alt="OpenClaw on Rock 5B responding via Telegram — find out who is auxten" style="zoom:25%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-openclaw-telegram-chat.png" alt="OpenClaw on Rock 5B responding via Telegram — find out who is auxten" style="max-width: 100%;" /></p>
 <p>I almost forgot about the keyboard/mouse/display emulation. So next I checked this board's spec sheet, and it actually has everything I need:</p>
 <ul>
 <li>A USB port that supports HID device emulation (keyboard + mouse). Unfortunately, this is also the port I was using for power. But the good news is I can power the board through a couple of pins on its 40-pin header — I just had to cut open a USB cable and connect the red and black wires to the correct pins. (I basically had one shot at this — if I got it wrong, the board would probably become a very expensive desk leg shim.)</li>
 <li>A Micro HDMI <em>input</em> (it looks like USB-C but definitely isn't). Yes, this board somehow has an HDMI input on top of its two HDMI outputs!</li>
 <li>A CPU with hardware video decoding — the mighty RK3588. RockChip Rocks! RockChip YES!</li>
 </ul>
-<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/40pin5v.jpeg" style="zoom:10%;" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/40pin5v.jpeg" style="max-width: 80%;" /></p>
 <p>Clicking permission dialogs might not be an everyday need — most people can just remote in — but I decided to open-source the whole thing anyway: <a href="https://github.com/auxten/handson">HandsOn</a> — a unified MCP interface for controlling any computer at any level, from BIOS to desktop. Multiple backends: macOS native (Peekaboo), Rock 5B, PiKVM, NanoKVM. Regardless of which backend is connected, the AI agent sees the same set of tools.</p>
 <p><img alt="HandsOn architecture — one MCP interface, multiple backends from macOS to BIOS" src="/blog/how-i-manage-my-one-man-company-with-openclaw/handson-architecture.png" /></p>
 <p>Because it's <em>hardware</em>, it can do anything a human can. No matter how Apple changes the system's security architecture in the future — typing passwords, clicking security dialogs, interacting with FileVault, navigating BIOS menus. No software-level restriction can stop me anymore. Hahaha, feeling like a god!</p>
@@ -256,14 +256,16 @@
 <p><strong>Treat it like a coworker, not a tool.</strong> Separate accounts, separate machines, separate permissions. The mental model of "a coworker with their own desk" is both safer and more productive. And just like a real coworker — sometimes it'll pull off something brilliant that catches you completely off guard.</p>
 <hr />
 <h1 id="keep-building-keep-fresh">Keep Building, Keep Fresh.</h1>
-<p><em>Links:</em>
-- <em><a href="https://github.com/chdb-io/chdb">chDB</a> — In-process OLAP engine (big data SQLite)</em>
-- <em><a href="https://botschat.app">BotsChat</a> — Agent control panel on Cloudflare</em>
-- <em><a href="https://macmate.app">MacMate</a> — Virtual display + anti-sleep for headless Mac</em>
-- <em><a href="https://github.com/auxten/clickmem">ClickMem</a> — Unified agent memory (chDB + Qwen3)</em>
-- <em><a href="https://github.com/auxten/handson">HandsOn</a> — IP-KVM MCP interface for hardware control</em>
-- <em><a href="https://github.com/openclaw/openclaw/pull/41007">OpenClaw restart loop fix PR</a> — Submitted by my OpenClaw agent</em>
-- <em><a href="https://github.com/chdb-io/chdb/pull/496">Building chDB DataStore with AI</a> — Multi-agent pipeline for pandas compatibility</em></p>
+<p><strong>Links:</strong></p>
+<ul>
+<li><a href="https://github.com/chdb-io/chdb">chDB</a> — In-process OLAP engine (big data SQLite)</li>
+<li><a href="https://botschat.app">BotsChat</a> — Agent control panel on Cloudflare</li>
+<li><a href="https://macmate.app">MacMate</a> — Virtual display + anti-sleep for headless Mac</li>
+<li><a href="https://github.com/auxten/clickmem">ClickMem</a> — Unified agent memory (chDB + Qwen3)</li>
+<li><a href="https://github.com/auxten/handson">HandsOn</a> — IP-KVM MCP interface for hardware control</li>
+<li><a href="https://github.com/openclaw/openclaw/pull/41007">OpenClaw restart loop fix PR</a> — Submitted by my OpenClaw agent</li>
+<li><a href="https://github.com/chdb-io/chdb/pull/496">Building chDB DataStore with AI</a> — Multi-agent pipeline for pandas compatibility</li>
+</ul>
   </article>
 
   <footer class="footer">
