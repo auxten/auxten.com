@@ -8,7 +8,7 @@ import markdown
 SITE_DIR = os.path.expanduser("~/Codes/go/src/github.com/auxten/site/content/posts")
 OUT_DIR = os.path.expanduser("~/Codes/go/src/github.com/auxten/auxten.com/blog")
 
-# Map source folder -> output slug
+# Map source folder -> output slug (Hugo posts)
 POSTS = {
     "chDB is joining ClickHouse": "chdb-is-joining-clickhouse",
     "ClickHouse on Pandas DataFrame": "clickhouse-on-pandas-dataframe",
@@ -19,6 +19,16 @@ POSTS = {
     "The birth of chDB": "the-birth-of-chdb",
     "Vector Database-1": "vector-databases-a-traditional-database-developers-perspective",
 }
+
+# Direct markdown posts (not from Hugo): (md_path, title, date, slug)
+DIRECT_POSTS = [
+    (
+        os.path.expanduser("~/Library/CloudStorage/Dropbox/Notes/写书/openclaw-meetup-images/how-i-manage-my-one-man-company-with-openclaw.md"),
+        "How I Manage My One-Man Company with OpenClaw",
+        "2026-03-14",
+        "how-i-manage-my-one-man-company-with-openclaw",
+    ),
+]
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -220,10 +230,81 @@ def convert_post(folder_name, slug):
     print(f"  OK: {slug}.md")
 
 
+def convert_direct_post(md_path, title, date_short, slug):
+    """Convert a direct markdown file (not from Hugo) to HTML."""
+    if not os.path.exists(md_path):
+        print(f"  SKIP: {md_path} not found")
+        return
+
+    with open(md_path, "r", encoding="utf-8") as f:
+        body = f.read()
+
+    # Strip the H1 title and blockquote if present (already in template)
+    lines = body.split("\n")
+    start = 0
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and not stripped.startswith(">") and stripped != "---":
+            start = i
+            break
+    # Find first --- separator and skip everything before it
+    for i, line in enumerate(lines):
+        if line.strip() == "---" and i > 0:
+            start = i + 1
+            break
+    body = "\n".join(lines[start:])
+
+    # Fix image paths: relative images -> /blog/slug/image.png
+    body = re.sub(
+        r'!\[([^\]]*)\]\((?!/|http)([^)]+)\)',
+        lambda m: f'![{m.group(1)}](/blog/{slug}/{m.group(2)})',
+        body
+    )
+    # Fix HTML img tags with relative src
+    body = re.sub(
+        r'src="(?!/|http)([^"]+)"',
+        lambda m: f'src="/blog/{slug}/{m.group(1)}"',
+        body
+    )
+
+    # Convert markdown to HTML
+    md = markdown.Markdown(extensions=[
+        'tables',
+        'fenced_code',
+        'codehilite',
+        'toc',
+        'attr_list',
+    ], extension_configs={
+        'codehilite': {'css_class': 'highlight', 'guess_lang': False},
+    })
+    html_content = md.convert(body)
+
+    # Write HTML output
+    out_path = os.path.join(OUT_DIR, slug + ".html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(TEMPLATE.format(
+            title=title,
+            date=date_short,
+            content=html_content,
+            slug=slug,
+        ))
+    print(f"  OK: {slug}.html ({len(html_content)} chars)")
+
+    # Write markdown version for AI agents
+    md_out_path = os.path.join(OUT_DIR, slug + ".md")
+    with open(md_out_path, "w", encoding="utf-8") as f:
+        f.write(f"# {title}\n\n")
+        f.write(f"*{date_short} — by Auxten Wang*\n\n")
+        f.write(body)
+    print(f"  OK: {slug}.md")
+
+
 def main():
     print("Building blog posts...")
     for folder_name, slug in POSTS.items():
         convert_post(folder_name, slug)
+    for md_path, title, date, slug in DIRECT_POSTS:
+        convert_direct_post(md_path, title, date, slug)
     print("Done!")
 
 

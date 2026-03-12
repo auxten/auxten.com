@@ -115,6 +115,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 
 ## Blog Posts
 
+- [How I Manage My One-Man Company with OpenClaw](https://auxten.com/blog/how-i-manage-my-one-man-company-with-openclaw.html) — 2026-03-14
 - [My $182 ARM SBC Draws 7 Watts and Runs a Full AI Agent](https://auxten.com/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent.html) — 2026-02-26
 - [Context Management Is the Real Bottleneck for AI Agents](https://auxten.com/blog/context-management-is-the-real-bottleneck-for-ai-agents.html) — 2026-02-23
 - [Potential of MCP in Database Applications](https://auxten.com/blog/potential-of-mcp-in-database-applications.html) — 2025-06-05
