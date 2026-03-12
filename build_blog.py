@@ -82,9 +82,12 @@ TEMPLATE = """<!DOCTYPE html>
     <p class="post-meta">{date}</p>
   </div>
 
-  <article class="post-content">
-    {content}
-  </article>
+  <div class="post-wrapper">
+    <nav class="post-toc" id="postToc"></nav>
+    <article class="post-content" id="postContent">
+      {content}
+    </article>
+  </div>
 
   <footer class="footer">
     <div class="footer-inner">
@@ -93,6 +96,35 @@ TEMPLATE = """<!DOCTYPE html>
   </footer>
 
   <script src="/theme.js"></script>
+  <script>
+  (function(){{
+    var toc=document.getElementById('postToc');
+    var content=document.getElementById('postContent');
+    if(!toc||!content)return;
+    var headings=content.querySelectorAll('h2,h3');
+    if(headings.length<2){{toc.style.display='none';return;}}
+    headings.forEach(function(h){{
+      var a=document.createElement('a');
+      a.href='#'+h.id;
+      a.textContent=h.textContent;
+      if(h.tagName==='H3')a.classList.add('post-toc-h3');
+      toc.appendChild(a);
+    }});
+    var links=toc.querySelectorAll('a');
+    function updateActive(){{
+      var scrollPos=window.scrollY+150;
+      var current=null;
+      headings.forEach(function(h){{
+        if(h.offsetTop<=scrollPos)current=h;
+      }});
+      links.forEach(function(a){{
+        a.classList.toggle('active',current&&a.getAttribute('href')==='#'+current.id);
+      }});
+    }}
+    window.addEventListener('scroll',updateActive);
+    updateActive();
+  }})();
+  </script>
 </body>
 </html>
 """

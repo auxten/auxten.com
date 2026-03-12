@@ -50,8 +50,10 @@
     <p class="post-meta">2026-02-26</p>
   </div>
 
-  <article class="post-content">
-    <h1 id="my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent-with-browser-automation-heres-every-stupid-problem-i-hit-getting-there">My $182 ARM SBC draws 7 watts and runs a full AI agent with browser automation. Here's every stupid problem I hit getting there.</h1>
+  <div class="post-wrapper">
+    <nav class="post-toc" id="postToc"></nav>
+    <article class="post-content" id="postContent">
+      <h1 id="my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent-with-browser-automation-heres-every-stupid-problem-i-hit-getting-there">My $182 ARM SBC draws 7 watts and runs a full AI agent with browser automation. Here's every stupid problem I hit getting there.</h1>
 <p>So I had this Rock 5B (RK3588, 16GB RAM, 1TB NVMe) sitting around running headless Ubuntu 22.04. Thought it'd be fun to turn it into a self-hosted OpenClaw box with WhatsApp integration and remote desktop.</p>
 <p><img alt="Rock 5B front with fan and HDMI dummy plug" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/rock5-front.jpeg" />
 <img alt="Rock 5B back with WD Blue SN550 1TB NVMe" src="/blog/my-182-arm-sbc-draws-7-watts-and-runs-a-full-ai-agent/rock5-back.jpeg" /></p>
@@ -159,7 +161,8 @@
 <p>For anyone running home automation, AI agents, or browser automation — an ARM SBC might genuinely be the ideal form factor. Not "good enough for the price," but actually better than cloud or x86 alternatives for this specific workload. The low power, zero contention, always-on nature of the hardware matches the always-on nature of the software perfectly.</p>
 <p><strong>Edit:</strong> If you're considering this setup, go straight to OpenClaw v2026.2.13 and save yourself the Zod schema therapy session. Buy the HDMI dummy plug ($2). And don't fight the Rockchip PPA's Node.js pinning — force-install from nodesource immediately.</p>
 <p><strong>Edit 2:</strong> Shameless plug (literally) — if you'd rather run OpenClaw on a Mac Mini instead of an SBC, you hit the same problems: sleep prevention, virtual display, audio routing. I built <a href="https://macmate.app/">MacMate</a> to solve exactly this. It's a native macOS app that does what XFCE Presentation Mode + HDMI dummy plug do on Linux, but without the hardware. Virtual displays via CGVirtualDisplay API, awake management, audio loopback — $18 one-time. Full disclosure: this is my own product. That said, you'd be trading 7W power draw for... whatever a Mac Mini pulls. Can't win them all.</p>
-  </article>
+    </article>
+  </div>
 
   <footer class="footer">
     <div class="footer-inner">
@@ -168,5 +171,34 @@
   </footer>
 
   <script src="/theme.js"></script>
+  <script>
+  (function(){
+    var toc=document.getElementById('postToc');
+    var content=document.getElementById('postContent');
+    if(!toc||!content)return;
+    var headings=content.querySelectorAll('h2,h3');
+    if(headings.length<2){toc.style.display='none';return;}
+    headings.forEach(function(h){
+      var a=document.createElement('a');
+      a.href='#'+h.id;
+      a.textContent=h.textContent;
+      if(h.tagName==='H3')a.classList.add('post-toc-h3');
+      toc.appendChild(a);
+    });
+    var links=toc.querySelectorAll('a');
+    function updateActive(){
+      var scrollPos=window.scrollY+150;
+      var current=null;
+      headings.forEach(function(h){
+        if(h.offsetTop<=scrollPos)current=h;
+      });
+      links.forEach(function(a){
+        a.classList.toggle('active',current&&a.getAttribute('href')==='#'+current.id);
+      });
+    }
+    window.addEventListener('scroll',updateActive);
+    updateActive();
+  })();
+  </script>
 </body>
 </html>

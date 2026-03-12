@@ -50,8 +50,10 @@
     <p class="post-meta">2026-02-23</p>
   </div>
 
-  <article class="post-content">
-    <h1 id="context-management-is-the-real-bottleneck-for-ai-agents">Context Management Is the Real Bottleneck for AI Agents</h1>
+  <div class="post-wrapper">
+    <nav class="post-toc" id="postToc"></nav>
+    <article class="post-content" id="postContent">
+      <h1 id="context-management-is-the-real-bottleneck-for-ai-agents">Context Management Is the Real Bottleneck for AI Agents</h1>
 <p><img alt="Cover" src="/blog/context-management-is-the-real-bottleneck-for-ai-agents/cover.png" /></p>
 <p>Ever since Anthropic released MCP (Model Context Protocol), I've felt that this company has a uniquely sharp perspective on the model-to-user relationship. MCP gave agents a standardized way to <em>access</em> external tools and data. Then came Skills — reusable bundles of instructions and workflows that promised to make agents more "capable." Together, they represent two sides of the same coin: MCP expands what the agent can <em>do</em>; Skills shape how the agent <em>thinks</em>.</p>
 <p>But after spending serious time building with both, I've arrived at a somewhat contrarian take: <strong>the bottleneck isn't capability — it's context quality.</strong> Most of what people add to their agent's context is noise, not signal. And the maturity of your project determines which side of that line any given piece of context falls on.</p>
@@ -117,7 +119,8 @@
 <p>Everything I've discussed here applies to using LLMs for serious production work — not casual Q&amp;A. But I believe if we can solve context management for the hardest engineering problems, the simpler use cases will be trivially handled.</p>
 <p>To sum up: expanding model context windows alone won't solve our engineering challenges. We need robust mechanisms for <strong>storing</strong> context, intelligent methods for <strong>retrieving</strong> it, and hierarchical systems for <strong>prioritizing</strong> it. The pieces already exist — persistent storage at scale, world-class search and retrieval, massive AI infrastructure. What's missing is someone putting them together with agent context as the first-class use case.</p>
 <p>The company that solves agent memory will own the next decade of developer tools. And when I think about who already has all the pieces, the list is very short.</p>
-  </article>
+    </article>
+  </div>
 
   <footer class="footer">
     <div class="footer-inner">
@@ -126,5 +129,34 @@
   </footer>
 
   <script src="/theme.js"></script>
+  <script>
+  (function(){
+    var toc=document.getElementById('postToc');
+    var content=document.getElementById('postContent');
+    if(!toc||!content)return;
+    var headings=content.querySelectorAll('h2,h3');
+    if(headings.length<2){toc.style.display='none';return;}
+    headings.forEach(function(h){
+      var a=document.createElement('a');
+      a.href='#'+h.id;
+      a.textContent=h.textContent;
+      if(h.tagName==='H3')a.classList.add('post-toc-h3');
+      toc.appendChild(a);
+    });
+    var links=toc.querySelectorAll('a');
+    function updateActive(){
+      var scrollPos=window.scrollY+150;
+      var current=null;
+      headings.forEach(function(h){
+        if(h.offsetTop<=scrollPos)current=h;
+      });
+      links.forEach(function(a){
+        a.classList.toggle('active',current&&a.getAttribute('href')==='#'+current.id);
+      });
+    }
+    window.addEventListener('scroll',updateActive);
+    updateActive();
+  })();
+  </script>
 </body>
 </html>
