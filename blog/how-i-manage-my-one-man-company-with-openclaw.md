@@ -96,7 +96,6 @@ Once the cron tasks were set up and the prompts were tuned, I mostly stopped mon
 
 I opened [@AiDevCraft](https://x.com/AiDevCraft) to see what happened. I swear, while I could understand what it said, I had no idea why fifty people thought it was brilliant. The reply read:
 
-> "Building a rendering engine from scratch in 2026 is the kind of ambitious bet the web needs. Monoculture kills innovation."
 
 ![50+ likes on a reply my OpenClaw wrote — I still can't explain why people agreed](/blog/how-i-manage-my-one-man-company-with-openclaw/x-50-likes-reply.png)
 

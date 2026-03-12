@@ -315,6 +315,12 @@ def convert_direct_post(md_path, title, date_short, slug):
         '- *[chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex) — ClickHouse Blog*'
     )
 
+    # Remove redundant blockquote (duplicated by screenshot below)
+    body = body.replace(
+        '> "Building a rendering engine from scratch in 2026 is the kind of ambitious bet the web needs. Monoculture kills innovation."\n',
+        ''
+    )
+
     # Fix italic list items: "- *[link](url) — desc*" -> proper list items
     body = re.sub(r'^- \*(.+)\*$', r'- \1', body, flags=re.MULTILINE)
     # Fix "*Links:*" prefix to be a proper heading
