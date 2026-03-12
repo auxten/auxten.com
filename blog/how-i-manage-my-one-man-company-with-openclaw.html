@@ -54,7 +54,7 @@
     <nav class="post-toc" id="postToc"></nav>
     <article class="post-content" id="postContent">
       <h2 id="it-started-with-a-side-project">It Started with a Side Project</h2>
-<p><img alt="chDB logo" src="/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-logo.png" /></p>
+<p><img src="/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-logo.png" alt="chDB logo" style="max-width: 200px;"></p>
 <p>A few years ago, I was a principal engineer at Shopee, building large-scale distributed systems. But like many engineers, I had a side project that kept me up at night: <a href="https://github.com/chdb-io/chdb">chDB</a> — an in-process OLAP database engine powered by ClickHouse. Think of it as SQLite for big data: ClickHouse's columnar storage and vectorized execution, running inside your Python process, no server required.</p>
 <p>In 2023, ClickHouse acquired chDB. I've been maintaining it ever since — while quietly accumulating far more side projects than any one person should be managing alone.</p>
 <p>This is the story of how I stopped trying to do it all myself.</p>
@@ -64,7 +64,8 @@
 <p>It started with ChatGPT. Late 2022. You'd open a chat window, describe what a function should do, copy the output, paste it into your editor, and wire everything together by hand. It felt revolutionary at the time. It feels primitive now.</p>
 <p>Then we graduated to describing entire files — imports, class structures, error handling, the works. The AI got better at holding context, and we got better at prompting.</p>
 <p>Then Cursor appeared. Then Claude Code. Suddenly the AI was <em>inside</em> your editor. It could see your codebase, run your tests, fix its own bugs. When we were building <a href="https://github.com/chdb-io/chdb/pull/496">chDB v4's DataStore</a> — a pandas-compatible layer that lets you swap one import line and get ClickHouse speed — we built a full multi-agent pipeline: test generator, bug fixer, architect, reviewer, benchmark runner, all orchestrated by Python scripts.</p>
-<p><img alt="chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations" src="/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.png" /></p>
+<p><img alt="chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations" src="/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.webp" /></p>
+<p><em>Source: <a href="https://clickhouse.com/blog/chdb-journey-to-zero-copy">The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame</a> — ClickHouse Blog</em></p>
 <p>It worked remarkably well. And then a thought hit me: if AI agents can write, review, and iterate on code inside my IDE... can they do it <em>without</em> me? Can they run on a dedicated machine, 24/7?</p>
 <p>I decided to buy a Mac Mini.</p>
 <hr />

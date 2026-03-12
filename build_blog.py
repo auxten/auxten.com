@@ -296,6 +296,19 @@ def convert_direct_post(md_path, title, date_short, slug):
                   lambda m: f'style="max-width: {min(int(m.group(1)) * 8, 100)}%;"',
                   body)
 
+    # Add max-width to chDB logo
+    body = body.replace(
+        '![chDB logo](chdb-logo.png)',
+        '<img src="chdb-logo.png" alt="chDB logo" style="max-width: 200px;">'
+    )
+
+    # Replace benchmark image with webp and add ClickHouse blog link
+    body = body.replace(
+        '![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](chdb-dataframe-benchmark.png)',
+        '![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](chdb-dataframe-benchmark.webp)\n\n'
+        '*Source: [The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog*'
+    )
+
     # Fix image paths: relative images -> /blog/slug/image.png
     body = re.sub(
         r'!\[([^\]]*)\]\((?!/|http)([^)]+)\)',

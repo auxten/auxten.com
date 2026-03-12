@@ -5,7 +5,7 @@
 
 ## It Started with a Side Project
 
-![chDB logo](/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-logo.png)
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-logo.png" alt="chDB logo" style="max-width: 200px;">
 
 A few years ago, I was a principal engineer at Shopee, building large-scale distributed systems. But like many engineers, I had a side project that kept me up at night: [chDB](https://github.com/chdb-io/chdb) — an in-process OLAP database engine powered by ClickHouse. Think of it as SQLite for big data: ClickHouse's columnar storage and vectorized execution, running inside your Python process, no server required.
 
@@ -25,7 +25,9 @@ Then we graduated to describing entire files — imports, class structures, erro
 
 Then Cursor appeared. Then Claude Code. Suddenly the AI was *inside* your editor. It could see your codebase, run your tests, fix its own bugs. When we were building [chDB v4's DataStore](https://github.com/chdb-io/chdb/pull/496) — a pandas-compatible layer that lets you swap one import line and get ClickHouse speed — we built a full multi-agent pipeline: test generator, bug fixer, architect, reviewer, benchmark runner, all orchestrated by Python scripts.
 
-![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.png)
+![chDB DataStore benchmark — pandas vs chDB vs DuckDB across 14 operations](/blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.webp)
+
+*Source: [The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame](https://clickhouse.com/blog/chdb-journey-to-zero-copy) — ClickHouse Blog*
 
 It worked remarkably well. And then a thought hit me: if AI agents can write, review, and iterate on code inside my IDE... can they do it *without* me? Can they run on a dedicated machine, 24/7?
 
