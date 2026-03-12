@@ -315,6 +315,12 @@ def convert_direct_post(md_path, title, date_short, slug):
         '- *[chDB 4.0 — Pandas Hex](https://clickhouse.com/blog/chdb.4-0-pandas-hex) — ClickHouse Blog*'
     )
 
+    # Add link to ClickHouse acquisition
+    body = body.replace(
+        'In 2023, ClickHouse acquired chDB.',
+        'In 2023, [ClickHouse acquired chDB](https://clickhouse.com/blog/chdb-joins-clickhouse-family).'
+    )
+
     # Remove redundant blockquote (duplicated by screenshot below)
     body = body.replace(
         '> "Building a rendering engine from scratch in 2026 is the kind of ambitious bet the web needs. Monoculture kills innovation."\n',

@@ -9,7 +9,7 @@
 
 A few years ago, I was a principal engineer at Shopee, building large-scale distributed systems. But like many engineers, I had a side project that kept me up at night: [chDB](https://github.com/chdb-io/chdb) — an in-process OLAP database engine powered by ClickHouse. Think of it as SQLite for big data: ClickHouse's columnar storage and vectorized execution, running inside your Python process, no server required.
 
-In 2023, ClickHouse acquired chDB. I've been maintaining it ever since — while quietly accumulating far more side projects than any one person should be managing alone.
+In 2023, [ClickHouse acquired chDB](https://clickhouse.com/blog/chdb-joins-clickhouse-family). I've been maintaining it ever since — while quietly accumulating far more side projects than any one person should be managing alone.
 
 This is the story of how I stopped trying to do it all myself.
 
