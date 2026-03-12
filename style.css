@@ -856,6 +856,34 @@ img { max-width: 100%; height: auto; }
   line-height: 1.5;
 }
 
+.post-content img {
+  cursor: zoom-in;
+}
+
+/* Lightbox */
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, .85);
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+.lightbox.active {
+  display: flex;
+}
+
+.lightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border: 3px solid #fff;
+  box-shadow: 0 0 40px rgba(0, 0, 0, .5);
+}
+
 .post-content code {
   font-family: 'JetBrains Mono', monospace;
   font-size: .88em;

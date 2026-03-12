@@ -204,5 +204,26 @@ Q:
     updateActive();
   })();
   </script>
+  <div class="lightbox" id="lightbox"><img id="lightboxImg"></div>
+  <script>
+  (function(){
+    var lb=document.getElementById('lightbox');
+    var lbImg=document.getElementById('lightboxImg');
+    var content=document.getElementById('postContent');
+    if(!content)return;
+    content.addEventListener('click',function(e){
+      if(e.target.tagName==='IMG'){
+        lbImg.src=e.target.src;
+        lb.classList.add('active');
+      }
+    });
+    lb.addEventListener('click',function(){
+      lb.classList.remove('active');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape')lb.classList.remove('active');
+    });
+  })();
+  </script>
 </body>
 </html>
