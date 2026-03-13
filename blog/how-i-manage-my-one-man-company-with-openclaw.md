@@ -9,7 +9,7 @@
 
 A few years ago, I was a principal engineer at Shopee, building large-scale distributed systems. But like many engineers, I had a side project that kept me up at night: [chDB](https://github.com/chdb-io/chdb) — an in-process OLAP database engine powered by ClickHouse. Think of it as SQLite for big data: ClickHouse's columnar storage and vectorized execution, running inside your Python process, no server required.
 
-In 2023, [ClickHouse acquired chDB](https://clickhouse.com/blog/chdb-joins-clickhouse-family). I've been maintaining it ever since — while quietly accumulating far more side projects than any one person should be managing alone.
+In 2023, [ClickHouse acquired chDB](https://clickhouse.com/blog/chdb-joins-clickhouse-family). I've been maintaining it ever since — while quietly accumulating far more open-source projects than any one person should be managing alone.
 
 This is the story of how I stopped trying to do it all myself.
 
@@ -262,18 +262,16 @@ One more thing for Mac users: **use Time Machine.** You'll forget about it for m
 
 Here's what my one-man company runs on:
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Daily development | [Cursor](https://cursor.com) + [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Greenfield coding, IDE-native AI |
-| 24/7 agent | [OpenClaw](https://openclaw.com) on Mac Mini | Maintenance, social media, deployments, App Store |
-| Communication | [BotsChat](https://botschat.app) (Cloudflare) | Agent control panel, task management, E2E encrypted |
-| Observability | [LangFuse](https://langfuse.com) | LLM call tracing, agent debugging, bad case analysis |
-| Memory | [ClickMem](https://github.com/auxten/clickmem) (chDB + Qwen3) | Unified local-first memory across machines and tools |
-| Headless Mac infra | [MacMate](https://macmate.app) | Virtual display, anti-sleep, audio loopback |
-| Hardware control | [HandsOn](https://github.com/auxten/handson) (Rock 5B / RPi) | IP-KVM for permission dialogs, BIOS, passwords |
-| Hosting | [Cloudflare Workers](https://workers.cloudflare.com) | APIs, web apps, landing pages — free tier |
+- **Daily development:** [Cursor](https://cursor.com) + [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — Greenfield coding, IDE-native AI
+- **24/7 agent:** [OpenClaw](https://openclaw.com) on Mac Mini — Maintenance, social media, deployments, App Store
+- **Communication:** [BotsChat](https://botschat.app) (Cloudflare) — Agent control panel, task management, E2E encrypted
+- **Observability:** [LangFuse](https://langfuse.com) — LLM call tracing, agent debugging, bad case analysis
+- **Memory:** [ClickMem](https://github.com/auxten/clickmem) (chDB + Qwen3) — Unified local-first memory across machines and tools
+- **Headless Mac infra:** [MacMate](https://macmate.app) — Virtual display, anti-sleep, audio loopback
+- **Hardware control:** [HandsOn](https://github.com/auxten/handson) (Rock 5B / RPi) — IP-KVM for permission dialogs, BIOS, passwords
+- **Hosting:** [Cloudflare Workers](https://workers.cloudflare.com) — APIs, web apps, landing pages — free tier
 
-Recurring cost: near zero. The Mac Mini draws ~15W. The Rock 5B draws 7W. Cloudflare is free. LangFuse has a generous free tier. All LLM costs are covered by ClickHouse's enterprise subscriptions.
+Recurring cost: near zero. The Mac Mini draws ~15W. The Rock 5B draws 7W. Cloudflare is free. LangFuse has a generous free tier. LLM costs are covered by my personal Claude Code subscription ($200/month).
 
 ---
 
