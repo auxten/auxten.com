@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How I Manage My One-Man Company with OpenClaw — Singapore Meetup</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── Type scale (base 36px) ── */
+  /* xxl: 2.2em  xl: 1.5em  lg: 1.1em  base: 1em  sm: 0.82em  xs: 0.68em  xxs: 0.58em */
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #1565c0;
+    --c-blue: #1565c0;
+    --c-orange: #e65100;
+    --c-muted: #888;
+    --c-body: #2d2d2d;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 36px; }
+
+  /* ── Headings ── */
+  .reveal h1, .reveal h2, .reveal h3 { font-weight: 800; text-transform: none; letter-spacing: -0.02em; line-height: 1.2; }
+  .reveal h1 { font-size: 2.2em; color: #1a1a1a; margin-bottom: 0.4em; }
+  .reveal h2 { font-size: 1.5em; color: var(--c-blue); margin-bottom: 0.7em; }
+  .reveal h3 { font-size: 1.1em; color: #1976d2; margin-bottom: 0.5em; }
+
+  /* ── Body text ── */
+  .reveal p { line-height: 1.6; margin-bottom: 0.4em; }
+  .reveal section > p { font-size: 0.82em; }
+  .reveal ul, .reveal ol { text-align: left; margin-left: 0.5em; }
+  .reveal li { margin-bottom: 0.45em; font-size: 0.82em; line-height: 1.55; }
+  .reveal li strong { font-weight: 700; }
+
+  /* ── Utility ── */
+  .reveal .highlight { color: var(--c-orange); font-weight: 700; }
+  .reveal .dim { color: var(--c-muted); font-size: 0.68em; letter-spacing: 0.01em; line-height: 1.4; }
+  .reveal .sub { font-size: 0.68em; color: #666; }
+  .emoji { font-size: 1.2em; vertical-align: -0.05em; }
+
+  /* ── Images ── */
+  .reveal section img {
+    max-height: 55vh;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 10px;
+  }
+  .reveal .small-img img { max-height: 35vh; }
+  .reveal .medium-img img { max-height: 45vh; }
+  .reveal .image-slide img { box-shadow: none; border-radius: 10px; max-height: 58vh; }
+  .reveal .image-slide .dim { margin-top: 0.4em; }
+
+  /* ── Blockquote ── */
+  .reveal blockquote {
+    background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+    border-left: 5px solid var(--c-blue);
+    padding: 0.8em 1.2em;
+    font-style: italic;
+    width: 82%;
+    color: #333;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.88em;
+    line-height: 1.6;
+  }
+  .reveal .quote-slide blockquote { font-size: 0.95em; width: 78%; margin: 0 auto; }
+
+  /* ── Two-column ── */
+  .reveal .two-col {
+    display: flex;
+    gap: 2.5em;
+    align-items: center;
+    justify-content: center;
+  }
+  .reveal .two-col > div { flex: 1; }
+  .reveal .two-col img { max-height: 40vh; }
+  .reveal .two-col li { font-size: 0.78em; }
+
+  /* ── Stack list ── */
+  .reveal .stack-list { columns: 2; column-gap: 2.5em; list-style: none; padding-left: 0; }
+  .reveal .stack-list li { font-size: 0.68em; margin-bottom: 0.5em; break-inside: avoid; padding-left: 0; line-height: 1.5; }
+  .reveal .stack-list strong { color: var(--c-blue); font-weight: 700; }
+
+  /* ── Code ── */
+  .reveal code {
+    background: #f0f0f0;
+    padding: 0.15em 0.35em;
+    border-radius: 5px;
+    font-size: 0.88em;
+    color: #c62828;
+  }
+
+  /* ── Title slide ── */
+  .title-slide h1 { font-size: 2em; line-height: 1.25; margin-bottom: 0.3em; }
+  .title-slide p { color: #555; }
+  .title-slide .sub-info { font-size: 0.62em; color: #999; margin-top: 0; }
+
+  /* ── Sponsor logos ── */
+  .sponsor-logos img { box-shadow: none !important; border-radius: 0 !important; opacity: 0.7; }
+  .no-shadow { box-shadow: none !important; }
+
+  /* ── Five lessons ── */
+  .reveal .lessons { list-style: none; padding-left: 0; }
+  .reveal .lessons li { font-size: 0.78em; margin-bottom: 0.6em; padding-left: 1.6em; text-indent: -1.6em; line-height: 1.5; }
+  .reveal .lessons li strong { font-weight: 700; color: var(--c-body); }
+  .reveal .lessons li span { color: var(--c-muted); font-weight: 400; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ TITLE ============ -->
+<section class="title-slide">
+  <h1>How I Manage My<br>One-Man Company<br>with OpenClaw 🦞</h1>
+  <p><strong>Auxten Wang</strong> · Technical Director @ ClickHouse</p>
+  <p class="sub-info">Singapore OpenClaw Meetup · March 2026</p>
+</section>
+
+<!-- ============ WHAT IS OPENCLAW ============ -->
+<section>
+  <h2>What is OpenClaw? 🦞</h2>
+  <p>Imagine having a <strong>personal assistant</strong> that lives on your computer, works 24/7, and never asks for a raise.</p>
+  <ul style="margin-top: 0.6em;">
+    <li class="fragment">You text it on <strong>WhatsApp, Telegram, Slack</strong> — it texts back</li>
+    <li class="fragment">It can browse the web, write code, send emails, manage files</li>
+    <li class="fragment">It remembers what you told it last week</li>
+    <li class="fragment">It runs <strong>on your machine</strong> — your data stays with you</li>
+  </ul>
+  <p class="fragment" style="margin-top: 0.8em;">Open source · 309k GitHub stars · macOS / iOS / Android / Linux</p>
+  <p class="fragment dim">Today I'll share what happens when you <em>actually</em> let it run your company.</p>
+</section>
+
+<!-- ============ SPONSOR ============ -->
+<section>
+  <p class="dim" style="text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: 0.8em;">Thanks to Our Sponsor</p>
+  <img src="logos/clickhouse-logo-black.svg" style="max-height: 90px; box-shadow: none; margin-bottom: 0.4em;">
+  <p class="sub" style="max-width: 72%; margin: 0 auto 1.2em;">
+    The <strong>leading open-source OLAP database</strong> for real-time analytics.<br>
+    Petabyte-scale data, millisecond queries. 46k+ GitHub stars.
+  </p>
+  <p class="dim" style="margin-bottom: 0.5em;">Powering AI infrastructure for</p>
+  <div class="sponsor-logos" style="display: flex; gap: 3em; align-items: center; justify-content: center; flex-wrap: wrap;">
+    <img src="logos/anthropic_small_a6ab486d34.svg" style="height: 36px;">
+    <img src="logos/character_3a9027ce90_4085d9ac89.svg" style="height: 32px;">
+    <img src="logos/weights_and_biases_full_6a8e4d8d35.svg" style="height: 32px;">
+    <img src="logos/poolside_1c835dc37f.svg" style="height: 32px;">
+  </div>
+  <p class="dim" style="margin-top: 1.2em;">
+    <em>"ClickHouse played an instrumental role in helping us develop and ship Claude 4."</em> — Anthropic
+  </p>
+</section>
+
+<!-- ============ ABOUT ME ============ -->
+<section>
+  <div style="display: flex; align-items: stretch; gap: 2.5em; max-width: 95%; margin: 0 auto;">
+    <!-- Left: headshot + bio -->
+    <div style="flex: 1; text-align: left; display: flex; flex-direction: column; justify-content: center;">
+      <div style="display: flex; align-items: center; gap: 0.8em; margin-bottom: 0.8em;">
+        <img src="logos/head.jpg" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0;">
+        <div>
+          <h2 style="margin: 0; font-size: 1.2em; line-height: 1.2;">Auxten Wang</h2>
+          <p class="dim" style="margin: 0.2em 0 0;"><strong>@auxten</strong> · <a href="https://auxten.com">auxten.com</a></p>
+        </div>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.72em; line-height: 2;">
+        <li>🏢 <strong>Technical Director</strong> @ ClickHouse</li>
+        <li>🚀 Creator of <strong>chDB</strong> — acquired by ClickHouse 2024</li>
+        <li>🛒 Ex-Principal Engineer @ Shopee</li>
+        <li>🔗 Cofounder & CTO, CovenantSQL</li>
+        <li style="color: #999;">Baidu · Qihoo 360 · eLong · 4Paradigm</li>
+      </ul>
+    </div>
+    <!-- Right: projects screenshot -->
+    <div style="flex: 0 0 auto; display: flex; align-items: center;">
+      <img src="logos/projects-auxten.png" style="height: 52vh; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE PROBLEM ============ -->
+<section>
+  <h2>The Problem</h2>
+  <p class="fragment">One person. Too many projects.</p>
+  <p class="fragment">Code, social media, App Store, infrastructure, community...</p>
+  <p class="fragment">I needed a <span class="highlight">24/7 coworker</span>.</p>
+</section>
+
+<!-- ============ AI CODING EVOLUTION ============ -->
+<section>
+  <h2>AI Coding Evolution</h2>
+  <ul>
+    <li class="fragment"><strong>2022:</strong> ChatGPT → copy-paste into editor</li>
+    <li class="fragment"><strong>2023:</strong> Describe entire files, better prompting</li>
+    <li class="fragment"><strong>2024:</strong> Cursor + Claude Code — AI <em>inside</em> the editor</li>
+    <li class="fragment"><strong>2025:</strong> Multi-agent pipelines (test → fix → review → benchmark)</li>
+    <li class="fragment"><strong>2026:</strong> <span class="highlight">Can they run without me? 24/7?</span></li>
+  </ul>
+</section>
+
+<section class="image-slide">
+  <h2>chDB DataStore: Multi-Agent Pipeline</h2>
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/chdb-ai-loop.jpg">
+  <p class="dim">Test generator → bug fixer → architect → reviewer → benchmark runner</p>
+</section>
+
+<section class="medium-img">
+  <h2>The Results</h2>
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/chdb-dataframe-benchmark.webp">
+  <p class="dim">chDB DataStore — pandas-compatible, ClickHouse speed</p>
+</section>
+
+<!-- ============ I BOUGHT A MAC MINI ============ -->
+<section>
+  <h2>I Bought a Mac Mini</h2>
+  <p class="fragment">Plan: build my own always-on agent from scratch</p>
+  <p class="fragment">Mac Mini was <em>literally still being shipped</em><br>when OpenClaw launched</p>
+  <p class="fragment">Day 1 of delivery = Day 1 of OpenClaw</p>
+  <p class="fragment"><span class="highlight">Sometimes timing just works out.</span></p>
+</section>
+
+<section class="image-slide">
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/openclaw-mac-mini-setup.png">
+  <p class="dim">OpenClaw on Mac Mini — 24/7 agent</p>
+</section>
+
+<!-- ============ THEN EVERYTHING BROKE ============ -->
+<section>
+  <h2>Then Everything Broke</h2>
+  <ul style="list-style: none; padding-left: 0;">
+    <li class="fragment"><span class="emoji">😴</span>&ensp;Mac kept falling asleep</li>
+    <li class="fragment"><span class="emoji">🖥️</span>&ensp;Chrome barely worked — no display, no window server</li>
+    <li class="fragment"><span class="emoji">🤖</span>&ensp;Headless Chrome = CAPTCHA magnet</li>
+    <li class="fragment"><span class="emoji">🎤</span>&ensp;Needed a microphone... on a Mac Mini</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Three Problems → One Product</h2>
+  <div class="two-col">
+    <div>
+      <h3><a href="https://macmate.app">MacMate</a> — $18</h3>
+      <ul>
+        <li><strong>Anti-sleep</strong> without hacks</li>
+        <li><strong>Virtual display</strong> via CGVirtualDisplay API</li>
+        <li><strong>Audio loopback</strong> — speaker → virtual mic</li>
+      </ul>
+      <p class="dim" style="margin-top: 0.6em;">Born from running OpenClaw on a headless Mac</p>
+    </div>
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/image-20260311164637753.png" style="max-height: 36vh;">
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOCIAL MEDIA ============ -->
+<section>
+  <h2>My AI Got Its Own Twitter</h2>
+  <ul>
+    <li class="fragment">Multiple X accounts for news & project promotion</li>
+    <li class="fragment">OpenClaw handles: finding users, writing articles, engaging</li>
+    <li class="fragment">One month → 0 to 35 followers (modest, right?)</li>
+    <li class="fragment">Then one day: <span class="highlight">50+ likes on a single reply</span></li>
+  </ul>
+</section>
+
+<section class="image-slide">
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/x-50-likes-reply.png">
+  <p style="margin-top: 0.6em;">I could understand <em>what</em> it said.<br>I had <strong>no idea</strong> why 50 people agreed.</p>
+</section>
+
+<!-- ============ APP STORE ============ -->
+<section>
+  <h2>Then I Let It Submit My Apps</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li class="fragment">Metadata, screenshots, review submission</li>
+        <li class="fragment">Started writing its own <em>skills</em></li>
+        <li class="fragment">Discovered fastlane could do more than I taught it</li>
+        <li class="fragment">"Hey, ship a new version." → Done.</li>
+      </ul>
+    </div>
+    <div class="fragment">
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/image-20260311212423985.png">
+    </div>
+  </div>
+</section>
+
+<!-- ============ BOTSCHAT ============ -->
+<section>
+  <h2>WhatsApp Was Terrible</h2>
+  <ul>
+    <li class="fragment">No visibility into scheduled tasks</li>
+    <li class="fragment">Everything in one conversation</li>
+    <li class="fragment">Every command typed manually</li>
+    <li class="fragment"><em>"I'm a programmer. But if I can click a button instead of typing a command, I'm clicking the button."</em></li>
+  </ul>
+</section>
+
+<section class="image-slide">
+  <h2>So I Built BotsChat</h2>
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/botschat-architecture.png" style="max-height: 45vh;">
+  <p class="dim">Cloudflare Workers + D1 + R2 + Durable Objects — still on free tier</p>
+</section>
+
+<section>
+  <div class="two-col">
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/botschat-thread.png">
+    </div>
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/botschat-cron.png">
+    </div>
+  </div>
+  <p class="dim">Separate channels · Cron management · E2E encryption · Buttons!</p>
+</section>
+
+<section class="quote-slide">
+  <h2>The Workflow</h2>
+  <blockquote>
+    <strong>Cursor + Claude Code</strong> to build new things.<br>
+    <strong>OpenClaw</strong> to keep them alive.
+  </blockquote>
+  <p class="fragment" style="margin-top: 1em; font-size: 0.9em;">IDE AI = dev team &nbsp;&nbsp;·&nbsp;&nbsp; Always-on agent = ops team</p>
+</section>
+
+<!-- ============ LANGFUSE ============ -->
+<section>
+  <h2>The Agent That Debugs Itself</h2>
+  <ul>
+    <li class="fragment">All LLM call traces piped to <a href="https://langfuse.com">LangFuse</a></li>
+    <li class="fragment">I traced a bug manually once... then automated it</li>
+    <li class="fragment">Periodic schedule: OpenClaw reviews its own conversations</li>
+    <li class="fragment"><span class="highlight">Agent debugging agent. Agent optimizing agent.</span></li>
+  </ul>
+</section>
+
+<section class="image-slide">
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/langfuse-feedback-loop.png">
+  <p class="dim">Closed loop: logs → analysis → bad case detection → self-optimization</p>
+</section>
+
+<!-- ============ CLICKMEM ============ -->
+<section>
+  <h2>The Amnesia Problem</h2>
+  <p class="fragment">Build with Cursor on laptop → hand off to OpenClaw on Mac Mini</p>
+  <p class="fragment"><span class="highlight">30% of context lost every handoff</span></p>
+  <p class="fragment">CLAUDE.md and AGENTS.md aren't enough</p>
+  <p class="fragment">I needed: <strong>unified memory across machines and tools</strong></p>
+</section>
+
+<section>
+  <h2>ClickMem</h2>
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/clickmem-architecture.png" style="max-height: 45vh;">
+  <p class="dim">All agents share unified three-layer memory via MCP/HTTP</p>
+</section>
+
+<section>
+  <h2>Three-Layer Memory</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li><strong>L0 — Working:</strong> current session</li>
+        <li><strong>L1 — Episodic:</strong> events, time-decayed</li>
+        <li><strong>L2 — Semantic:</strong> durable facts</li>
+      </ul>
+      <p class="fragment dim" style="margin-top: 0.6em;">Hybrid search: vector + keyword + time decay + MMR</p>
+      <p class="fragment"><span class="highlight">Zero cloud. Zero API cost.</span></p>
+    </div>
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/clickmem-decay-weights.png" style="max-height: 35vh;">
+    </div>
+  </div>
+</section>
+
+<!-- ============ HANDSON ============ -->
+<section>
+  <h2>The Button Software Couldn't Click</h2>
+  <p class="fragment">OpenClaw pushed an update → pile of macOS permission dialogs</p>
+  <p class="fragment">macOS <strong>explicitly prevents</strong> software from clicking security dialogs</p>
+  <p class="fragment">The agent that controls my computer... can't click "Allow" to control my computer</p>
+  <p class="fragment"><span class="emoji">💡</span> What if I use <em>hardware</em>?</p>
+</section>
+
+<section>
+  <h2>$182 Rock 5B + IP-KVM</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li>USB HID emulation (keyboard + mouse)</li>
+        <li>HDMI <em>input</em> — video capture</li>
+        <li>RK3588 hardware video decoding</li>
+        <li>Powered via 40-pin header 🔧</li>
+      </ul>
+      <p class="highlight" style="margin-top: 0.8em; font-size: 0.82em;">Total system draw: 7 watts</p>
+    </div>
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-7w-power.jpeg">
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Claw Helps Claw</h2>
+  <div class="two-col">
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-xfce-desktop.png">
+    </div>
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-openclaw-telegram-chat.png">
+    </div>
+  </div>
+  <p class="dim">Mutual passwordless SSH — if one Claw dies, the other revives it</p>
+</section>
+
+<section class="image-slide">
+  <h2>HandsOn — Open Source IP-KVM</h2>
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/handson-architecture.png" style="max-height: 45vh;">
+  <p class="dim">One MCP interface · Multiple backends: macOS, Rock 5B, PiKVM, NanoKVM</p>
+</section>
+
+<!-- ============ PR TO ITSELF ============ -->
+<section>
+  <h2>Submitting a PR to Itself</h2>
+  <ul>
+    <li class="fragment">OpenClaw found a bug... <em>in OpenClaw's own code</em></li>
+    <li class="fragment">Plugin reload → restart loop → gateway death</li>
+    <li class="fragment">Diagnosed root cause, wrote fix + tests</li>
+    <li class="fragment"><a href="https://github.com/openclaw/openclaw/pull/41007">PR #41007</a> — submitted by <code>Daniel-Robbins</code></li>
+    <li class="fragment"><span class="highlight">Three reviewers approved it.</span></li>
+  </ul>
+</section>
+
+<section class="image-slide">
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/github-pr-41007.png">
+  <p style="margin-top: 0.6em;">An AI agent. Finding bugs in its own platform.<br>Submitting patches. Approved by humans.</p>
+</section>
+
+<!-- ============ THE RULE ============ -->
+<section class="quote-slide">
+  <h2>The One Rule</h2>
+  <blockquote>
+    Treat your OpenClaw like a new hire. Give it its own email, its own user account, its own GitHub, its own machine.
+  </blockquote>
+  <p class="fragment" style="margin-top: 1em;">Blast radius containment. If it does something destructive — and it <em>will</em> — it's in its own sandbox.</p>
+  <p class="fragment"><strong>Also: use Time Machine.</strong></p>
+</section>
+
+<!-- ============ THE STACK ============ -->
+<section>
+  <h2>The Stack Today</h2>
+  <ul class="stack-list">
+    <li><strong>Daily dev:</strong> <a href="https://cursor.com">Cursor</a> + <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a></li>
+    <li><strong>24/7 agent:</strong> <a href="https://openclaw.com">OpenClaw</a> on Mac Mini</li>
+    <li><strong>Comms:</strong> <a href="https://botschat.app">BotsChat</a> on Cloudflare</li>
+    <li><strong>Observability:</strong> <a href="https://langfuse.com">LangFuse</a></li>
+    <li><strong>Memory:</strong> <a href="https://github.com/auxten/clickmem">ClickMem</a> — chDB + Qwen3</li>
+    <li><strong>Headless Mac:</strong> <a href="https://macmate.app">MacMate</a></li>
+    <li><strong>Hardware:</strong> <a href="https://github.com/auxten/handson">HandsOn</a> IP-KVM</li>
+    <li><strong>Hosting:</strong> <a href="https://workers.cloudflare.com">Cloudflare Workers</a> free tier</li>
+  </ul>
+  <p class="fragment highlight" style="margin-top: 1em; font-size: 0.82em;">Recurring cost: ~$200/month (Claude Code subscription)</p>
+</section>
+
+<!-- ============ 5 LESSONS ============ -->
+<section>
+  <h2>Five Things I'd Tell Myself</h2>
+  <ol class="lessons">
+    <li class="fragment"><strong>Infrastructure > prompts.</strong> <span>— System engineering is the moat.</span></li>
+    <li class="fragment"><strong>Cursor for dev, OpenClaw for ops.</strong> <span>— One builds, the other maintains.</span></li>
+    <li class="fragment"><strong>Memory is the missing piece.</strong> <span>— Amnesia kills teamwork.</span></li>
+    <li class="fragment"><strong>Your agent will surprise you.</strong> <span>— Give it room to explore.</span></li>
+    <li class="fragment"><strong>Treat it like a coworker, not a tool.</strong> <span>— Containment = safety + freedom.</span></li>
+  </ol>
+</section>
+
+<!-- ============ END ============ -->
+<section>
+  <h1 style="margin-bottom: 0.2em;">Keep Building,<br>Keep Fresh.</h1>
+  <p class="sub" style="margin-bottom: 1.2em;">
+    <a href="https://github.com/chdb-io/chdb">chDB</a> ·
+    <a href="https://botschat.app">BotsChat</a> ·
+    <a href="https://macmate.app">MacMate</a> ·
+    <a href="https://github.com/auxten/clickmem">ClickMem</a> ·
+    <a href="https://github.com/auxten/handson">HandsOn</a>
+  </p>
+  <p>
+    <a href="https://x.com/auxten">@auxten</a> ·
+    <a href="https://auxten.com">auxten.com</a>
+  </p>
+  <h2 style="margin-top: 1em;">Q&A 🦞</h2>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720
+});
+</script>
+</body>
+</html>
