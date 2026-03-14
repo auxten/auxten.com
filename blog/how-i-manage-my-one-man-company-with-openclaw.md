@@ -202,7 +202,7 @@ What if I built a hardware device — a tiny board that pretends to be a physica
 
 So I powered up this Rock 5B dev board that had been collecting dust for six months, set up passwordless SSH, and told my Cursor to install my second OpenClaw on this [$182 Rock 5B SBC](https://github.com/auxten/handson), just to see what would happen. The entire system — SBC, NVMe, HDMI dummy plug, XFCE desktop, Chromium, OpenClaw gateway — draws **7 watts**. Less than an LED light bulb.
 
-<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-7w-power.jpeg" alt="7 watts — the entire system running OpenClaw + Chromium + XFCE desktop" style="max-width: 80%;" />
+<img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-ipkvm.jpeg" alt="7 watts — the entire system running OpenClaw + Chromium + XFCE desktop" style="max-width: 80%;" />
 
 <img src="/blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-xfce-desktop.png" alt="XFCE desktop over RDP: htop, OpenClaw gateway, Chromium browsing normally" style="max-width: 100%;" />
 
