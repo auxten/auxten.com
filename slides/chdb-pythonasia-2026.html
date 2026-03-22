@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How I Put a Rocket Engine into Python — PythonAsia 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #1565c0;
+    --c-blue: #1565c0;
+    --c-orange: #e65100;
+    --c-green: #2e7d32;
+    --c-red: #c62828;
+    --c-muted: #888;
+    --c-body: #2d2d2d;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; }
+
+  /* ── Headings ── */
+  .reveal h1, .reveal h2, .reveal h3 { font-weight: 800; text-transform: none; letter-spacing: -0.02em; line-height: 1.2; }
+  .reveal h1 { font-size: 2.2em; color: #1a1a1a; margin-bottom: 0.4em; }
+  .reveal h2 { font-size: 1.45em; color: var(--c-blue); margin-bottom: 0.6em; }
+  .reveal h3 { font-size: 1.05em; color: #1976d2; margin-bottom: 0.4em; }
+
+  /* ── Body ── */
+  .reveal p { line-height: 1.6; margin-bottom: 0.4em; }
+  .reveal section > p { font-size: 0.82em; }
+  .reveal ul, .reveal ol { text-align: left; margin-left: 0.5em; }
+  .reveal li { margin-bottom: 0.4em; font-size: 0.78em; line-height: 1.55; }
+  .reveal li strong { font-weight: 700; }
+
+  /* ── Utility ── */
+  .reveal .highlight { color: var(--c-orange); font-weight: 700; }
+  .reveal .hl-green { color: var(--c-green); font-weight: 700; }
+  .reveal .dim { color: var(--c-muted); font-size: 0.65em; letter-spacing: 0.01em; line-height: 1.4; }
+  .reveal .sub { font-size: 0.68em; color: #666; }
+  .reveal .big-number { font-size: 3em; font-weight: 800; line-height: 1; }
+
+  /* ── Images ── */
+  .reveal section img { max-height: 55vh; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-radius: 10px; }
+  .reveal .no-shadow img, .reveal img.no-shadow { box-shadow: none !important; }
+
+  /* ── Code — CENTERED, CAPPED WIDTH, NO LIGATURES ── */
+  .reveal pre { width: auto; max-width: 92%; margin: 0.5em auto; box-shadow: 0 2px 12px rgba(0,0,0,0.10); border-radius: 10px; display: inline-block; text-align: left; }
+  .reveal section { text-align: center; }
+  .reveal section ul, .reveal section ol { display: inline-block; text-align: left; }
+  .reveal pre code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 0.65em;
+    line-height: 1.5;
+    padding: 0.8em 1.2em;
+    max-height: 520px;
+    border-radius: 10px;
+  }
+  .reveal code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #f0f0f0;
+    padding: 0.12em 0.3em;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: #c62828;
+  }
+  .reveal pre code { background: #272822; color: #f8f8f2; }
+
+  /* ── Blockquote ── */
+  .reveal blockquote {
+    background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+    border-left: 5px solid var(--c-blue);
+    padding: 0.7em 1.1em;
+    font-style: italic;
+    width: 82%;
+    color: #333;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  /* ── Two-column ── */
+  .reveal .two-col { display: flex; gap: 2em; align-items: center; justify-content: center; }
+  .reveal .two-col > div { flex: 1; }
+  .reveal .two-col img { max-height: 40vh; }
+  .reveal .two-col li { font-size: 0.75em; }
+  .reveal .two-col pre { width: auto; max-width: 100%; display: inline-block; }
+  .reveal .two-col pre code { font-size: 0.58em; }
+
+  /* ── Architecture boxes ── */
+  .arch-flow { display: flex; align-items: center; justify-content: center; gap: 0; margin: 0.8em auto; flex-wrap: wrap; }
+  .arch-box { padding: 0.4em 0.7em; border-radius: 8px; font-size: 0.55em; font-weight: 600; text-align: center; line-height: 1.3; min-width: 5em; }
+  .arch-box.pandas { background: #e3f2fd; color: #1565c0; border: 2px solid #90caf9; }
+  .arch-box.ch { background: #fff3e0; color: #e65100; border: 2px solid #ffcc80; }
+  .arch-box.zerocopy { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; }
+  .arch-arrow { font-size: 1.2em; color: #999; margin: 0 0.15em; font-weight: 700; }
+  .arch-arrow.good { color: #2e7d32; }
+
+  /* ── Benchmark table ── */
+  .reveal table.bench { width: 95%; margin: 0.5em auto; border-collapse: collapse; font-size: 0.58em; }
+  .reveal table.bench th { background: #1565c0; color: #fff; padding: 0.45em 0.6em; text-align: left; font-weight: 700; }
+  .reveal table.bench td { padding: 0.4em 0.6em; border-bottom: 1px solid #e0e0e0; }
+  .reveal table.bench tr:nth-child(even) td { background: #f5f5f5; }
+  .reveal table.bench .winner { color: var(--c-green); font-weight: 700; }
+  .reveal table.bench .loser { color: #999; }
+
+  /* ── Title slide ── */
+  .title-slide h1 { font-size: 1.8em; line-height: 1.2; margin-bottom: 0.3em; }
+  .title-slide p { color: #555; }
+  .title-slide .sub-info { font-size: 0.58em; color: #999; margin-top: 0; }
+
+  /* ── Stats grid ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; margin: 0.8em auto; max-width: 92%; }
+  .stat-card { background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%); border: 2px solid #e0e7ff; border-radius: 12px; padding: 0.6em; text-align: center; }
+  .stat-card .num { font-size: 1.8em; font-weight: 800; color: var(--c-blue); line-height: 1.1; }
+  .stat-card .label { font-size: 0.5em; color: #666; margin-top: 0.2em; }
+
+  /* ── Before/After ── */
+  .before-after { display: flex; gap: 1.2em; align-items: stretch; margin: 0.5em auto; max-width: 100%; }
+  .before-after > div { flex: 1; border-radius: 10px; padding: 0; overflow: hidden; }
+  .before-after .tag { display: block; padding: 0.3em 0.8em; font-size: 0.52em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .before-after .before-tag { background: #ffebee; color: #c62828; }
+  .before-after .after-tag { background: #e8f5e9; color: #2e7d32; }
+  .before-after pre { margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; width: 100% !important; max-width: 100% !important; display: block !important; }
+  .before-after pre code { font-size: 0.56em; border-radius: 0 !important; }
+
+  /* ── Step list ── */
+  .step-list { list-style: none; padding: 0; counter-reset: steps; }
+  .step-list li { counter-increment: steps; position: relative; padding-left: 2.2em; margin-bottom: 0.5em; font-size: 0.75em; }
+  .step-list li::before { content: counter(steps); position: absolute; left: 0; top: 0.05em; width: 1.6em; height: 1.6em; background: var(--c-blue); color: #fff; border-radius: 50%; text-align: center; line-height: 1.6em; font-size: 0.8em; font-weight: 700; }
+
+  /* ── Memory bar chart ── */
+  .mem-bar-row { display: flex; align-items: center; gap: 0.4em; margin-bottom: 0.35em; font-size: 0.55em; }
+  .mem-bar-label { width: 8.5em; text-align: right; font-weight: 600; flex-shrink: 0; }
+  .mem-bar { height: 1.6em; border-radius: 4px; display: flex; align-items: center; padding-left: 0.4em; color: #fff; font-weight: 600; font-size: 0.9em; min-width: 2em; }
+  .mem-bar.pandas-bar { background: linear-gradient(90deg, #ef9a9a, #c62828); }
+  .mem-bar.chdb-bar { background: linear-gradient(90deg, #a5d6a7, #2e7d32); }
+
+  /* ═══════════════════════════════════════════
+     Join Anything — Custom code block
+     ═══════════════════════════════════════════ */
+  .join-code {
+    display: inline-block; text-align: left;
+    background: #272822; color: #f8f8f2;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 0.62em; line-height: 1.65;
+    padding: 0.8em 1.4em;
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    max-width: 92%;
+  }
+  .jl { white-space: pre; min-height: 1.3em; }
+  .jkw { color: #66d9ef; font-weight: 600; }
+  .jstr { color: #e6db74; }
+  .jnum { color: #ae81ff; }
+  .jfn { color: #a6e22e; }
+  /* Data source highlights — match badge colors */
+  .jsrc {
+    padding: 0.08em 0.3em; border-radius: 4px;
+    font-weight: 600;
+  }
+  .jsrc-http { background: rgba(21,101,192,0.3); color: #82b1ff; border-bottom: 2px solid rgba(144,202,249,0.6); }
+  .jsrc-csv  { background: rgba(230,81,0,0.3); color: #ffcc80; border-bottom: 2px solid rgba(255,204,128,0.6); }
+  .jsrc-py   { background: rgba(46,125,50,0.3); color: #a5d6a7; border-bottom: 2px solid rgba(165,214,167,0.6); }
+  .jsrc-http .jstr { color: #bbdefb; }
+  .jsrc-csv .jstr  { color: #ffe0b2; }
+  /* Inline badges */
+  .jbadge {
+    font-size: 0.72em; font-weight: 700;
+    padding: 0.15em 0.55em; border-radius: 10px;
+    margin-left: 0.6em; vertical-align: middle;
+    letter-spacing: 0.02em;
+  }
+  .jbadge-http { background: #e3f2fd; color: #1565c0; border: 1.5px solid #90caf9; }
+  .jbadge-csv  { background: #fff3e0; color: #e65100; border: 1.5px solid #ffcc80; }
+  .jbadge-py   { background: #e8f5e9; color: #2e7d32; border: 1.5px solid #a5d6a7; }
+
+  /* comment token for join-code blocks */
+  .jcmt { color: #75715e; }
+
+  /* ═══════════════════════════════════════════
+     Code Theater — One Line Change Animation
+     Three-step fragment-driven single slide
+     ═══════════════════════════════════════════ */
+  .morph-demo { position: relative; }
+
+  /* -- Titles: crossfade between three headings -- */
+  .morph-titles { position: relative; height: 1.7em; margin-bottom: 0.25em; }
+  .morph-titles h2 {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.4s ease, transform 0.35s ease;
+  }
+  .morph-titles .t1 { opacity: 1; transform: translateY(0); }
+  .step-2 .morph-titles .t1 { opacity: 0; transform: translateY(-12px); }
+  .step-2 .morph-titles .t2 { opacity: 1; transform: translateY(0); }
+  .step-3 .morph-titles .t2 { opacity: 0; transform: translateY(-12px); }
+  .step-3 .morph-titles .t3 { opacity: 1; transform: translateY(0); }
+
+  /* -- Stage: flex container that reflows on step 3 -- */
+  .morph-stage {
+    display: flex; align-items: flex-start; justify-content: center;
+    gap: 0; max-width: 100%; overflow: hidden;
+    transition: gap 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-3 .morph-stage { gap: 0.5em; }
+
+  /* -- Python code panel -- */
+  .morph-py {
+    position: relative; flex: 0 0 auto;
+    width: 70%; max-width: 700px;
+    transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-3 .morph-py { width: 46%; }
+
+  .morph-py > .join-code {
+    display: block; width: 100%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    transition: opacity 0.5s ease, font-size 0.5s ease;
+  }
+  .step-3 .morph-py > .join-code { font-size: 0.53em; }
+  .step-3 .morph-sql pre code { font-size: 0.55em; }
+  .morph-py .py-old { transition: opacity 0.5s ease; }
+  .morph-py .py-new {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0; z-index: 2;
+    transition: opacity 0.5s ease;
+  }
+  .step-2 .morph-py .py-old,
+  .step-3 .morph-py .py-old { opacity: 0; }
+  .step-2 .morph-py .py-new,
+  .step-3 .morph-py .py-new { opacity: 1; }
+
+  /* -- Green glow flash on line 1 -- */
+  .morph-py::after {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2.6em;
+    border-radius: 10px 10px 0 0;
+    pointer-events: none; z-index: 3; opacity: 0;
+  }
+  .step-2 .morph-py::after,
+  .step-3 .morph-py::after {
+    animation: glowPulse 1.8s ease-out forwards;
+  }
+  @keyframes glowPulse {
+    0%   { opacity: 0; background: transparent; }
+    12%  { opacity: 1; background: rgba(46,125,50,0.22); box-shadow: inset 0 0 40px rgba(46,125,50,0.35), 0 0 20px rgba(46,125,50,0.15); }
+    40%  { opacity: 1; background: rgba(46,125,50,0.08); box-shadow: inset 0 0 15px rgba(46,125,50,0.1); }
+    100% { opacity: 1; background: rgba(46,125,50,0.03); box-shadow: none; }
+  }
+
+  /* -- SQL panel: grows from 0 width -- */
+  .morph-sql {
+    flex: 0 0 0%; overflow: hidden;
+    opacity: 0; transform: translateX(30px) scale(0.96);
+    transition: flex-basis 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.45s ease 0.15s,
+                transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  }
+  .step-3 .morph-sql {
+    flex: 0 0 42%; opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  .morph-sql pre {
+    margin: 0 !important; width: 100% !important; max-width: 100% !important;
+    display: block !important; box-shadow: 0 4px 24px rgba(0,0,0,0.15) !important;
+  }
+  .morph-sql-tag {
+    font-size: 0.45em; font-weight: 700; color: var(--c-blue);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 0 0 0.25em; text-align: left;
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.3s ease 0.5s, transform 0.3s ease 0.5s;
+  }
+  .step-3 .morph-sql-tag { opacity: 1; transform: translateY(0); }
+
+  /* -- Connector arrow between panels -- */
+  .morph-arrow {
+    flex: 0 0 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: flex-basis 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s,
+                opacity 0.35s ease 0.35s;
+  }
+  .step-3 .morph-arrow { flex: 0 0 2em; opacity: 1; }
+  .morph-arrow svg { width: 100%; height: 32px; overflow: visible; }
+  .morph-arrow .arrow-path {
+    fill: none; stroke: var(--c-blue); stroke-width: 2.5;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 80; stroke-dashoffset: 80;
+    transition: stroke-dashoffset 0.6s ease 0.4s;
+  }
+  .step-3 .morph-arrow .arrow-path { stroke-dashoffset: 0; }
+
+  /* -- Badge pill -- */
+  .morph-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: var(--c-green); font-weight: 700; font-size: 0.48em;
+    padding: 0.35em 1.2em; border-radius: 20px;
+    margin-top: 0.35em;
+    opacity: 0; transform: scale(0.8) translateY(8px);
+    transition: opacity 0.4s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .step-2 .morph-badge { opacity: 1; transform: scale(1) translateY(0); transition-delay: 0.55s; }
+  .step-3 .morph-badge { opacity: 0; transform: scale(0.8) translateY(-8px); transition-delay: 0s; transition-duration: 0.2s; }
+
+  /* -- Captions: crossfade -- */
+  .morph-captions { position: relative; height: 1.2em; margin-top: 0.1em; }
+  .morph-captions span {
+    position: absolute; left: 0; right: 0;
+    font-size: 0.58em; color: var(--c-muted);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.35s ease, transform 0.3s ease;
+  }
+  .step-2 .morph-captions .cap-2 { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+  .step-3 .morph-captions .cap-2 { opacity: 0; transform: translateY(-6px); transition-delay: 0s; }
+  .step-3 .morph-captions .cap-3 { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
+
+  /* ── Step 4: SQL → Architecture Diagram ── */
+  .step-4 .morph-titles .t3 { opacity: 0; transform: translateY(-12px); }
+  .step-4 .morph-titles .t4 { opacity: 1; transform: translateY(0); }
+
+  .step-4 .morph-stage {
+    transform: scale(0.52) translateY(-10%);
+    opacity: 0.35;
+    filter: blur(1.5px);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.5s ease,
+                filter 0.5s ease,
+                gap 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .morph-arch {
+    position: relative;
+    opacity: 0; transform: translateY(40px) scale(0.92);
+    max-height: 0; overflow: hidden;
+    transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-4 .morph-arch {
+    opacity: 1; transform: translateY(0) scale(1);
+    max-height: 500px;
+    transition-delay: 0.25s;
+  }
+  .morph-arch-arrow {
+    font-size: 1.4em; color: var(--c-blue); font-weight: 700;
+    margin: 0.1em 0;
+    opacity: 0; transform: translateY(-8px);
+    transition: opacity 0.3s ease 0.15s, transform 0.3s ease 0.15s;
+  }
+  .step-4 .morph-arch-arrow {
+    opacity: 1; transform: translateY(0);
+    animation: archArrowBounce 1.2s ease-in-out 0.6s infinite;
+  }
+  @keyframes archArrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+  }
+  .morph-arch img {
+    max-height: 32vh !important;
+    border-radius: 12px;
+    box-shadow: 0 6px 32px rgba(21,101,192,0.18) !important;
+  }
+  .morph-arch-label {
+    font-size: 0.42em; font-weight: 700; color: var(--c-blue);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-top: 0.3em;
+  }
+
+  .step-4 .morph-captions .cap-3 { opacity: 0; transform: translateY(-6px); transition-delay: 0s; }
+  .step-4 .morph-captions .cap-4 { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══ 1. TITLE ═══ -->
+<section class="title-slide">
+  <img src="logos/chdb-light.png" class="no-shadow" style="height: 72px; margin-bottom: 0.3em; box-shadow: none;">
+  <h1>How I Put a Rocket Engine<br>into Python</h1>
+  <p style="font-size: 0.72em; color: #666; margin-top: -0.2em;">Porting ClickHouse for High-Performance Apps</p>
+  <p style="margin-top: 1.2em;"><strong>Auxten Wang</strong> &middot; Technical Director @ ClickHouse</p>
+  <p class="sub-info">PythonAsia 2026 &middot; 30 min</p>
+</section>
+
+<!-- ═══ 2. QUICK POLL ═══ -->
+<section>
+  <div style="max-width: 640px; margin: 0 auto;">
+    <h2>Quick Poll</h2>
+    <p class="fragment" style="font-size: 1em; margin-top: 0.8em;">Who has used <strong>Pandas</strong>?</p>
+    <p class="fragment" style="font-size: 1em;">Who has waited <strong>more than 10 seconds</strong><br>for a Pandas operation?</p>
+    <p class="fragment" style="font-size: 1.1em; margin-top: 0.8em;">
+      What if I told you it could be<br>
+      <span class="highlight" style="font-size: 1.6em;">247x faster?</span>
+    </p>
+  </div>
+</section>
+
+<!-- ═══ 3. ABOUT ME ═══ -->
+<section>
+  <div style="display: flex; align-items: center; gap: 2em; max-width: 640px; margin: 0 auto;">
+    <div style="flex: 1; text-align: left;">
+      <div style="display: flex; align-items: center; gap: 0.7em; margin-bottom: 0.7em;">
+        <img src="logos/head.jpg" style="width: 68px; height: 68px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0;">
+        <div>
+          <h2 style="margin: 0; font-size: 1.15em; line-height: 1.2;">Auxten Wang</h2>
+          <p class="dim" style="margin: 0.15em 0 0;"><strong>@auxten</strong> &middot; <a href="https://auxten.com">auxten.com</a></p>
+        </div>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.68em; line-height: 2;">
+        <li>Technical Director @ <strong>ClickHouse</strong></li>
+        <li>Creator of <strong>chDB</strong> &mdash; acquired by ClickHouse in 2024</li>
+        <li>Ex-Principal Engineer @ Shopee</li>
+        <li>Cofounder &amp; CTO, CovenantSQL</li>
+        <li style="color: #999;">Baidu &middot; Qihoo 360 &middot; 4Paradigm</li>
+      </ul>
+    </div>
+    <div style="flex: 0 0 auto;">
+      <img src="logos/chdb-light.png" style="height: 200px; box-shadow: none; border-radius: 0;">
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4. THE PROBLEM ═══ -->
+<section>
+  <h2>You Love Pandas. But...</h2>
+  <ul>
+    <li class="fragment"><strong>Single-threaded.</strong> One core out of 16 doing the work.</li>
+    <li class="fragment"><strong>Eager execution.</strong> Every step materializes the full result in memory.</li>
+    <li class="fragment"><strong>Memory hungry.</strong> A 50M-row JOIN needs <span class="highlight">10.5 GB</span> peak RAM in Pandas.</li>
+  </ul>
+  <p class="fragment" style="font-size: 0.82em; margin-top: 0.8em;">
+    On an <strong>8GB laptop</strong>, that JOIN will <span class="highlight">OOM and kill your process</span>.
+  </p>
+  <p class="fragment dim" style="margin-top: 0.4em;">What if you could run the same Pandas code, up to 247x faster, using 3-23x less memory?</p>
+</section>
+
+<!-- ═══ 5. WHAT IS CHDB ═══ -->
+<section>
+  <h2>chDB: Rocket Engine on a Bicycle</h2>
+  <ul>
+    <li class="fragment"><strong>In-process SQL OLAP engine</strong> powered by ClickHouse</li>
+    <li class="fragment"><strong>No server. No config.</strong> Just <code>pip install chdb</code></li>
+    <li class="fragment"><strong>Full ClickHouse SQL</strong> &mdash; 300+ functions, JOINs, CTEs, window functions</li>
+    <li class="fragment"><strong>80+ data formats</strong> &mdash; CSV, Parquet, JSON, S3, HTTP, PostgreSQL...</li>
+    <li class="fragment"><strong>Zero-copy</strong> DataFrame &harr; ClickHouse &mdash; no serialization overhead</li>
+  </ul>
+  <p class="fragment dim" style="margin-top: 0.5em;">Think of it as: <strong>SQLite for analytics &mdash; but 100x faster.</strong></p>
+</section>
+
+<!-- ═══ 5b. CLICKBENCH ═══ -->
+<section>
+  <h2>How Fast? ClickBench Says...</h2>
+  <img src="logos/clickbench.png" style="max-height: 50vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);">
+  <p class="dim" style="margin-top: 0.2em;">
+    ClickBench &middot; 100M rows of web analytics &middot; AWS c6a.4xlarge (16 vCPU, 32 GB) &middot; Combined score across 43 queries
+  </p>
+  <div style="display: flex; gap: 1em; justify-content: center; margin-top: 0.2em; font-size: 0.52em; font-weight: 700;">
+    <span style="background:#e8f5e9; color:#2e7d32; padding:0.25em 0.8em; border-radius:12px;">chDB: 1.09x</span>
+    <span style="background:#fff3e0; color:#e65100; padding:0.25em 0.8em; border-radius:12px;">MongoDB: 95x slower</span>
+    <span style="background:#ffebee; color:#c62828; padding:0.25em 0.8em; border-radius:12px;">SQLite: 184x slower</span>
+    <span style="background:#ffebee; color:#c62828; padding:0.25em 0.8em; border-radius:12px;">PostgreSQL: 346x slower</span>
+  </div>
+</section>
+
+<!-- ═══ 6. HELLO CHDB ═══ -->
+<section>
+  <h2>Hello, chDB v4</h2>
+  <pre><code class="language-python" data-trim data-noescape>
+import chdb.datastore as pd  # one line change!
+
+df = pd.DataFrame({
+    'user_id': range(1_000_000),
+    'category': ['A', 'B', 'C'] * 333334,
+    'value': [i * 0.1 for i in range(1_000_000)]
+})
+
+# Same Pandas API — ClickHouse engine underneath
+result = (
+    df.groupby('category')
+    .agg({'value': ['count', 'mean']})
+    .sort_values(('value', 'count'), ascending=False)
+)
+
+print(result)  # Triggers lazy execution
+  </code></pre>
+  <p class="dim">Pandas syntax. ClickHouse speed. Zero setup.</p>
+</section>
+
+<!-- ═══ 7. EVERYTHING IS A TABLE ═══ -->
+<section>
+  <h2>Everything is a Table</h2>
+  <pre><code class="language-python" data-trim data-noescape>
+# Local files
+chdb.query("SELECT * FROM file('data.parquet', Parquet)")
+chdb.query("SELECT * FROM file('data.csv', CSVWithNames)")
+
+# Remote data
+chdb.query("SELECT * FROM url('https://example.com/data.json')")
+chdb.query("SELECT * FROM s3('s3://bucket/data.parquet')")
+
+# Python objects — dict, DataFrame, PyArrow
+data = {'a': [1, 2, 3], 'b': ['x', 'y', 'z']}
+chdb.query("SELECT * FROM Python(data)")
+
+# Databases
+chdb.query("SELECT * FROM postgresql('host', 'db', 'table', 'user', 'pw')")
+  </code></pre>
+  <p class="dim">80+ formats. Local, remote, in-memory. Same SQL.</p>
+</section>
+
+<!-- ═══ 8. JOIN ANYTHING ═══ -->
+<section>
+  <h2>Join Anything with SQL</h2>
+  <div class="join-code"><div class="jl"><span class="jfn">chdb.query</span>(<span class="jstr">"""</span></div><div class="jl">    <span class="jkw">SELECT</span> name, age, purchase_total</div><div class="jl">    <span class="jkw">FROM</span> <span class="jsrc jsrc-http">url(<span class="jstr">'https://api.example.com/users.parquet'</span>)</span> users <span class="jbadge jbadge-http">HTTP API</span></div><div class="jl"></div><div class="jl">    <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-csv">file(<span class="jstr">'local_orders.csv'</span>)</span> orders <span class="jbadge jbadge-csv">Local CSV</span></div><div class="jl">      <span class="jkw">ON</span> users.uid = orders.uid</div><div class="jl"></div><div class="jl">    <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-py">Python(processed_df)</span> enriched <span class="jbadge jbadge-py">DataFrame</span></div><div class="jl">      <span class="jkw">ON</span> enriched.uid = users.uid</div><div class="jl"></div><div class="jl">    <span class="jkw">WHERE</span> age &gt; <span class="jnum">25</span></div><div class="jl">    <span class="jkw">ORDER BY</span> purchase_total <span class="jkw">DESC</span></div><div class="jl">    <span class="jkw">LIMIT</span> <span class="jnum">1000</span></div><div class="jl"><span class="jstr">"""</span>)</div></div>
+  <p class="dim">Three data sources, one query. No ETL.</p>
+</section>
+
+<!-- ═══ 9. DATASTORE ARCHITECTURE ═══ -->
+<section>
+  <h2>DataStore: Pandas API, ClickHouse Engine</h2>
+  <img src="logos/datastore_architecture.png" style="max-height: 52vh;">
+  <p class="dim" style="margin-top: 0.2em;">Lazy evaluation &middot; Smart engine selection &middot; Intermediate caching</p>
+</section>
+
+<!-- ═══ 10. CODE THEATER: One Line Change → Lazy SQL ═══ -->
+<section>
+  <div class="morph-demo">
+    <!-- Titles -->
+    <div class="morph-titles">
+      <h2 class="t1">Your Pandas Code</h2>
+      <h2 class="t2" style="color: var(--c-green);">One Line Change</h2>
+      <h2 class="t3" style="color: var(--c-blue);">Under the Hood</h2>
+      <h2 class="t4" style="color: var(--c-orange);">Inside the Engine</h2>
+    </div>
+
+    <!-- Stage -->
+    <div class="morph-stage">
+      <!-- Python panel (two overlapping pre blocks) -->
+      <div class="morph-py">
+        <div class="py-old join-code"><div class="jl"><span class="jkw">import</span> pandas <span class="jkw">as</span> pd</div><div class="jl"></div><div class="jl">df = pd.<span class="jfn">read_csv</span>(<span class="jstr">"employee_data.csv"</span>)</div><div class="jl">filtered = df[</div><div class="jl">    (df[<span class="jstr">'age'</span>] &gt; <span class="jnum">25</span>) &amp;</div><div class="jl">    (df[<span class="jstr">'salary'</span>] &gt; <span class="jnum">50000</span>)</div><div class="jl">]</div><div class="jl">grouped = filtered.<span class="jfn">groupby</span>(<span class="jstr">'city'</span>)[<span class="jstr">'salary'</span>] \</div><div class="jl">    .<span class="jfn">agg</span>([<span class="jstr">'mean'</span>, <span class="jstr">'sum'</span>, <span class="jstr">'count'</span>])</div><div class="jl">result = grouped.<span class="jfn">sort_values</span>(</div><div class="jl">    <span class="jstr">'mean'</span>, ascending=<span class="jkw">False</span></div><div class="jl">).<span class="jfn">head</span>(<span class="jnum">10</span>)</div></div>
+        <div class="py-new join-code"><div class="jl"><span class="jkw">import</span> chdb.datastore <span class="jkw">as</span> pd  <span class="jcmt"># &lt;- rocket!</span></div><div class="jl"></div><div class="jl">df = pd.<span class="jfn">read_csv</span>(<span class="jstr">"employee_data.csv"</span>)</div><div class="jl">filtered = df[</div><div class="jl">    (df[<span class="jstr">'age'</span>] &gt; <span class="jnum">25</span>) &amp;</div><div class="jl">    (df[<span class="jstr">'salary'</span>] &gt; <span class="jnum">50000</span>)</div><div class="jl">]</div><div class="jl">grouped = filtered.<span class="jfn">groupby</span>(<span class="jstr">'city'</span>)[<span class="jstr">'salary'</span>] \</div><div class="jl">    .<span class="jfn">agg</span>([<span class="jstr">'mean'</span>, <span class="jstr">'sum'</span>, <span class="jstr">'count'</span>])</div><div class="jl">result = grouped.<span class="jfn">sort_values</span>(</div><div class="jl">    <span class="jstr">'mean'</span>, ascending=<span class="jkw">False</span></div><div class="jl">).<span class="jfn">head</span>(<span class="jnum">10</span>)</div></div>
+      </div>
+
+      <!-- Connector arrow -->
+      <div class="morph-arrow">
+        <svg viewBox="0 0 60 32">
+          <path class="arrow-path" d="M 4 16 L 44 16 L 38 8 M 44 16 L 38 24" />
+        </svg>
+      </div>
+
+      <!-- SQL panel -->
+      <div class="morph-sql">
+        <div class="morph-sql-tag">auto-generated sql &darr;</div>
+        <pre><code class="language-sql" data-trim data-noescape>
+SELECT city,
+       AVG(salary) AS mean,
+       SUM(salary) AS sum,
+       COUNT(salary) AS count
+FROM file('employee_data.csv',
+          'CSVWithNames')
+WHERE age &gt; 25
+  AND salary &gt; 50000
+GROUP BY city
+ORDER BY mean DESC
+LIMIT 10
+        </code></pre>
+      </div>
+    </div>
+
+    <!-- Badge (step 2 only) -->
+    <div class="morph-badge">Up to 247x faster &middot; 23x less memory</div>
+
+    <!-- Architecture diagram (step 4) -->
+    <div class="morph-arch">
+      <div class="morph-arch-arrow">&darr;</div>
+      <img src="https://raw.githubusercontent.com/chdb-io/chdb/main/docs/_static/arch-chdb3.png" alt="chDB Architecture">
+    </div>
+
+    <!-- Captions -->
+    <div class="morph-captions">
+      <span class="cap-2">Same API. Same code. <strong style="color: var(--c-green);">ClickHouse speed underneath.</strong></span>
+      <span class="cap-3">Predicate pushdown &middot; Column pruning &middot; Limit propagation &mdash; <strong>automatic</strong></span>
+      <span class="cap-4">SQL feeds directly into chDB's embedded ClickHouse engine &mdash; <strong>in-process, zero network</strong></span>
+    </div>
+  </div>
+
+  <!-- Invisible fragment triggers -->
+  <span class="fragment" data-step="2" style="position:absolute;opacity:0;pointer-events:none;"></span>
+  <span class="fragment" data-step="3" style="position:absolute;opacity:0;pointer-events:none;"></span>
+  <span class="fragment" data-step="4" style="position:absolute;opacity:0;pointer-events:none;"></span>
+</section>
+
+<!-- ═══ 12. SEGMENT EXECUTION ═══ -->
+<section>
+  <h2>Segment Execution</h2>
+  <p style="font-size: 0.75em;">What if your pipeline mixes SQL-optimizable ops and Python-only ops?</p>
+  <div style="margin: 0.8em auto; max-width: 90%;">
+    <div class="arch-flow" style="gap: 0.3em;">
+      <div class="arch-box ch" style="font-size: 0.5em; min-width: 7.5em;">Segment 1<br><strong>ClickHouse</strong><br>filter + group by</div>
+      <span class="arch-arrow good" style="font-size: 1.5em;">&rarr;</span>
+      <div class="arch-box pandas" style="font-size: 0.5em; min-width: 7.5em;">Segment 2<br><strong>Pandas</strong><br>custom Python func</div>
+      <span class="arch-arrow good" style="font-size: 1.5em;">&rarr;</span>
+      <div class="arch-box ch" style="font-size: 0.5em; min-width: 7.5em;">Segment 3<br><strong>ClickHouse</strong><br>sort + limit</div>
+    </div>
+  </div>
+  <ul style="margin-top: 0.5em;">
+    <li class="fragment"><strong>Auto-splits</strong> the pipeline at Pandas/SQL boundaries</li>
+    <li class="fragment">ClickHouse handles what it can, Pandas handles the rest</li>
+    <li class="fragment">Seamless handoff via Python's <strong>buffer protocol</strong> &mdash; minimal overhead</li>
+  </ul>
+  <p class="fragment dim">You write Pandas. The engine decides what runs where.</p>
+</section>
+
+<!-- ═══ 13. MULTI-SOURCE ═══ -->
+<section>
+  <h2>Multi-Source with DataStore</h2>
+  <pre><code class="language-python" data-trim data-noescape>
+import chdb.datastore as ds
+
+# Connect multiple sources
+sales = ds.read_csv("local_sales.csv")
+customers = ds.DataStore("clickhouse",
+                         host="localhost", table="customer_info")
+
+# Join and analyze — lazy, cross-source
+result = (
+    sales
+    .merge(customers, on="customer_id")
+    .query("purchase_date >= '2025-01-01'")
+    .groupby("city")
+    .agg({"revenue": "sum", "order_id": "count"})
+    .sort_values("revenue", ascending=False)
+    .head(20)
+)
+
+print(result)  # Execution triggers here!
+  </code></pre>
+  <p class="dim">Local CSV + remote ClickHouse. One Pandas-style pipeline.</p>
+</section>
+
+<!-- ═══ 14. LANGUAGE BINDINGS ═══ -->
+<section>
+  <h2>Not Just Python</h2>
+  <p style="font-size: 0.78em; margin-bottom: 0.5em;">chDB runs as a <strong>native library</strong> in 9 languages:</p>
+  <div style="display: flex; gap: 0.7em; justify-content: center; flex-wrap: wrap; margin: 0.4em auto; max-width: 92%;">
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/python-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#306998;">Python</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">pip install chdb</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/go-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#00ADD8;">Go</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">github.com/chdb-io/chdb-go</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/rust-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#B7410E;">Rust</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">cargo add chdb-rust</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/ruby-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#CC342D;">Ruby</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">gem install chdb-ruby</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/nodejs-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#339933;">Node.js</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">npm i chdb</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/bun-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#b88a2a;">Bun</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">chdb-io/chdb-bun</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/dotnet-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#512BD4;">.NET</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">dotnet add package chdb</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/java-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#E76F00;">Java</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">chdb-io/chdb-java</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/zig-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#f7a41d;">Zig</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">chdb-io/chdb-zig</div>
+    </div>
+  </div>
+  <p style="font-size: 0.72em; margin-top: 0.5em; margin-bottom: 0.3em;"><strong>Runs everywhere</strong> &mdash; no server, no infra:</p>
+  <div style="display: flex; gap: 0.6em; justify-content: center; flex-wrap: wrap; font-size: 0.48em; font-weight: 700;">
+    <span style="background:#e3f2fd; color:#1565c0; padding:0.3em 0.8em; border-radius:10px;">Jupyter Notebook</span>
+    <span style="background:#fff3e0; color:#e65100; padding:0.3em 0.8em; border-radius:10px;">Google Colab</span>
+    <span style="background:#e8f5e9; color:#2e7d32; padding:0.3em 0.8em; border-radius:10px;">Hex</span>
+    <span style="background:#f3e5f5; color:#7b1fa2; padding:0.3em 0.8em; border-radius:10px;">marimo</span>
+    <span style="background:#fce4ec; color:#c62828; padding:0.3em 0.8em; border-radius:10px;">AWS Lambda</span>
+    <span style="background:#e0f2f1; color:#00695c; padding:0.3em 0.8em; border-radius:10px;">Cloudflare Workers</span>
+    <span style="background:#efebe9; color:#4e342e; padding:0.3em 0.8em; border-radius:10px;">Docker</span>
+    <span style="background:#e8eaf6; color:#283593; padding:0.3em 0.8em; border-radius:10px;">CLI scripts</span>
+  </div>
+</section>
+
+<!-- ═══ 16. BENCHMARK: SPEED ═══ -->
+<section>
+  <h2>Benchmark: Speed (50M rows)</h2>
+  <table class="bench">
+    <thead>
+      <tr><th>Scenario</th><th>Pandas</th><th>chDB</th><th>Speedup</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>T01 Read Parquet + COUNT</td>
+        <td class="loser">2.07s</td>
+        <td class="winner">0.28s</td>
+        <td class="winner">7.4x</td>
+      </tr>
+      <tr>
+        <td>T02 Filter + GroupBy + SUM</td>
+        <td class="loser">2.88s</td>
+        <td class="winner">0.69s</td>
+        <td class="winner">4.1x</td>
+      </tr>
+      <tr>
+        <td>T03 Multi-key GroupBy + 4 aggs</td>
+        <td class="loser">5.31s</td>
+        <td class="winner">1.88s</td>
+        <td class="winner">2.8x</td>
+      </tr>
+      <tr>
+        <td>T04 JOIN (50M &times; 10K) + agg</td>
+        <td class="loser">6.76s</td>
+        <td class="winner">0.87s</td>
+        <td class="winner">7.7x</td>
+      </tr>
+      <tr>
+        <td>T05 Top-10 per group (window)</td>
+        <td class="loser">35.05s</td>
+        <td class="winner">9.29s</td>
+        <td class="winner">3.8x</td>
+      </tr>
+      <tr>
+        <td>T06 P95 quantile by region</td>
+        <td class="loser">4.14s</td>
+        <td class="winner">0.68s</td>
+        <td class="winner">6.1x</td>
+      </tr>
+      <tr>
+        <td>T07 Derived cols + filter + Top-1000</td>
+        <td class="loser">2.93s</td>
+        <td class="winner">1.14s</td>
+        <td class="winner">2.6x</td>
+      </tr>
+      <tr>
+        <td>T08 Count Distinct (exact)</td>
+        <td class="loser">7.57s</td>
+        <td class="winner">1.38s</td>
+        <td class="winner">5.5x</td>
+      </tr>
+      <tr>
+        <td>T09 In-memory DataFrame query</td>
+        <td class="loser">2.89s</td>
+        <td class="winner">2.17s</td>
+        <td class="winner">1.3x</td>
+      </tr>
+      <tr>
+        <td>T10 Time-series monthly agg</td>
+        <td class="loser">4.07s</td>
+        <td class="winner">0.68s</td>
+        <td class="winner">6.0x</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="dim">chdb v4.1.6 vs pandas 3.0.1 &middot; Ubuntu, 16 CPUs, 33GB RAM, Python 3.14 &middot; chDB wins 10/10, mean <strong>4.2x</strong></p>
+</section>
+
+<!-- ═══ 17. BENCHMARK: MEMORY ═══ -->
+<section>
+  <h2>Benchmark: Peak Memory (50M rows)</h2>
+  <div style="max-width: 92%; margin: 0.4em auto;">
+    <div class="mem-bar-row">
+      <span class="mem-bar-label">Read + Count</span>
+      <div class="mem-bar pandas-bar" style="width: 50%;">5,310 MB</div>
+    </div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label" style="color: var(--c-green);">chDB</span>
+      <div class="mem-bar chdb-bar" style="width: 2.2%;">234</div>
+      <span style="font-size: 0.55em; font-weight: 700; color: var(--c-green);">&nbsp;22.7x less</span>
+    </div>
+    <div style="height: 0.4em;"></div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label">Filter + Agg</span>
+      <div class="mem-bar pandas-bar" style="width: 68%;">7,161 MB</div>
+    </div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label" style="color: var(--c-green);">chDB</span>
+      <div class="mem-bar chdb-bar" style="width: 11.5%;">1,216 MB</div>
+      <span style="font-size: 0.55em; font-weight: 700; color: var(--c-green);">&nbsp;5.9x less</span>
+    </div>
+    <div style="height: 0.4em;"></div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label">JOIN + Agg</span>
+      <div class="mem-bar pandas-bar" style="width: 100%;">10,473 MB</div>
+    </div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label" style="color: var(--c-green);">chDB</span>
+      <div class="mem-bar chdb-bar" style="width: 17.4%;">1,824 MB</div>
+      <span style="font-size: 0.55em; font-weight: 700; color: var(--c-green);">&nbsp;5.7x less</span>
+    </div>
+    <div style="height: 0.4em;"></div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label">P95 Quantile</span>
+      <div class="mem-bar pandas-bar" style="width: 35.3%;">3,699 MB</div>
+    </div>
+    <div class="mem-bar-row">
+      <span class="mem-bar-label" style="color: var(--c-green);">chDB</span>
+      <div class="mem-bar chdb-bar" style="width: 14%;">1,472 MB</div>
+      <span style="font-size: 0.55em; font-weight: 700; color: var(--c-green);">&nbsp;2.5x less</span>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.3em;">Peak RSS via Linux VmHWM (kernel-level, unfakeable) &middot; Geomean memory saving: <strong>2.9x</strong></p>
+</section>
+
+<!-- ═══ 18. OOM RISK ═══ -->
+<section>
+  <h2>On Your 8GB Laptop</h2>
+  <table class="bench">
+    <thead>
+      <tr><th>50M-row Operation</th><th>Pandas Peak</th><th>chDB Peak</th><th>8GB Laptop</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>JOIN + aggregation</td>
+        <td class="loser">10.5 GB</td>
+        <td class="winner">1.8 GB</td>
+        <td><span style="color: var(--c-red); font-weight: 700;">Pandas OOM</span> &middot; <span class="hl-green">chDB OK</span></td>
+      </tr>
+      <tr>
+        <td>Derived columns + filter</td>
+        <td class="loser">7.4 GB</td>
+        <td class="winner">3.0 GB</td>
+        <td><span style="color: var(--c-red); font-weight: 700;">Pandas OOM</span> &middot; <span class="hl-green">chDB OK</span></td>
+      </tr>
+      <tr>
+        <td>Multi-key GroupBy</td>
+        <td class="loser">7.3 GB</td>
+        <td class="winner">4.2 GB</td>
+        <td><span style="color: var(--c-red); font-weight: 700;">Pandas OOM</span> &middot; <span class="hl-green">chDB OK</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="fragment" style="margin-top: 0.6em;">
+    <blockquote style="font-size: 0.72em;">
+      When Pandas OOMs, the OS kills your process &mdash; no recovery.<br>
+      When chDB hits a limit, it throws an <strong>exception</strong> you can catch.
+    </blockquote>
+  </div>
+</section>
+
+<!-- ═══ 19. AI LOVES PANDAS ═══ -->
+<section>
+  <h2>AI Writes Pandas. chDB Runs It Fast.</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li class="fragment">LLMs generate <strong>excellent Pandas code</strong> &mdash; it's the most common data API in training data</li>
+        <li class="fragment">DataStore executes it on ClickHouse <strong>automatically</strong></li>
+        <li class="fragment">No need to teach your AI a new API</li>
+      </ul>
+      <p class="fragment" style="font-size: 0.72em; margin-top: 0.6em;">
+        The future workflow:<br>
+        <strong>AI writes Pandas</strong> &rarr; <strong>chDB makes it fast</strong>
+      </p>
+    </div>
+    <div class="fragment" style="text-align: center;">
+      <blockquote style="font-size: 0.65em; width: 95%;">
+        "Hey Claude, group sales by region and show me the top 10."
+      </blockquote>
+      <p style="font-size: 0.6em; color: var(--c-green); margin-top: 0.5em;">
+        &darr; generates standard Pandas code &darr;<br>
+        &darr; runs on ClickHouse via DataStore &darr;<br>
+        &darr; up to 247x faster, 3-23x less memory &darr;
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 20. THE NUMBERS ═══ -->
+<section>
+  <h2>The Numbers</h2>
+  <div class="stats-grid" style="grid-template-columns: 1fr 1fr; margin-top: 0.6em;">
+    <div class="stat-card">
+      <div class="num" style="color: var(--c-green);">247x</div>
+      <div class="label">Faster than Pandas<br>COUNT(*) on 1M row DataFrame</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="color: var(--c-blue);">~24%</div>
+      <div class="label">Faster than DuckDB<br>exporting 1M rows to DataFrame (2.64s vs 3.47s)</div>
+    </div>
+  </div>
+  <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-top: 0.5em;">
+    <div class="stat-card">
+      <div class="num">7.7x</div>
+      <div class="label">fastest speedup<br>50M-row JOIN+agg</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">23x</div>
+      <div class="label">less peak memory<br>vs Pandas</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">80+</div>
+      <div class="label">data formats<br>supported</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.4em;">1 line</div>
+      <div class="label">to change for<br>DataStore</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 21. GETTING STARTED ═══ -->
+<section>
+  <h2>Getting Started &mdash; 30 Seconds</h2>
+  <pre><code class="language-bash" data-trim data-noescape>
+pip install "chdb>=4.0.0"
+  </code></pre>
+  <pre><code class="language-python" data-trim data-noescape>
+import chdb.datastore as pd  # swap one import, done
+
+# Your existing workflow — unchanged
+df = pd.read_csv("your_data.csv")
+
+result = (
+    df[df['amount'] > 100]
+    .groupby('category')
+    .agg({'amount': 'sum', 'order_id': 'count'})
+    .sort_values('amount', ascending=False)
+    .head(10)
+)
+
+result.plot(kind='bar')  # Still a real DataFrame
+  </code></pre>
+  <p class="dim">No server. No config. No new API to learn.</p>
+</section>
+
+<!-- ═══ 22. ROAD AHEAD ═══ -->
+<section>
+  <h2>The Road Ahead</h2>
+  <ul>
+    <li class="fragment">
+      <strong>Python 3.14 free-threading</strong> &mdash; no more GIL<br>
+      <span class="sub">Register Python functions as ClickHouse UDFs in vectorized pipelines</span>
+    </li>
+    <li class="fragment">
+      <strong>PyTorch DataLoader integration</strong><br>
+      <span class="sub">Efficient batching, shuffling, and streaming for ML training</span>
+    </li>
+    <li class="fragment">
+      <strong>Hybrid execution</strong><br>
+      <span class="sub">Seamlessly scale from laptop to ClickHouse Cloud</span>
+    </li>
+    <li class="fragment">
+      <strong>Multi-modal data processing</strong><br>
+      <span class="sub">Text + image + audio pipelines with chDB as the data backbone</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══ 23. Q&A ═══ -->
+<section>
+  <h1 style="margin-bottom: 0.6em;">Thank You!</h1>
+  <div style="display: flex; gap: 2em; justify-content: center; align-items: center; margin-bottom: 0.8em;">
+    <img src="logos/chdb-light.png" class="no-shadow" style="height: 90px; box-shadow: none;">
+    <img src="logos/clickhouse-logo-black.svg" class="no-shadow" style="height: 64px; box-shadow: none;">
+  </div>
+  <ul style="list-style: none; padding: 0; font-size: 0.62em; line-height: 2; text-align: center;">
+    <li><strong>GitHub:</strong> <a href="https://github.com/chdb-io/chdb">github.com/chdb-io/chdb</a></li>
+    <li><strong>Docs:</strong> <a href="https://clickhouse.com/docs/chdb">clickhouse.com/docs/chdb</a></li>
+    <li><strong>PyPI:</strong> <a href="https://pypi.org/project/chdb">pypi.org/project/chdb</a></li>
+    <li><strong>Discord:</strong> <a href="https://discord.gg/D2Daa2fM5K">discord.gg/D2Daa2fM5K</a></li>
+  </ul>
+  <h2 style="margin-top: 0.8em;">Q&amp;A</h2>
+  <p class="dim"><a href="https://x.com/auxten">@auxten</a> &middot; <a href="https://auxten.com">auxten.com</a></p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720,
+  plugins: [ RevealHighlight ]
+});
+
+// Code Theater: fragment-driven step classes
+Reveal.on('fragmentshown', function(e) {
+  var step = e.fragment.getAttribute('data-step');
+  if (step) {
+    var demo = e.fragment.closest('section').querySelector('.morph-demo');
+    if (demo) demo.classList.add('step-' + step);
+  }
+});
+Reveal.on('fragmenthidden', function(e) {
+  var step = e.fragment.getAttribute('data-step');
+  if (step) {
+    var demo = e.fragment.closest('section').querySelector('.morph-demo');
+    if (demo) demo.classList.remove('step-' + step);
+  }
+});
+</script>
+</body>
+</html>
