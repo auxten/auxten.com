@@ -587,8 +587,8 @@ void insert_from_ptr(const void* ptr,
   <h2>Breakthrough 2: C++ String Encoding</h2>
   <div class="two-col" style="gap: 1.2em; align-items: flex-start; max-width: 96%; margin: 0 auto;">
     <div style="text-align: left;">
-      <p style="font-size: 0.68em;"><strong>The problem:</strong> Python <code>str</code> can be UTF-8, UTF-16, or UTF-32 internally (PEP 393 compact repr). ClickHouse expects UTF-8.</p>
-      <p style="font-size: 0.68em;">Converting via <code>PyUnicode_AsUTF8</code> &rarr; <strong>acquires GIL per string</strong>. With millions of strings, this kills parallelism.</p>
+      <p style="font-size: 0.68em;"><strong>The problem:</strong> Python <code>str</code> stores as Latin-1, UCS-2, or UCS-4 internally (PEP 393). ClickHouse expects UTF-8.</p>
+      <p style="font-size: 0.68em;">Calling <code>PyUnicode_AsUTF8</code> <strong>requires holding the GIL</strong>. Millions of strings &rarr; entire conversion becomes serial.</p>
       <div style="margin: 0.6em 0;">
         <div style="display: flex; gap: 0.5em; align-items: stretch; max-width: 100%;">
           <div class="arch-box v1" style="font-size: 0.44em; flex:1; min-width: auto;">
