@@ -532,7 +532,7 @@ result = chdb.query("""
 <!-- ═══ 6a. BREAKTHROUGH 1: GIL TWO-PHASE ═══ -->
 <section>
   <h2>Breakthrough 1: GIL Two-Phase Design</h2>
-  <div class="two-col" style="gap: 1.2em; align-items: flex-start; max-width: 96%; margin: 0 auto;">
+  <div class="two-col" style="gap: 1.2em; align-items: flex-start; max-width: 88%; margin: 0 auto;">
     <div style="text-align: left;">
       <p style="font-size: 0.68em;"><strong>The problem:</strong> ClickHouse wants all 16 cores. Python's GIL says <em>"one thread at a time."</em></p>
       <p style="font-size: 0.68em;">If we call CPython API per data access &rarr; multi-threaded engine degrades to <strong>single-threaded</strong>.</p>
@@ -585,7 +585,7 @@ void insert_from_ptr(const void* ptr,
 <!-- ═══ 6b. BREAKTHROUGH 2: C++ STRING ENCODING ═══ -->
 <section>
   <h2>Breakthrough 2: C++ String Encoding</h2>
-  <div class="two-col" style="gap: 1.2em; align-items: flex-start; max-width: 96%; margin: 0 auto;">
+  <div class="two-col" style="gap: 1.2em; align-items: flex-start; max-width: 88%; margin: 0 auto;">
     <div style="text-align: left;">
       <p style="font-size: 0.68em;"><strong>The problem:</strong> Python <code>str</code> stores as Latin-1, UCS-2, or UCS-4 internally (PEP 393). ClickHouse expects UTF-8.</p>
       <p style="font-size: 0.68em;">Calling <code>PyUnicode_AsUTF8</code> <strong>requires holding the GIL</strong>. Millions of strings &rarr; entire conversion becomes serial.</p>
@@ -642,7 +642,7 @@ static size_t ConvertPyUnicodeToUtf8(
 <!-- ═══ 6c. BREAKTHROUGH 3: NATIVE JSON ═══ -->
 <section>
   <h2>Breakthrough 3: Native JSON on DataFrame</h2>
-  <div class="two-col" style="gap: 1em; align-items: flex-start; max-width: 96%; margin: 0 auto;">
+  <div class="two-col" style="gap: 1em; align-items: flex-start; max-width: 88%; margin: 0 auto;">
     <div style="text-align: left;">
       <p style="font-size: 0.68em;"><strong>The problem:</strong> Real DataFrames often have <code>object</code> columns filled with nested dicts. Traditional approach: flatten to columns first, lose structure.</p>
       <p style="font-size: 0.68em;"><strong>chDB's approach:</strong></p>
