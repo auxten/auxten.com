@@ -539,43 +539,45 @@ result = chdb.query("""
       <div style="margin: 0.5em 0;">
         <div class="arch-flow" style="gap: 0.2em; flex-direction: column; align-items: stretch; max-width: 95%;">
           <div class="arch-box" style="background:#ffebee; color:#c62828; border:2px solid #ef9a9a; font-size:0.48em; min-width:auto;">
-            <strong>Phase 1: Hold GIL</strong> (single-threaded, fast)<br>
-            Extract all column pointers &amp; NumPy metadata<br>
-            Gather dtypes, shapes, strides in one batch
+            <strong>Phase 1: <code style="color:#c62828;background:none;font-size:1em;">prepareColumnCache()</code></strong><br>
+            Hold GIL &rarr; extract <code style="color:#c62828;background:none;font-size:0.95em;">buf</code>, <code style="color:#c62828;background:none;font-size:0.95em;">stride</code>, <code style="color:#c62828;background:none;font-size:0.95em;">dtype</code> for every column<br>
+            One batch of Python calls, then done
           </div>
           <span class="arch-arrow good" style="font-size: 1.2em; text-align: center;">&darr;</span>
           <div class="arch-box zerocopy" style="font-size:0.48em; min-width:auto;">
-            <strong>Phase 2: Release GIL</strong> (parallel C++)<br>
-            ClickHouse reads memory via raw pointers<br>
-            Full multi-core vectorized execution
+            <strong>Phase 2: N parallel <code style="color:#2e7d32;background:none;font-size:1em;">PythonSource</code> streams</strong><br>
+            Each stream reads its row slice via <code style="color:#2e7d32;background:none;font-size:0.95em;">col.buf + offset</code><br>
+            No GIL, no Python API &mdash; pure pointer arithmetic
           </div>
         </div>
       </div>
     </div>
     <div>
-      <pre><code class="language-cpp" data-trim data-noescape style="font-size: 0.46em;">
-// Phase 1: Hold GIL — batch all Python calls
+      <pre><code class="language-cpp" data-trim data-noescape style="font-size: 0.44em;">
+// Phase 1: prepareColumnCache() — GIL held
 {
-    py::gil_scoped_acquire gil;
-
-    for (auto & col : columns) {
-        PyObject* arr = col.values;  // numpy array
-        col.ptr  = get_data_ptr(arr);
-        col.dtype = get_dtype(arr);
-        col.stride = get_stride(arr);
+    py::gil_scoped_acquire acquire;
+    for (auto & col : column_cache) {
+        // Pandas: df[col].to_numpy() → array
+        py::array arr = column.attr("to_numpy")();
+        col.buf    = arr.data();   // raw pointer
+        col.stride = arr.strides(0);
+        col.row_count = arr.size();
     }
-}
-// GIL released here — Python is free
+}  // GIL released — shared across all streams
 
-// Phase 2: No GIL — parallel ClickHouse
-// reads memory directly via col.ptr
-// using all available CPU cores
-tbb::parallel_for(blocks, [&](Block& b) {
-    // vectorized SIMD processing
-    // no Python API calls at all
-});
+// Phase 2: N parallel PythonSource streams
+// each reads a row slice via raw pointer math
+void insert_from_ptr(const void* ptr,
+    MutableColumnPtr& col, size_t offset,
+    size_t count, size_t stride) {
+    // Direct memcpy — no GIL, no Python API
+    const char* start = (char*)ptr
+                        + offset * sizeof(T);
+    col->appendRawData(start, count);
+}
       </code></pre>
-      <p class="dim" style="margin-top: 0.2em; text-align: center;">Minimize CPython API surface &rarr; maximize parallel execution</p>
+      <p class="dim" style="margin-top: 0.2em; text-align: center;">One GIL acquisition to cache all pointers &rarr; N parallel streams read raw memory</p>
     </div>
   </div>
 </section>
@@ -606,32 +608,32 @@ tbb::parallel_for(blocks, [&](Block& b) {
     </div>
     <div>
       <pre><code class="language-cpp" data-trim data-noescape style="font-size: 0.44em;">
-// CPython internal: PyCompactUnicodeObject
-// kind=1 → Latin-1 (1 byte/char)
-// kind=2 → UCS-2   (2 bytes/char)
-// kind=4 → UCS-4   (4 bytes/char)
+// Step 1: Get raw pointer + kind without
+// Python C API (via pybind11 non_limited_api)
+getPyUnicodeUtf8(obj, data, length,
+                 kind, codepoint_cnt,
+                 direct_insert);
 
-// Our C++ reimplementation:
-void encode_to_utf8(PyObject* str,
-                    char* out) {
-    auto* compact = (PyCompactUnicodeObject*)str;
-    int kind = compact->_base.kind;
-    void* data = PyUnicode_DATA(str);
-    Py_ssize_t len = compact->_base.length;
-
-    switch (kind) {
-    case 1: // Latin-1 → UTF-8 (SIMD copy)
-        latin1_to_utf8(data, len, out);
-        break;
-    case 2: // UCS-2 → UTF-8
-        ucs2_to_utf8(data, len, out);
-        break;
-    case 4: // UCS-4 → UTF-8
-        ucs4_to_utf8(data, len, out);
-        break;
-    }
+// Step 2: Convert in C++ — no GIL needed
+static size_t ConvertPyUnicodeToUtf8(
+    const void* input, int kind,
+    size_t codepoint_cnt,
+    Offsets& offsets, Chars& chars) {
+  switch (kind) {
+  case 1: // Latin-1 (1 byte/char)
+    for (size_t i = 0; i < codepoint_cnt; ++i)
+      offset += utf8proc_encode_char(
+        ((uint8_t*)input)[i], &chars[offset]);
+    break;
+  case 2: // UCS-2 (2 bytes/char)
+    for (size_t i = 0; i < codepoint_cnt; ++i)
+      offset += utf8proc_encode_char(
+        ((uint16_t*)input)[i], &chars[offset]);
+    break;
+  case 4: // UCS-4 (4 bytes/char)
+    /* same pattern with uint32_t */
+  }
 }
-// No GIL needed — parallel safe!
       </code></pre>
     </div>
   </div>
