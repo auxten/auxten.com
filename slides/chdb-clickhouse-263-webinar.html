@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>chDB v4: Zero-Copy ClickHouse on Pandas — ClickHouse 26.3 Webinar</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #e65100;
+    --c-ch-yellow: #fadb14;
+    --c-ch-orange: #e65100;
+    --c-blue: #1565c0;
+    --c-green: #2e7d32;
+    --c-red: #c62828;
+    --c-muted: #888;
+    --c-body: #2d2d2d;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; }
+
+  .reveal h1, .reveal h2, .reveal h3 { font-weight: 800; text-transform: none; letter-spacing: -0.02em; line-height: 1.2; }
+  .reveal h1 { font-size: 2.2em; color: #1a1a1a; margin-bottom: 0.4em; }
+  .reveal h2 { font-size: 1.4em; color: var(--c-ch-orange); margin-bottom: 0.6em; }
+  .reveal h3 { font-size: 1.05em; color: #bf360c; margin-bottom: 0.4em; }
+
+  .reveal p { line-height: 1.6; margin-bottom: 0.4em; }
+  .reveal section > p { font-size: 0.82em; }
+  .reveal ul, .reveal ol { text-align: left; margin-left: 0.5em; }
+  .reveal li { margin-bottom: 0.4em; font-size: 0.78em; line-height: 1.55; }
+  .reveal li strong { font-weight: 700; }
+
+  .reveal .highlight { color: var(--c-ch-orange); font-weight: 700; }
+  .reveal .hl-green { color: var(--c-green); font-weight: 700; }
+  .reveal .hl-blue { color: var(--c-blue); font-weight: 700; }
+  .reveal .dim { color: var(--c-muted); font-size: 0.65em; letter-spacing: 0.01em; line-height: 1.4; }
+  .reveal .sub { font-size: 0.68em; color: #666; }
+  .reveal .big-number { font-size: 3em; font-weight: 800; line-height: 1; }
+
+  .reveal section img { max-height: 55vh; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-radius: 10px; }
+  .reveal .no-shadow img, .reveal img.no-shadow { box-shadow: none !important; }
+
+  .reveal pre { width: auto; max-width: 92%; margin: 0.5em auto; box-shadow: 0 2px 12px rgba(0,0,0,0.10); border-radius: 10px; display: inline-block; text-align: left; }
+  .reveal section { text-align: center; }
+  .reveal section ul, .reveal section ol { display: inline-block; text-align: left; }
+  .reveal pre code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 0.62em;
+    line-height: 1.5;
+    padding: 0.8em 1.2em;
+    max-height: 520px;
+    border-radius: 10px;
+  }
+  .reveal code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #f0f0f0;
+    padding: 0.12em 0.3em;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: #c62828;
+  }
+  .reveal pre code { background: #272822; color: #f8f8f2; }
+
+  .reveal blockquote {
+    background: linear-gradient(135deg, #fff3e0 0%, #fff8f0 100%);
+    border-left: 5px solid var(--c-ch-orange);
+    padding: 0.7em 1.1em;
+    font-style: italic;
+    width: 82%;
+    color: #333;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  .reveal .two-col { display: flex; gap: 2em; align-items: center; justify-content: center; }
+  .reveal .two-col > div { flex: 1; }
+  .reveal .two-col img { max-height: 40vh; }
+  .reveal .two-col li { font-size: 0.72em; }
+  .reveal .two-col pre { width: auto; max-width: 100%; display: inline-block; }
+  .reveal .two-col pre code { font-size: 0.55em; }
+
+  .title-slide h1 { font-size: 1.65em; line-height: 1.2; margin-bottom: 0.25em; }
+  .title-slide p { color: #555; }
+  .title-slide .sub-info { font-size: 0.58em; color: #999; margin-top: 0; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; margin: 0.8em auto; max-width: 92%; }
+  .stat-card { background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%); border: 2px solid #e0e7ff; border-radius: 12px; padding: 0.6em; text-align: center; }
+  .stat-card .num { font-size: 1.8em; font-weight: 800; color: var(--c-ch-orange); line-height: 1.1; }
+  .stat-card .label { font-size: 0.5em; color: #666; margin-top: 0.2em; }
+
+  .reveal table.bench { width: 95%; margin: 0.5em auto; border-collapse: collapse; font-size: 0.55em; }
+  .reveal table.bench th { background: var(--c-ch-orange); color: #fff; padding: 0.45em 0.6em; text-align: left; font-weight: 700; }
+  .reveal table.bench td { padding: 0.4em 0.6em; border-bottom: 1px solid #e0e0e0; }
+  .reveal table.bench tr:nth-child(even) td { background: #f5f5f5; }
+  .reveal table.bench .winner { color: var(--c-green); font-weight: 700; }
+  .reveal table.bench .loser { color: #999; }
+
+  .mem-bar-row { display: flex; align-items: center; gap: 0.4em; margin-bottom: 0.35em; font-size: 0.55em; }
+  .mem-bar-label { width: 8.5em; text-align: right; font-weight: 600; flex-shrink: 0; }
+  .mem-bar { height: 1.6em; border-radius: 4px; display: flex; align-items: center; padding-left: 0.4em; color: #fff; font-weight: 600; font-size: 0.9em; min-width: 2em; }
+  .mem-bar.pandas-bar { background: linear-gradient(90deg, #ef9a9a, #c62828); }
+  .mem-bar.chdb-bar { background: linear-gradient(90deg, #a5d6a7, #2e7d32); }
+
+  .arch-flow { display: flex; align-items: center; justify-content: center; gap: 0; margin: 0.6em auto; flex-wrap: wrap; }
+  .arch-box { padding: 0.5em 0.8em; border-radius: 10px; font-size: 0.52em; font-weight: 600; text-align: center; line-height: 1.3; min-width: 6em; }
+  .arch-box.v1 { background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; }
+  .arch-box.v2 { background: #fff3e0; color: #e65100; border: 2px solid #ffcc80; }
+  .arch-box.v4 { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; }
+  .arch-box.pandas { background: #e3f2fd; color: #1565c0; border: 2px solid #90caf9; }
+  .arch-box.ch { background: #fff3e0; color: #e65100; border: 2px solid #ffcc80; }
+  .arch-box.zerocopy { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; }
+  .arch-arrow { font-size: 1.2em; color: #999; margin: 0 0.2em; font-weight: 700; }
+  .arch-arrow.good { color: #2e7d32; }
+
+  .evo-timeline { display: flex; align-items: flex-start; justify-content: center; gap: 0; margin: 0.6em auto; max-width: 96%; }
+  .evo-step { flex: 1; text-align: center; position: relative; }
+  .evo-step .evo-dot {
+    width: 2.4em; height: 2.4em; border-radius: 50%; margin: 0 auto 0.3em;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.55em; color: #fff;
+  }
+  .evo-step .evo-label { font-size: 0.52em; font-weight: 700; margin-bottom: 0.15em; }
+  .evo-step .evo-desc { font-size: 0.42em; color: #666; line-height: 1.4; padding: 0 0.3em; }
+  .evo-step .evo-metric { font-size: 0.65em; font-weight: 800; margin-top: 0.2em; }
+  .evo-connector { flex: 0 0 3em; display: flex; align-items: center; justify-content: center; padding-top: 0.8em; }
+  .evo-connector svg { width: 100%; height: 20px; }
+
+  .before-after { display: flex; gap: 1em; align-items: stretch; margin: 0.5em auto; max-width: 100%; }
+  .before-after > div { flex: 1; border-radius: 10px; overflow: hidden; }
+  .before-after .tag { display: block; padding: 0.3em 0.8em; font-size: 0.5em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .before-after .before-tag { background: #ffebee; color: #c62828; }
+  .before-after .after-tag { background: #e8f5e9; color: #2e7d32; }
+  .before-after .arrow-tag { background: #fff3e0; color: #e65100; }
+  .before-after pre { margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; width: 100% !important; max-width: 100% !important; display: block !important; }
+  .before-after pre code { font-size: 0.52em; border-radius: 0 !important; }
+
+  .badge-pill {
+    display: inline-block; padding: 0.25em 0.9em; border-radius: 20px;
+    font-size: 0.48em; font-weight: 700; margin: 0.15em;
+  }
+
+  .tech-card {
+    background: #fff; border: 2px solid #e0e0e0; border-radius: 12px;
+    padding: 0.5em 0.7em; text-align: left; font-size: 0.6em;
+  }
+  .tech-card h4 { margin: 0 0 0.2em; font-size: 1em; font-weight: 800; }
+  .tech-card p { margin: 0; font-size: 0.85em; color: #555; line-height: 1.4; }
+  .tech-card .metric { font-weight: 800; }
+
+  /* ═══ Code Theater — morph animation ═══ */
+  .join-code {
+    display: inline-block; text-align: left;
+    background: #272822; color: #f8f8f2;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 0.62em; line-height: 1.65;
+    padding: 0.8em 1.4em; border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15); max-width: 92%;
+  }
+  .jl { white-space: pre; min-height: 1.3em; }
+  .jkw { color: #66d9ef; font-weight: 600; }
+  .jstr { color: #e6db74; }
+  .jnum { color: #ae81ff; }
+  .jfn { color: #a6e22e; }
+  .jcmt { color: #75715e; }
+
+  .morph-demo { position: relative; }
+  .morph-titles { position: relative; height: 1.7em; margin-bottom: 0.25em; }
+  .morph-titles h2 {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.4s ease, transform 0.35s ease;
+  }
+  .morph-titles .t1 { opacity: 1; transform: translateY(0); }
+  .step-2 .morph-titles .t1 { opacity: 0; transform: translateY(-12px); }
+  .step-2 .morph-titles .t2 { opacity: 1; transform: translateY(0); }
+  .step-3 .morph-titles .t2 { opacity: 0; transform: translateY(-12px); }
+  .step-3 .morph-titles .t3 { opacity: 1; transform: translateY(0); }
+
+  .morph-stage {
+    display: flex; align-items: flex-start; justify-content: center;
+    gap: 0; max-width: 100%; overflow: hidden;
+    transition: gap 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-3 .morph-stage { gap: 0.5em; }
+
+  .morph-py {
+    position: relative; flex: 0 0 auto;
+    width: 70%; max-width: 700px;
+    transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-3 .morph-py { width: 46%; }
+  .morph-py > .join-code {
+    display: block; width: 100%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    transition: opacity 0.5s ease, font-size 0.5s ease;
+  }
+  .step-3 .morph-py > .join-code { font-size: 0.53em; }
+  .step-3 .morph-sql pre code { font-size: 0.55em; }
+  .morph-py .py-old { transition: opacity 0.5s ease; }
+  .morph-py .py-new {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0; z-index: 2; transition: opacity 0.5s ease;
+  }
+  .step-2 .morph-py .py-old, .step-3 .morph-py .py-old { opacity: 0; }
+  .step-2 .morph-py .py-new, .step-3 .morph-py .py-new { opacity: 1; }
+
+  .morph-py::after {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2.6em;
+    border-radius: 10px 10px 0 0;
+    pointer-events: none; z-index: 3; opacity: 0;
+  }
+  .step-2 .morph-py::after, .step-3 .morph-py::after {
+    animation: glowPulse 1.8s ease-out forwards;
+  }
+  @keyframes glowPulse {
+    0%   { opacity: 0; background: transparent; }
+    12%  { opacity: 1; background: rgba(46,125,50,0.22); box-shadow: inset 0 0 40px rgba(46,125,50,0.35), 0 0 20px rgba(46,125,50,0.15); }
+    40%  { opacity: 1; background: rgba(46,125,50,0.08); box-shadow: inset 0 0 15px rgba(46,125,50,0.1); }
+    100% { opacity: 1; background: rgba(46,125,50,0.03); box-shadow: none; }
+  }
+
+  .morph-sql {
+    flex: 0 0 0%; overflow: hidden;
+    opacity: 0; transform: translateX(30px) scale(0.96);
+    transition: flex-basis 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.45s ease 0.15s,
+                transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  }
+  .step-3 .morph-sql { flex: 0 0 42%; opacity: 1; transform: translateX(0) scale(1); }
+  .morph-sql pre {
+    margin: 0 !important; width: 100% !important; max-width: 100% !important;
+    display: block !important; box-shadow: 0 4px 24px rgba(0,0,0,0.15) !important;
+  }
+  .morph-sql-tag {
+    font-size: 0.45em; font-weight: 700; color: var(--c-ch-orange);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 0 0 0.25em; text-align: left;
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.3s ease 0.5s, transform 0.3s ease 0.5s;
+  }
+  .step-3 .morph-sql-tag { opacity: 1; transform: translateY(0); }
+
+  .morph-arrow {
+    flex: 0 0 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: flex-basis 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, opacity 0.35s ease 0.35s;
+  }
+  .step-3 .morph-arrow { flex: 0 0 2em; opacity: 1; }
+  .morph-arrow svg { width: 100%; height: 32px; overflow: visible; }
+  .morph-arrow .arrow-path {
+    fill: none; stroke: var(--c-ch-orange); stroke-width: 2.5;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 80; stroke-dashoffset: 80;
+    transition: stroke-dashoffset 0.6s ease 0.4s;
+  }
+  .step-3 .morph-arrow .arrow-path { stroke-dashoffset: 0; }
+
+  .morph-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: var(--c-green); font-weight: 700; font-size: 0.48em;
+    padding: 0.35em 1.2em; border-radius: 20px; margin-top: 0.35em;
+    opacity: 0; transform: scale(0.8) translateY(8px);
+    transition: opacity 0.4s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .step-2 .morph-badge { opacity: 1; transform: scale(1) translateY(0); transition-delay: 0.55s; }
+  .step-3 .morph-badge { opacity: 0; transform: scale(0.8) translateY(-8px); transition-delay: 0s; transition-duration: 0.2s; }
+
+  .morph-captions { position: relative; height: 1.2em; margin-top: 0.1em; }
+  .morph-captions span {
+    position: absolute; left: 0; right: 0;
+    font-size: 0.58em; color: var(--c-muted);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.35s ease, transform 0.3s ease;
+  }
+  .step-2 .morph-captions .cap-2 { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+  .step-3 .morph-captions .cap-2 { opacity: 0; transform: translateY(-6px); transition-delay: 0s; }
+  .step-3 .morph-captions .cap-3 { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
+
+  /* ── Step 4: SQL → Architecture Diagram ── */
+  .morph-titles .t4 { color: var(--c-ch-orange); }
+  .step-4 .morph-titles .t3 { opacity: 0; transform: translateY(-12px); }
+  .step-4 .morph-titles .t4 { opacity: 1; transform: translateY(0); }
+  .step-4 .morph-stage {
+    transform: scale(0.42) translateY(-10%);
+    transform-origin: top center;
+    max-height: 120px; opacity: 0.25; filter: blur(2px);
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+                max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.5s ease, filter 0.5s ease,
+                gap 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .morph-arch {
+    position: relative; opacity: 0;
+    transform: translateY(40px) scale(0.92);
+    max-height: 0; overflow: hidden; margin-top: 0;
+    transition: opacity 0.5s ease, transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), margin-top 0.5s ease;
+  }
+  .step-4 .morph-arch {
+    opacity: 1; transform: translateY(0) scale(1);
+    max-height: 500px; margin-top: -80px; transition-delay: 0.25s;
+  }
+  .morph-arch-arrow {
+    font-size: 1.4em; color: var(--c-ch-orange); font-weight: 700;
+    margin: 0.1em 0; opacity: 0; transform: translateY(-8px);
+    transition: opacity 0.3s ease 0.15s, transform 0.3s ease 0.15s;
+  }
+  .step-4 .morph-arch-arrow {
+    opacity: 1; transform: translateY(0);
+    animation: archArrowBounce 1.2s ease-in-out 0.6s infinite;
+  }
+  @keyframes archArrowBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+  }
+  .morph-arch img {
+    max-height: 32vh !important; border-radius: 12px;
+    box-shadow: 0 6px 32px rgba(230,81,0,0.18) !important;
+  }
+  .step-4 .morph-captions .cap-3 { opacity: 0; transform: translateY(-6px); transition-delay: 0s; }
+  .step-4 .morph-captions .cap-4 { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══ 1. TITLE ═══ -->
+<section class="title-slide">
+  <div style="display: flex; align-items: center; justify-content: center; gap: 1em; margin-bottom: 0.5em;">
+    <img src="logos/chdb-light.png" class="no-shadow" style="height: 64px; box-shadow: none;">
+    <span style="font-size: 0.7em; color: #ccc; font-weight: 300;">+</span>
+    <img src="logos/clickhouse-logo-black.svg" class="no-shadow" style="height: 48px; box-shadow: none;">
+  </div>
+  <h1>chDB v4: The Fastest SQL Engine<br>on Pandas DataFrame</h1>
+  <p style="font-size: 0.68em; color: #666; margin-top: -0.1em;">Zero-Copy Architecture &middot; DataStore API &middot; Benchmarks</p>
+  <p style="margin-top: 1em;"><strong>Auxten Wang</strong> &middot; Technical Director @ ClickHouse</p>
+  <p class="sub-info">ClickHouse Release 26.3 Webinar &middot; 15 min</p>
+</section>
+
+<!-- ═══ 2. WHAT IS CHDB ═══ -->
+<section>
+  <h2>What is chDB?</h2>
+  <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 0.6em;">
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">In-Process</div>
+      <div class="label">ClickHouse engine<br>No server needed</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">1 Line</div>
+      <div class="label"><code style="font-size:0.85em">pip install chdb</code><br>Zero config</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">300+</div>
+      <div class="label">SQL functions<br>JOINs, CTEs, Window</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">80+</div>
+      <div class="label">Data formats<br>CSV, Parquet, S3...</div>
+    </div>
+  </div>
+  <pre><code class="language-python" data-trim data-noescape>
+import chdb
+import pandas as pd
+
+df = pd.DataFrame({'user_id': range(1_000_000),
+                    'category': ['A', 'B', 'C'] * 333334})
+
+result = chdb.query("""
+    SELECT category, COUNT(*) as cnt
+    FROM Python(df)
+    GROUP BY category
+""", "DataFrame")
+  </code></pre>
+  <p class="dim">Same ClickHouse engine you already know &mdash; compiled as a shared library, embedded in your Python process. No infrastructure.</p>
+</section>
+
+<!-- ═══ 3. THE PROBLEM ═══ -->
+<section>
+  <h2>The Problem: Pandas at Scale</h2>
+  <blockquote style="font-size: 0.78em; width: 88%;">
+    "I have a DataFrame. I want to run SQL on it. Give me back a DataFrame. <strong>Fast.</strong>"
+  </blockquote>
+  <div style="margin-top: 0.6em;">
+    <ul>
+      <li class="fragment"><strong>Single-threaded.</strong> One core out of 16 doing the work</li>
+      <li class="fragment"><strong>Eager execution.</strong> Every step materializes the full result in memory</li>
+      <li class="fragment"><strong>Memory hungry.</strong> A 50M-row JOIN peaks at <span class="highlight">10.5 GB</span> in Pandas</li>
+    </ul>
+  </div>
+  <p class="fragment" style="font-size: 0.78em; margin-top: 0.6em;">
+    On an <strong>8 GB laptop</strong>, that JOIN will <span class="highlight">OOM and kill your process</span>.
+  </p>
+  <p class="fragment dim">What if you could keep writing Pandas code, but run it up to <strong>247x faster</strong> with <strong>23x less memory</strong>?</p>
+</section>
+
+<!-- ═══ 4. JOURNEY TO ZERO-COPY ═══ -->
+<section>
+  <h2>The Journey to Zero-Copy</h2>
+  <div class="evo-timeline">
+    <!-- v1.0 -->
+    <div class="evo-step">
+      <div class="evo-dot" style="background: linear-gradient(135deg, #ef5350, #c62828);">v1</div>
+      <div class="evo-label" style="color: #c62828;">v1.0 (2023)</div>
+      <div class="evo-desc">
+        4 serialization steps<br>
+        DataFrame &rarr; Parquet &rarr; CH &rarr; Parquet &rarr; DataFrame
+      </div>
+      <div class="evo-metric" style="color: #c62828;">~100ms+ overhead per query</div>
+    </div>
+    <div class="evo-connector">
+      <svg viewBox="0 0 60 20"><path d="M 4 10 L 48 10 L 42 4 M 48 10 L 42 16" fill="none" stroke="#bbb" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </div>
+    <!-- v2.0 -->
+    <div class="evo-step">
+      <div class="evo-dot" style="background: linear-gradient(135deg, #ff9800, #e65100);">v2</div>
+      <div class="evo-label" style="color: #e65100;">v2.0 (2024)</div>
+      <div class="evo-desc">
+        Zero-copy <strong>input</strong><br>
+        Direct memory read from DataFrame<br>
+        Output still via Parquet
+      </div>
+      <div class="evo-metric" style="color: #e65100;">87x faster than v1.0</div>
+    </div>
+    <div class="evo-connector">
+      <svg viewBox="0 0 60 20"><path d="M 4 10 L 48 10 L 42 4 M 48 10 L 42 16" fill="none" stroke="#bbb" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </div>
+    <!-- v4.0 -->
+    <div class="evo-step">
+      <div class="evo-dot" style="background: linear-gradient(135deg, #66bb6a, #2e7d32);">v4</div>
+      <div class="evo-label" style="color: #2e7d32;">v4.0 (2026)</div>
+      <div class="evo-desc">
+        <strong>Complete zero-copy loop</strong><br>
+        DataFrame &harr; ClickHouse &harr; DataFrame<br>
+        No serialization anywhere
+      </div>
+      <div class="evo-metric" style="color: #2e7d32;">The ultimate integration</div>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.3em;">From 30 seconds to 0.5 seconds &mdash; a 60x improvement over three generations</p>
+</section>
+
+<!-- ═══ 4b. THE SECRET: DON'T LET PYTHON SLOW DOWN CLICKHOUSE ═══ -->
+<section>
+  <h2>ClickHouse Is Already Fast. The Question Is...</h2>
+  <p class="fragment" style="font-size: 0.85em; margin-top: 0.4em;">
+    chDB <strong>is</strong> ClickHouse &mdash; same codebase, same vectorized engine, same SIMD pipelines.
+  </p>
+  <blockquote class="fragment" style="font-size: 0.82em; margin-top: 0.6em;">
+    So how do we make it the <strong>fastest SQL engine on Pandas DataFrame</strong>?
+  </blockquote>
+  <div class="fragment" style="margin-top: 0.6em;">
+    <div class="arch-flow" style="gap: 0.3em;">
+      <div class="arch-box pandas" style="font-size: 0.5em; min-width: 8em;">
+        <strong>Pandas DataFrame</strong><br>NumPy arrays in memory
+      </div>
+      <span class="arch-arrow" style="font-size: 1.5em; color: #c62828;">&rarr;</span>
+      <div class="arch-box v1" style="font-size: 0.5em; min-width: 8em;">
+        <strong>The Bottleneck</strong><br>serialization, GIL, encoding
+      </div>
+      <span class="arch-arrow" style="font-size: 1.5em; color: #c62828;">&rarr;</span>
+      <div class="arch-box ch" style="font-size: 0.5em; min-width: 8em;">
+        <strong>ClickHouse Engine</strong><br>already blazing fast
+      </div>
+    </div>
+  </div>
+  <p class="fragment" style="font-size: 0.88em; margin-top: 0.6em;">
+    The secret: <strong style="color: var(--c-ch-orange); font-size: 1.15em;">Don't let Python slow down ClickHouse.</strong>
+  </p>
+  <ul class="fragment" style="margin-top: 0.3em;">
+    <li><strong>Zero serialization</strong> &mdash; read/write DataFrame memory directly</li>
+    <li><strong>Minimize GIL</strong> &mdash; batch all Python calls, then release</li>
+    <li><strong>Bypass CPython</strong> &mdash; rewrite hot paths (string encoding) in C++</li>
+  </ul>
+  <p class="fragment dim" style="margin-top: 0.3em;">The next 3 slides show exactly how we did each of these.</p>
+</section>
+
+<!-- ═══ 5. ZERO-COPY DEEP DIVE ═══ -->
+<section>
+  <h2>How Zero-Copy Works</h2>
+  <div class="two-col" style="align-items: flex-start; gap: 1.5em;">
+    <div>
+      <h3 style="text-align: left;">Input: DataFrame &rarr; ClickHouse</h3>
+      <ol class="step-list" style="font-size: 0.7em;">
+        <li>Extract raw pointers from NumPy arrays</li>
+        <li>Map NumPy dtypes to ClickHouse types</li>
+        <li>ClickHouse reads memory directly &mdash; no copy</li>
+      </ol>
+      <h3 style="text-align: left; margin-top: 0.5em;">Output: ClickHouse &rarr; DataFrame</h3>
+      <ol class="step-list" style="font-size: 0.7em;">
+        <li>Map ClickHouse column types to NumPy dtypes</li>
+        <li>Share underlying memory buffers directly</li>
+        <li>SIMD-optimized batch conversion for results</li>
+      </ol>
+    </div>
+    <div>
+      <div style="background:#272822; border-radius:10px; padding:0.6em 0.8em; text-align:left; font-family:'JetBrains Mono',monospace; font-size:0.48em; line-height:1.6; color:#f8f8f2; box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+        <div style="color:#75715e;"># What chDB does internally:</div>
+        <div>&nbsp;</div>
+        <div style="color:#75715e;"># 1. Get NumPy array from column</div>
+        <div>arr = df[<span style="color:#e6db74;">'col'</span>].values</div>
+        <div>&nbsp;</div>
+        <div style="color:#75715e;"># 2. Extract memory address</div>
+        <div>ptr = arr.__array_interface__[<span style="color:#e6db74;">'data'</span>][<span style="color:#ae81ff;">0</span>]</div>
+        <div>&nbsp;</div>
+        <div style="color:#75715e;"># 3. Get dtype info</div>
+        <div>dtype = arr.dtype</div>
+        <div>&nbsp;</div>
+        <div style="color:#75715e;"># 4. Pass to ClickHouse C++ engine</div>
+        <div style="color:#75715e;"># (no copy, just pointer!)</div>
+      </div>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.3em;">For numeric-heavy workloads, the boundary crossing cost is effectively <strong>constant</strong>, regardless of data size</p>
+</section>
+
+<!-- ═══ 6a. BREAKTHROUGH 1: GIL TWO-PHASE ═══ -->
+<section>
+  <h2>Breakthrough 1: GIL Two-Phase Design</h2>
+  <div class="two-col" style="gap: 1.2em; align-items: flex-start;">
+    <div style="text-align: left;">
+      <p style="font-size: 0.68em;"><strong>The problem:</strong> ClickHouse wants all 16 cores. Python's GIL says <em>"one thread at a time."</em></p>
+      <p style="font-size: 0.68em;">If we call CPython API per data access &rarr; multi-threaded engine degrades to <strong>single-threaded</strong>.</p>
+      <div style="margin: 0.5em 0;">
+        <div class="arch-flow" style="gap: 0.2em; flex-direction: column; align-items: stretch; max-width: 95%;">
+          <div class="arch-box" style="background:#ffebee; color:#c62828; border:2px solid #ef9a9a; font-size:0.48em; min-width:auto;">
+            <strong>Phase 1: Hold GIL</strong> (single-threaded, fast)<br>
+            Extract all column pointers &amp; NumPy metadata<br>
+            Gather dtypes, shapes, strides in one batch
+          </div>
+          <span class="arch-arrow good" style="font-size: 1.2em; text-align: center;">&darr;</span>
+          <div class="arch-box zerocopy" style="font-size:0.48em; min-width:auto;">
+            <strong>Phase 2: Release GIL</strong> (parallel C++)<br>
+            ClickHouse reads memory via raw pointers<br>
+            Full multi-core vectorized execution
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-cpp" data-trim data-noescape style="font-size: 0.46em;">
+// Phase 1: Hold GIL — batch all Python calls
+{
+    py::gil_scoped_acquire gil;
+
+    for (auto & col : columns) {
+        PyObject* arr = col.values;  // numpy array
+        col.ptr  = get_data_ptr(arr);
+        col.dtype = get_dtype(arr);
+        col.stride = get_stride(arr);
+    }
+}
+// GIL released here — Python is free
+
+// Phase 2: No GIL — parallel ClickHouse
+// reads memory directly via col.ptr
+// using all available CPU cores
+tbb::parallel_for(blocks, [&](Block& b) {
+    // vectorized SIMD processing
+    // no Python API calls at all
+});
+      </code></pre>
+      <p class="dim" style="margin-top: 0.2em; text-align: center;">Minimize CPython API surface &rarr; maximize parallel execution</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 6b. BREAKTHROUGH 2: C++ STRING ENCODING ═══ -->
+<section>
+  <h2>Breakthrough 2: C++ String Encoding</h2>
+  <div class="two-col" style="gap: 1.2em; align-items: flex-start;">
+    <div style="text-align: left;">
+      <p style="font-size: 0.68em;"><strong>The problem:</strong> Python <code>str</code> can be UTF-8, UTF-16, or UTF-32 internally (PEP 393 compact repr). ClickHouse expects UTF-8.</p>
+      <p style="font-size: 0.68em;">Converting via <code>PyUnicode_AsUTF8</code> &rarr; <strong>acquires GIL per string</strong>. With millions of strings, this kills parallelism.</p>
+      <div style="margin: 0.6em 0;">
+        <div style="display: flex; gap: 0.5em; align-items: stretch; max-width: 100%;">
+          <div class="arch-box v1" style="font-size: 0.44em; flex:1; min-width: auto;">
+            <strong>Before: Python API</strong><br>
+            GIL per string &rarr; serial<br>
+            <span style="font-size: 1.3em; font-weight: 800;">8.6s</span>
+          </div>
+          <span class="arch-arrow good" style="font-size: 1.3em; align-self: center;">&rarr;</span>
+          <div class="arch-box v4" style="font-size: 0.44em; flex:1; min-width: auto;">
+            <strong>After: C++ native</strong><br>
+            Direct memory, parallel<br>
+            <span style="font-size: 1.3em; font-weight: 800;">0.56s</span>
+          </div>
+        </div>
+        <p style="font-size: 0.55em; text-align: center; font-weight: 700; color: var(--c-green); margin-top: 0.2em;">15x faster on Q23 (SELECT * WHERE URL LIKE '%google%' ORDER BY EventTime)</p>
+      </div>
+    </div>
+    <div>
+      <pre><code class="language-cpp" data-trim data-noescape style="font-size: 0.44em;">
+// CPython internal: PyCompactUnicodeObject
+// kind=1 → Latin-1 (1 byte/char)
+// kind=2 → UCS-2   (2 bytes/char)
+// kind=4 → UCS-4   (4 bytes/char)
+
+// Our C++ reimplementation:
+void encode_to_utf8(PyObject* str,
+                    char* out) {
+    auto* compact = (PyCompactUnicodeObject*)str;
+    int kind = compact->_base.kind;
+    void* data = PyUnicode_DATA(str);
+    Py_ssize_t len = compact->_base.length;
+
+    switch (kind) {
+    case 1: // Latin-1 → UTF-8 (SIMD copy)
+        latin1_to_utf8(data, len, out);
+        break;
+    case 2: // UCS-2 → UTF-8
+        ucs2_to_utf8(data, len, out);
+        break;
+    case 4: // UCS-4 → UTF-8
+        ucs4_to_utf8(data, len, out);
+        break;
+    }
+}
+// No GIL needed — parallel safe!
+      </code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 6c. BREAKTHROUGH 3: NATIVE JSON ═══ -->
+<section>
+  <h2>Breakthrough 3: Native JSON on DataFrame</h2>
+  <div class="two-col" style="gap: 1em; align-items: flex-start;">
+    <div style="text-align: left;">
+      <p style="font-size: 0.68em;"><strong>The problem:</strong> Real DataFrames often have <code>object</code> columns filled with nested dicts. Traditional approach: flatten to columns first, lose structure.</p>
+      <p style="font-size: 0.68em;"><strong>chDB's approach:</strong></p>
+      <ol style="font-size: 0.62em;">
+        <li class="fragment">Sample <code>object</code> column to detect dict structure</li>
+        <li class="fragment">Auto-map to ClickHouse's native <strong>JSON type</strong></li>
+        <li class="fragment">Query nested fields with <strong>dot notation</strong> &mdash; no flattening</li>
+        <li class="fragment">Full access to ClickHouse JSON functions</li>
+      </ol>
+    </div>
+    <div>
+      <pre><code class="language-python" data-trim data-noescape style="font-size: 0.48em;">
+import pandas as pd, chdb
+
+data = pd.DataFrame({
+    'event': [
+        {'type': 'click',
+         'meta': {'x': 100, 'y': 200}},
+        {'type': 'scroll',
+         'meta': {'x': 150, 'y': 300}},
+        {'type': 'click',
+         'meta': {'x': 200, 'y': 400}}
+    ]
+})
+
+# Dot notation on nested JSON!
+result = chdb.query("""
+    SELECT
+        event.type,
+        event.meta.x AS x_coord,
+        event.meta.y AS y_coord
+    FROM Python(data)
+    WHERE event.type = 'click'
+""", "DataFrame")
+
+#   event.type  x_coord  y_coord
+# 0      click      100      200
+# 1      click      200      400
+      </code></pre>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.1em;">Perfect for log analytics, event data, API responses &mdash; no pre-processing, no schema definition</p>
+</section>
+
+<!-- ═══ 7. CODE THEATER: One Line Change → SQL ═══ -->
+<section>
+  <div class="morph-demo">
+    <div class="morph-titles">
+      <h2 class="t1">Your Pandas Code</h2>
+      <h2 class="t2" style="color: var(--c-green);">One Line Change</h2>
+      <h2 class="t3" style="color: var(--c-ch-orange);">Under the Hood</h2>
+      <h2 class="t4" style="color: var(--c-ch-orange);">Inside the Engine</h2>
+    </div>
+
+    <div class="morph-stage">
+      <div class="morph-py">
+        <div class="py-old join-code"><div class="jl"><span class="jkw">import</span> pandas <span class="jkw">as</span> pd</div><div class="jl"></div><div class="jl">df = pd.<span class="jfn">read_csv</span>(<span class="jstr">"employee_data.csv"</span>)</div><div class="jl">filtered = df[</div><div class="jl">    (df[<span class="jstr">'age'</span>] &gt; <span class="jnum">25</span>) &amp;</div><div class="jl">    (df[<span class="jstr">'salary'</span>] &gt; <span class="jnum">50000</span>)</div><div class="jl">]</div><div class="jl">grouped = filtered.<span class="jfn">groupby</span>(<span class="jstr">'city'</span>)[<span class="jstr">'salary'</span>] \</div><div class="jl">    .<span class="jfn">agg</span>([<span class="jstr">'mean'</span>, <span class="jstr">'sum'</span>, <span class="jstr">'count'</span>])</div><div class="jl">result = grouped.<span class="jfn">sort_values</span>(</div><div class="jl">    <span class="jstr">'mean'</span>, ascending=<span class="jkw">False</span></div><div class="jl">).<span class="jfn">head</span>(<span class="jnum">10</span>)</div></div>
+        <div class="py-new join-code"><div class="jl"><span class="jkw">import</span> chdb.datastore <span class="jkw">as</span> pd  <span class="jcmt"># &lt;- one line!</span></div><div class="jl"></div><div class="jl">df = pd.<span class="jfn">read_csv</span>(<span class="jstr">"employee_data.csv"</span>)</div><div class="jl">filtered = df[</div><div class="jl">    (df[<span class="jstr">'age'</span>] &gt; <span class="jnum">25</span>) &amp;</div><div class="jl">    (df[<span class="jstr">'salary'</span>] &gt; <span class="jnum">50000</span>)</div><div class="jl">]</div><div class="jl">grouped = filtered.<span class="jfn">groupby</span>(<span class="jstr">'city'</span>)[<span class="jstr">'salary'</span>] \</div><div class="jl">    .<span class="jfn">agg</span>([<span class="jstr">'mean'</span>, <span class="jstr">'sum'</span>, <span class="jstr">'count'</span>])</div><div class="jl">result = grouped.<span class="jfn">sort_values</span>(</div><div class="jl">    <span class="jstr">'mean'</span>, ascending=<span class="jkw">False</span></div><div class="jl">).<span class="jfn">head</span>(<span class="jnum">10</span>)</div></div>
+      </div>
+
+      <div class="morph-arrow">
+        <svg viewBox="0 0 60 32">
+          <path class="arrow-path" d="M 4 16 L 44 16 L 38 8 M 44 16 L 38 24" />
+        </svg>
+      </div>
+
+      <div class="morph-sql">
+        <div class="morph-sql-tag">auto-generated ClickHouse SQL &darr;</div>
+        <pre><code class="language-sql" data-trim data-noescape>
+SELECT city,
+       AVG(salary) AS mean,
+       SUM(salary) AS sum,
+       COUNT(salary) AS count
+FROM file('employee_data.csv',
+          'CSVWithNames')
+WHERE age &gt; 25
+  AND salary &gt; 50000
+GROUP BY city
+ORDER BY mean DESC
+LIMIT 10
+        </code></pre>
+      </div>
+    </div>
+
+    <div class="morph-badge">Up to 4.2x faster &middot; 23x less memory</div>
+
+    <div class="morph-arch">
+      <div class="morph-arch-arrow">&darr;</div>
+      <img src="logos/datastore_architecture.png" alt="DataStore Architecture">
+    </div>
+
+    <div class="morph-captions">
+      <span class="cap-2">Same API. Same code. <strong style="color: var(--c-green);">ClickHouse speed underneath.</strong></span>
+      <span class="cap-3">Predicate pushdown &middot; Column pruning &middot; Limit propagation &mdash; <strong>automatic</strong></span>
+      <span class="cap-4">SQL feeds into chDB's embedded ClickHouse engine &mdash; <strong>in-process, zero network</strong></span>
+    </div>
+  </div>
+
+  <span class="fragment" data-step="2" style="position:absolute;opacity:0;pointer-events:none;"></span>
+  <span class="fragment" data-step="3" style="position:absolute;opacity:0;pointer-events:none;"></span>
+  <span class="fragment" data-step="4" style="position:absolute;opacity:0;pointer-events:none;"></span>
+</section>
+
+<!-- ═══ 8. DATASTORE ARCHITECTURE ═══ -->
+<section>
+  <h2>DataStore: Four-Layer Architecture</h2>
+  <div class="two-col" style="gap: 1.2em; align-items: flex-start;">
+    <div>
+      <img src="logos/datastore_architecture.png" style="max-height: 44vh; border-radius: 8px;">
+    </div>
+    <div style="text-align: left;">
+      <div style="font-size: 0.62em; line-height: 1.7;">
+        <p><strong style="color: var(--c-ch-orange);">Layer 1 &mdash; Pandas API</strong><br>
+        <code>ds['col'] > 25</code>, <code>ds.groupby()</code>, <code>ds.merge()</code><br>
+        Every call returns a <strong>lazy object</strong></p>
+        <p><strong style="color: var(--c-ch-orange);">Layer 2 &mdash; LazyOp Chain</strong><br>
+        Records operations without touching data<br>
+        filter, select, assign, apply, groupby...</p>
+        <p><strong style="color: var(--c-ch-orange);">Layer 3 &mdash; Query Planner</strong><br>
+        Triggered by <code>print()</code>, <code>len()</code>, <code>.columns</code><br>
+        Splits pipeline into segments, routes to engine</p>
+        <p><strong style="color: var(--c-ch-orange);">Layer 4 &mdash; Execution</strong><br>
+        chDB segments &harr; Pandas segments<br>
+        DataFrames flow via <code>memoryview</code></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 8b. LAZY EXECUTION + EXPLAIN ═══ -->
+<section>
+  <h2>Lazy Execution &amp; explain()</h2>
+  <div class="two-col" style="gap: 1em;">
+    <div>
+      <pre><code class="language-python" data-trim data-noescape style="font-size: 0.52em;">
+from chdb import DataStore
+
+ds = DataStore.from_file("users.parquet")
+ds = ds[ds["age"] > 30]
+ds = ds.sort_values("salary",
+                     ascending=False)
+ds = ds.head(100)
+
+# Nothing has executed yet!
+print(ds.explain())
+      </code></pre>
+      <pre><code class="language-text" data-trim data-noescape style="font-size: 0.44em; background: #1e1e2e; color: #cdd6f4;">
+Execution Plan
+════════════════════════════════
+ [1] File: users.parquet
+
+Operations:
+────────────────────────────────
+ [2] [chDB] WHERE: age > 30
+ [3] [chDB] ORDER BY: salary DESC
+ [4] [chDB] LIMIT: 100
+      </code></pre>
+    </div>
+    <div style="text-align: left;">
+      <h3>What happens at execution</h3>
+      <ul style="font-size: 0.65em;">
+        <li class="fragment"><strong>Filter pushdown</strong> &mdash; WHERE before reading all data</li>
+        <li class="fragment"><strong>Column pruning</strong> &mdash; only read columns you use</li>
+        <li class="fragment"><strong>Limit propagation</strong> &mdash; stop after 100 rows</li>
+        <li class="fragment"><strong>Single pass</strong> over the file, vectorized SIMD</li>
+      </ul>
+      <div class="fragment" style="margin-top: 0.5em;">
+        <h3>Smart Caching</h3>
+        <ul style="font-size: 0.65em;">
+          <li>Each <code>print()</code> triggers execution &amp; caches results</li>
+          <li>Next operation reuses the cache</li>
+          <li>Auto-invalidated when pipeline changes</li>
+          <li>No manual <code>.cache()</code> needed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 9. SEGMENT EXECUTION ═══ -->
+<section>
+  <h2>Segment Execution: Best of Both Worlds</h2>
+  <pre><code class="language-python" data-trim data-noescape style="font-size: 0.52em;">
+ds = DataStore.from_file("data.parquet")
+ds = ds[ds["age"] > 25]                    # → chDB segment
+ds["name_upper"] = ds["name"].str.title()   # → Pandas segment (str.title)
+ds = ds.sort_values("age")                  # → chDB segment
+  </code></pre>
+  <div class="arch-flow" style="gap: 0.3em; margin: 0.5em auto;">
+    <div class="arch-box ch" style="font-size: 0.48em; min-width: 9em;">Segment 1 &middot; <strong>chDB</strong><br>FROM file() WHERE age &gt; 25</div>
+    <span class="arch-arrow good" style="font-size: 1.5em;">&rarr;</span>
+    <div class="arch-box pandas" style="font-size: 0.48em; min-width: 9em;">Segment 2 &middot; <strong>Pandas</strong><br>name.str.title()</div>
+    <span class="arch-arrow good" style="font-size: 1.5em;">&rarr;</span>
+    <div class="arch-box ch" style="font-size: 0.48em; min-width: 9em;">Segment 3 &middot; <strong>chDB</strong><br>via Python() ORDER BY age</div>
+  </div>
+  <ul style="margin-top: 0.3em;">
+    <li class="fragment"><strong>Auto-splits</strong> the pipeline at SQL/Pandas boundaries</li>
+    <li class="fragment">ClickHouse handles what it can; <strong>Pandas handles the rest</strong> (300+ CH functions + full Pandas ecosystem)</li>
+    <li class="fragment">Seamless handoff via Python <code>memoryview</code> &mdash; for numeric data, effectively <strong>zero-copy</strong></li>
+    <li class="fragment"><strong>Tip:</strong> keep Pandas-only ops toward the end for best optimization</li>
+  </ul>
+  <p class="fragment dim">The query planner sees through the entire pipeline. You just write Pandas.</p>
+</section>
+
+<!-- ═══ 9b. UNIFIED DATA SOURCES ═══ -->
+<section>
+  <h2>Unified Data Sources</h2>
+  <p style="font-size: 0.72em;">DataStore inherits all of ClickHouse's data source support:</p>
+  <pre><code class="language-python" data-trim data-noescape style="font-size: 0.52em;">
+# Local files — Parquet, CSV, JSON, ORC...
+ds = DataStore.from_file("events.parquet")
+
+# Remote S3
+ds = DataStore.uri("s3://bucket/path/to/data.parquet")
+
+# Query a PostgreSQL table
+ds = DataStore.from_sql("SELECT * FROM users", engine="postgresql://...")
+
+# Mix sources in a single query — ClickHouse optimizes the execution
+ds = DataStore.from_sql("""
+    SELECT u.name, e.event_type, e.timestamp
+    FROM file('users.parquet') u
+    JOIN postgresql('host:5432', 'db', 'events', 'user', 'pass') e
+    ON u.id = e.user_id
+""")
+
+ds = ds[ds["event_type"] == "purchase"].sort_values("timestamp")
+print(ds)  # Lazy — executes here
+  </code></pre>
+  <p class="dim">80+ formats. Local, remote, in-memory, cross-database JOINs. Same Pandas-style pipeline. No ETL.</p>
+</section>
+
+<!-- ═══ 10. BENCHMARK: SPEED + MEMORY COMBINED ═══ -->
+<section>
+  <h2>Benchmark: chDB vs Pandas &mdash; Speed &amp; Memory (50M Rows)</h2>
+  <table class="bench" style="font-size: 0.46em;">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Scenario</th>
+        <th>Pandas</th>
+        <th>chDB</th>
+        <th>Speedup</th>
+        <th>Pandas Mem</th>
+        <th>chDB Mem</th>
+        <th>Mem Saved</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>T01</td>
+        <td>Read Parquet + COUNT</td>
+        <td class="loser">2.07s</td>
+        <td class="winner">0.28s</td>
+        <td class="winner">7.4x</td>
+        <td class="loser">5,310 MB</td>
+        <td class="winner">234 MB</td>
+        <td class="winner">22.7x</td>
+      </tr>
+      <tr>
+        <td>T02</td>
+        <td>Filter + GroupBy + SUM</td>
+        <td class="loser">2.88s</td>
+        <td class="winner">0.69s</td>
+        <td class="winner">4.1x</td>
+        <td class="loser">7,161 MB</td>
+        <td class="winner">1,216 MB</td>
+        <td class="winner">5.9x</td>
+      </tr>
+      <tr>
+        <td>T03</td>
+        <td>Multi-key GroupBy + 4 aggs</td>
+        <td class="loser">5.31s</td>
+        <td class="winner">1.88s</td>
+        <td class="winner">2.8x</td>
+        <td class="loser">7,309 MB</td>
+        <td class="winner">4,222 MB</td>
+        <td class="winner">1.7x</td>
+      </tr>
+      <tr>
+        <td>T04</td>
+        <td>JOIN (50M &times; 10K) + agg</td>
+        <td class="loser">6.76s</td>
+        <td class="winner">0.87s</td>
+        <td class="winner">7.7x</td>
+        <td class="loser">10,473 MB</td>
+        <td class="winner">1,824 MB</td>
+        <td class="winner">5.7x</td>
+      </tr>
+      <tr>
+        <td>T05</td>
+        <td>Top-10 per group (window)</td>
+        <td class="loser">35.05s</td>
+        <td class="winner">9.29s</td>
+        <td class="winner">3.8x</td>
+        <td class="loser">5,797 MB</td>
+        <td class="winner">2,715 MB</td>
+        <td class="winner">2.1x</td>
+      </tr>
+      <tr>
+        <td>T06</td>
+        <td>P95 quantile by region</td>
+        <td class="loser">4.14s</td>
+        <td class="winner">0.68s</td>
+        <td class="winner">6.1x</td>
+        <td class="loser">3,699 MB</td>
+        <td class="winner">1,472 MB</td>
+        <td class="winner">2.5x</td>
+      </tr>
+      <tr>
+        <td>T07</td>
+        <td>Derived cols + filter + Top-1000</td>
+        <td class="loser">2.93s</td>
+        <td class="winner">1.14s</td>
+        <td class="winner">2.6x</td>
+        <td class="loser">7,374 MB</td>
+        <td class="winner">2,961 MB</td>
+        <td class="winner">2.5x</td>
+      </tr>
+      <tr>
+        <td>T08</td>
+        <td>Count Distinct (exact)</td>
+        <td class="loser">7.57s</td>
+        <td class="winner">1.38s</td>
+        <td class="winner">5.5x</td>
+        <td class="loser">3,650 MB</td>
+        <td class="winner">3,212 MB</td>
+        <td class="winner">1.1x</td>
+      </tr>
+      <tr>
+        <td>T09</td>
+        <td>In-memory DataFrame query</td>
+        <td class="loser">2.89s</td>
+        <td class="winner">2.17s</td>
+        <td class="winner">1.3x</td>
+        <td class="loser">6,841 MB</td>
+        <td class="winner">5,550 MB</td>
+        <td class="winner">1.2x</td>
+      </tr>
+      <tr>
+        <td>T10</td>
+        <td>Time-series monthly agg</td>
+        <td class="loser">4.07s</td>
+        <td class="winner">0.68s</td>
+        <td class="winner">6.0x</td>
+        <td class="loser">3,216 MB</td>
+        <td class="winner">1,679 MB</td>
+        <td class="winner">1.9x</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="display: flex; gap: 1em; justify-content: center; margin-top: 0.25em; font-size: 0.4em; color: #666;">
+    <span><strong>Hardware:</strong> AWS EC2 c6a.4xlarge (16 vCPU AMD EPYC, 32 GB)</span>
+    <span><strong>Method:</strong> best of 3 runs, cold start</span>
+    <span><strong>Python:</strong> 3.14</span>
+    <span><strong>Memory:</strong> Peak RSS via <code>/proc VmHWM</code></span>
+  </div>
+  <p class="dim" style="margin-top: 0.1em;">
+    chDB wins <strong>10/10</strong> on speed (geomean <strong>4.2x</strong>) and <strong>10/10</strong> on memory (geomean <strong>2.9x</strong>).
+    T04 JOIN: Pandas peaks at 10.5 GB &rarr; <span style="color:#c62828; font-weight:700;">OOM on 8 GB laptop</span>; chDB uses 1.8 GB &rarr; <span class="hl-green">OK</span>.
+  </p>
+</section>
+
+<!-- ═══ 11. DUCKDB OUTPUT BENCHMARK ═══ -->
+<section>
+  <h2>Output Zero-Copy: chDB vs DuckDB</h2>
+  <p style="font-size: 0.72em;">Query ClickBench hits (1M rows) &rarr; export to Pandas DataFrame</p>
+  <div style="max-width: 72%; margin: 0.6em auto;">
+    <div class="mem-bar-row" style="font-size: 0.62em;">
+      <span class="mem-bar-label" style="width: 5em;">DuckDB</span>
+      <div class="mem-bar pandas-bar" style="width: 85%; background: linear-gradient(90deg, #90caf9, #1565c0);">3.47s</div>
+    </div>
+    <div class="mem-bar-row" style="font-size: 0.62em;">
+      <span class="mem-bar-label" style="width: 5em; color: var(--c-green);">chDB v4</span>
+      <div class="mem-bar chdb-bar" style="width: 64.5%;">2.64s</div>
+      <span style="font-size: 0.8em; font-weight: 700; color: var(--c-green);">&nbsp;24% faster</span>
+    </div>
+  </div>
+  <div style="margin-top: 0.5em; text-align: left; max-width: 88%; margin-left: auto; margin-right: auto;">
+    <h3 style="font-size: 0.78em;">Why chDB wins on output</h3>
+    <ul style="font-size: 0.65em;">
+      <li><strong>Direct type mapping</strong> &mdash; ClickHouse columns &rarr; NumPy dtypes, no intermediate format</li>
+      <li><strong>Memory sharing</strong> &mdash; numeric buffers shared via <code>memoryview</code>, not copied</li>
+      <li><strong>SIMD batch conversion</strong> &mdash; result chunks converted with vectorized routines</li>
+      <li>DuckDB still serializes through its own Arrow/Pandas bridge</li>
+    </ul>
+  </div>
+  <div style="display: flex; gap: 0.8em; justify-content: center; margin-top: 0.3em; font-size: 0.4em; color: #666;">
+    <span><strong>Test:</strong> <code>SELECT * FROM file('hits_0.parquet')</code> &rarr; DataFrame</span>
+    <span><strong>Hardware:</strong> AWS EC2 c6a.4xlarge</span>
+    <span><strong>Method:</strong> best of 3 runs</span>
+  </div>
+</section>
+
+<!-- ═══ 12. AI LOVES PANDAS ═══ -->
+<section>
+  <h2>AI Writes Pandas. chDB Runs It Fast.</h2>
+  <div class="two-col" style="gap: 1.5em;">
+    <div style="text-align: left;">
+      <ul>
+        <li class="fragment"><strong>Pandas is the #1 data API</strong> in LLM training data &mdash; models generate excellent Pandas code</li>
+        <li class="fragment">DataStore executes it on ClickHouse <strong>automatically</strong></li>
+        <li class="fragment">No need to teach your AI a new API &mdash; works with <strong>Hex AI agents</strong>, Claude, ChatGPT</li>
+      </ul>
+      <div class="fragment" style="margin-top: 0.6em;">
+        <p style="font-size: 0.68em;">The future workflow:</p>
+        <div class="arch-flow" style="gap: 0.2em; margin: 0.3em 0;">
+          <div class="arch-box" style="background:#f3e5f5; color:#7b1fa2; border:2px solid #ce93d8; font-size:0.48em;">AI writes<br><strong>Pandas code</strong></div>
+          <span class="arch-arrow good">&rarr;</span>
+          <div class="arch-box ch" style="font-size:0.48em;">DataStore<br><strong>compiles to SQL</strong></div>
+          <span class="arch-arrow good">&rarr;</span>
+          <div class="arch-box zerocopy" style="font-size:0.48em;">ClickHouse<br><strong>executes fast</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="fragment" style="text-align: center;">
+      <blockquote style="font-size: 0.62em; width: 95%;">
+        "Hey Claude, group sales by region and show top 10."
+      </blockquote>
+      <p style="font-size: 0.58em; color: var(--c-green); margin-top: 0.4em; line-height: 1.8;">
+        &darr; generates standard Pandas code &darr;<br>
+        &darr; runs on ClickHouse via DataStore &darr;<br>
+        &darr; <strong>up to 247x faster</strong> &darr;
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 14. THE NUMBERS ═══ -->
+<section>
+  <h2>Summary: What chDB v4 Delivers</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6em; margin: 0.5em auto; max-width: 92%;">
+    <div class="tech-card" style="border-color: #a5d6a7; text-align: center;">
+      <h4 style="color: var(--c-green); font-size: 1.4em;">4.2x</h4>
+      <p>geometric mean speedup over Pandas<br>across 10 real-world scenarios (50M rows)</p>
+    </div>
+    <div class="tech-card" style="border-color: #90caf9; text-align: center;">
+      <h4 style="color: var(--c-blue); font-size: 1.4em;">24%</h4>
+      <p>faster than DuckDB<br>on DataFrame export (same dataset, same hardware)</p>
+    </div>
+    <div class="tech-card" style="border-color: #ffcc80; text-align: center;">
+      <h4 style="color: var(--c-ch-orange); font-size: 1.4em;">2.9 &ndash; 23x</h4>
+      <p>less peak memory vs Pandas<br>Pandas OOM on 8 GB &rarr; chDB runs fine</p>
+    </div>
+    <div class="tech-card" style="border-color: #ce93d8; text-align: center;">
+      <h4 style="color: #7b1fa2; font-size: 1.4em;">0 ser/deser</h4>
+      <p>complete zero-copy loop<br>DataFrame &harr; ClickHouse &harr; DataFrame</p>
+    </div>
+  </div>
+  <div style="margin-top: 0.4em;">
+    <p style="font-size: 0.62em; color: #444;">
+      <strong>For ClickHouse users:</strong> chDB brings the engine you already trust into Python notebooks, Hex, Colab &mdash;
+      same SQL dialect, same functions, same performance. No server to deploy.
+    </p>
+  </div>
+</section>
+
+<!-- ═══ 14b. LANGUAGE BINDINGS ═══ -->
+<section>
+  <h2>Not Just Python</h2>
+  <p style="font-size: 0.78em; margin-bottom: 0.5em;">chDB runs as a <strong>native library</strong> in 9 languages:</p>
+  <div style="display: flex; gap: 0.7em; justify-content: center; flex-wrap: wrap; margin: 0.4em auto; max-width: 92%;">
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/python-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#306998;">Python</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">pip install chdb</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/go-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#00ADD8;">Go</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">github.com/chdb-io/chdb-go</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/rust-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#B7410E;">Rust</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">cargo add chdb-rust</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/ruby-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#CC342D;">Ruby</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">gem install chdb-ruby</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/nodejs-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#339933;">Node.js</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">npm i chdb</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/bun-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#b88a2a;">Bun</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">chdb-io/chdb-bun</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/dotnet-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#512BD4;">.NET</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">dotnet add package chdb</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/java-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#E76F00;">Java</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">chdb-io/chdb-java</div>
+    </div>
+    <div style="background:#fff; border:2px solid #ddd; border-radius:12px; padding:0.35em 0.8em; text-align:center; min-width:7.5em; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+      <img src="logos/zig-logo.svg" style="height:1.3em; box-shadow:none; border-radius:0; vertical-align:middle; margin-bottom:0.1em;">
+      <div style="font-size:0.6em; font-weight:800; color:#f7a41d;">Zig</div>
+      <div style="font-size:0.38em; color:#888; font-family:'JetBrains Mono',monospace;">chdb-io/chdb-zig</div>
+    </div>
+  </div>
+  <p style="font-size: 0.72em; margin-top: 0.5em; margin-bottom: 0.3em;"><strong>Runs everywhere</strong> &mdash; no server, no infra:</p>
+  <div style="display: flex; gap: 0.6em; justify-content: center; flex-wrap: wrap; font-size: 0.48em; font-weight: 700;">
+    <span style="background:#e3f2fd; color:#1565c0; padding:0.3em 0.8em; border-radius:10px;">Jupyter Notebook</span>
+    <span style="background:#fff3e0; color:#e65100; padding:0.3em 0.8em; border-radius:10px;">Google Colab</span>
+    <span style="background:#e8f5e9; color:#2e7d32; padding:0.3em 0.8em; border-radius:10px;">Hex</span>
+    <span style="background:#f3e5f5; color:#7b1fa2; padding:0.3em 0.8em; border-radius:10px;">marimo</span>
+    <span style="background:#fce4ec; color:#c62828; padding:0.3em 0.8em; border-radius:10px;">AWS Lambda</span>
+    <span style="background:#e0f2f1; color:#00695c; padding:0.3em 0.8em; border-radius:10px;">Cloudflare Workers</span>
+    <span style="background:#efebe9; color:#4e342e; padding:0.3em 0.8em; border-radius:10px;">Docker</span>
+    <span style="background:#e8eaf6; color:#283593; padding:0.3em 0.8em; border-radius:10px;">CLI scripts</span>
+  </div>
+</section>
+
+<!-- ═══ 15. GETTING STARTED ═══ -->
+<section>
+  <h2>Getting Started &mdash; 30 Seconds</h2>
+  <pre><code class="language-bash" data-trim data-noescape>
+pip install "chdb>=4.0.0"
+  </code></pre>
+  <pre><code class="language-python" data-trim data-noescape>
+import chdb.datastore as pd  # swap one import, done
+
+df = pd.read_csv("your_data.csv")
+
+result = (
+    df[df['amount'] > 100]
+    .groupby('category')
+    .agg({'amount': 'sum', 'order_id': 'count'})
+    .sort_values('amount', ascending=False)
+    .head(10)
+)
+
+result.plot(kind='bar')  # Still a real DataFrame
+  </code></pre>
+  <div style="display: flex; gap: 0.8em; justify-content: center; margin-top: 0.4em; font-size: 0.42em; font-weight: 700;">
+    <span style="background:#e3f2fd; color:#1565c0; padding:0.25em 0.7em; border-radius:10px;">Jupyter Notebook</span>
+    <span style="background:#fff3e0; color:#e65100; padding:0.25em 0.7em; border-radius:10px;">Google Colab</span>
+    <span style="background:#e8f5e9; color:#2e7d32; padding:0.25em 0.7em; border-radius:10px;">Hex</span>
+    <span style="background:#f3e5f5; color:#7b1fa2; padding:0.25em 0.7em; border-radius:10px;">marimo</span>
+    <span style="background:#fce4ec; color:#c62828; padding:0.25em 0.7em; border-radius:10px;">AWS Lambda</span>
+    <span style="background:#efebe9; color:#4e342e; padding:0.25em 0.7em; border-radius:10px;">Docker</span>
+  </div>
+  <p class="dim" style="margin-top: 0.3em;">No server. No config. No new API to learn.</p>
+</section>
+
+<!-- ═══ 16. ROAD AHEAD ═══ -->
+<section>
+  <h2>The Road Ahead</h2>
+  <ul>
+    <li class="fragment">
+      <strong>Native Python UDF</strong> &mdash; in-process, no subprocess<br>
+      <span class="sub">Register Python functions as ClickHouse UDFs via <code>@chdb.func</code> decorator, executed inside the vectorized pipeline with full type mapping (<a href="https://github.com/chdb-io/chdb-core/pull/9" style="color:#999;">PR #9</a>)</span>
+    </li>
+    <li class="fragment">
+      <strong>Free-threading build (no-GIL)</strong> &mdash; Python 3.14+<br>
+      <span class="sub">chDB compiled with free-threading support, enabling true multi-threaded Python UDF execution within ClickHouse's parallel pipeline (<a href="https://github.com/chdb-io/chdb-core/pull/12" style="color:#999;">PR #12</a>)</span>
+    </li>
+    <li class="fragment">
+      <strong>PyTorch DataLoader integration</strong><br>
+      <span class="sub">Efficient batching, shuffling, and streaming for ML training</span>
+    </li>
+    <li class="fragment">
+      <strong>Hybrid execution</strong><br>
+      <span class="sub">Seamlessly scale from laptop to ClickHouse Cloud</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ═══ 17. Q&A ═══ -->
+<section>
+  <h1 style="margin-bottom: 0.5em;">Thank You!</h1>
+  <div style="display: flex; gap: 2em; justify-content: center; align-items: center; margin-bottom: 0.6em;">
+    <img src="logos/chdb-light.png" class="no-shadow" style="height: 80px; box-shadow: none;">
+    <img src="logos/clickhouse-logo-black.svg" class="no-shadow" style="height: 56px; box-shadow: none;">
+  </div>
+  <div style="display: inline-grid; grid-template-columns: auto auto; gap: 0.3em 2.5em; font-size: 0.55em; text-align: left;">
+    <div><strong>GitHub:</strong> <a href="https://github.com/chdb-io/chdb">github.com/chdb-io/chdb</a></div>
+    <div><strong>Blog:</strong> <a href="https://clickhouse.com/blog/chdb-journey-to-zero-copy">Journey to Zero-Copy</a></div>
+    <div><strong>Docs:</strong> <a href="https://clickhouse.com/docs/chdb">clickhouse.com/docs/chdb</a></div>
+    <div><strong>Blog:</strong> <a href="https://clickhouse.com/blog/chdb.4-0-pandas-hex">chDB 4.0 + Hex</a></div>
+    <div><strong>PyPI:</strong> <a href="https://pypi.org/project/chdb">pypi.org/project/chdb</a></div>
+    <div><strong>Discord:</strong> <a href="https://discord.gg/D2Daa2fM5K">discord.gg/D2Daa2fM5K</a></div>
+  </div>
+  <h2 style="margin-top: 0.7em; font-size: 1.3em;">Q&amp;A</h2>
+  <p class="dim"><a href="https://x.com/auxten">@auxten</a> &middot; <a href="https://auxten.com">auxten.com</a></p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720,
+  plugins: [ RevealHighlight ]
+});
+
+Reveal.on('fragmentshown', function(e) {
+  var step = e.fragment.getAttribute('data-step');
+  if (step) {
+    var demo = e.fragment.closest('section').querySelector('.morph-demo');
+    if (demo) demo.classList.add('step-' + step);
+  }
+});
+Reveal.on('fragmenthidden', function(e) {
+  var step = e.fragment.getAttribute('data-step');
+  if (step) {
+    var demo = e.fragment.closest('section').querySelector('.morph-demo');
+    if (demo) demo.classList.remove('step-' + step);
+  }
+});
+</script>
+</body>
+</html>
