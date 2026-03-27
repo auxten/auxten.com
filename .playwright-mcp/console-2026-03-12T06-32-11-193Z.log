@@ -1,0 +1,14 @@
+[  239333ms] TypeError: Cannot read properties of undefined (reading 'getIn')
+    at https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:35983
+    at https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:180991
+    at window.__SCRIPTS_LOADED__.vendor.push.215948.e.exports.$e.iterate.Je.iterate (https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:186985)
+    at window.__SCRIPTS_LOADED__.vendor.push.215948.e.exports.ze.__iterate (https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:180959)
+    at ze.forEach (https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:215477)
+    at Object.resolveComposition (https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:35881)
+    at https://abs.twimg.com/responsive-web/client-web/main.b56c45da.js:7:35434
+[  519820ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <a.css-175oi2r r-1pi2tsx r-13qz1uu r-o7ynqc r-6416eg r-1ny4l3l r-1loqt21>
+Ancestor with aria-hidden: <a.css-175oi2r r-1pi2tsx r-13qz1uu r-o7ynqc r-6416eg r-1ny4l3l r-1loqt21> @ https://x.com/auxten/status/2031983735869260000:0
+[  819082ms] [WARNING] Blocked aria-hidden on an element because its descendant retained focus. The focus must not be hidden from assistive technology users. Avoid using aria-hidden on a focused element or its ancestor. Consider using the inert attribute instead, which will also prevent focus. For more details, see the aria-hidden section of the WAI-ARIA specification at https://w3c.github.io/aria/#aria-hidden.
+Element with focus: <a.css-175oi2r r-1pi2tsx r-13qz1uu r-o7ynqc r-6416eg r-1ny4l3l r-1loqt21>
+Ancestor with aria-hidden: <a.css-175oi2r r-1pi2tsx r-13qz1uu r-o7ynqc r-6416eg r-1ny4l3l r-1loqt21> @ https://x.com/auxten/status/2031983735869260000:0
