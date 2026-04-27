@@ -135,35 +135,26 @@
 
 <!-- ═══ 2. WHAT IS CHDB ═══ -->
 <section>
-  <h2>What is chDB?</h2>
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="num" style="font-size: 1.2em;">In-Process</div>
-      <div class="label">ClickHouse engine<br>No server needed</div>
+  <h2 style="margin-bottom: 0.3em;">What is chDB?</h2>
+  <blockquote style="font-size: 0.7em; width: 78%; margin-bottom: 0.5em;">
+    An <strong>in-process SQL OLAP engine</strong> powered by ClickHouse &mdash;
+    embedded directly in your Python process. No server. No setup.
+  </blockquote>
+  <div class="two-col" style="gap: 1.5em; align-items: center;">
+    <div>
+      <img src="logos/arch-chdb3.png" class="no-shadow" style="max-height: 44vh; box-shadow: none;">
     </div>
-    <div class="stat-card">
-      <div class="num" style="font-size: 1.2em;">1 Line</div>
-      <div class="label"><code style="font-size:0.85em">pip install chdb</code><br>Zero config</div>
-    </div>
-    <div class="stat-card">
-      <div class="num" style="font-size: 1.2em;">300+</div>
-      <div class="label">SQL functions<br>JOINs, CTEs, Window</div>
-    </div>
-    <div class="stat-card">
-      <div class="num" style="font-size: 1.2em;">80+</div>
-      <div class="label">Data formats<br>CSV, Parquet, S3...</div>
+    <div style="text-align: left;">
+      <ul style="font-size: 0.78em;">
+        <li><strong>Pandas-compatible DataStore API</strong> &mdash; familiar syntax, ClickHouse speed</li>
+        <li><strong>60+ formats</strong> &mdash; Parquet, CSV, JSON, Arrow, ORC&hellip;</li>
+        <li><strong>334 SQL functions</strong> &mdash; JOINs, CTEs, window, JSON</li>
+        <li><strong>Zero-copy</strong> via Python <code>memoryview</code></li>
+        <li><strong>Python DB API 2.0</strong> &middot; 9 language bindings</li>
+      </ul>
+      <pre style="margin-top: 0.4em;"><code class="language-bash" data-trim data-noescape style="font-size: 0.7em;">pip install chdb</code></pre>
     </div>
   </div>
-  <pre><code class="language-python" data-trim data-noescape>
-import chdb
-
-result = chdb.query("""
-    SELECT category, COUNT(*) as cnt
-    FROM Python(df)
-    GROUP BY category
-""", "DataFrame")
-  </code></pre>
-  <p class="dim">Same ClickHouse engine you already know &mdash; embedded directly in your Python process.</p>
 </section>
 
 <!-- ═══ 3. DATASTORE ═══ -->
