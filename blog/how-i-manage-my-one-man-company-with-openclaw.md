@@ -271,7 +271,7 @@ Here's what my one-man company runs on:
 - **Hardware control:** [HandsOn](https://github.com/auxten/handson) (Rock 5B / RPi) — IP-KVM for permission dialogs, BIOS, passwords
 - **Hosting:** [Cloudflare Workers](https://workers.cloudflare.com) — APIs, web apps, landing pages — free tier
 
-Recurring cost: near zero. The Mac Mini draws ~15W. The Rock 5B draws 7W. Cloudflare is free. LangFuse has a generous free tier. LLM costs are covered by my personal Claude Code subscription ($200/month).
+Recurring cost: near zero. The Mac Mini draws ~15W. The Rock 5B draws 7W. Cloudflare is free. LangFuse has a generous free tier. LLM usage runs on my personal Claude Max subscription ($200/month).
 
 ---
 
