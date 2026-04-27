@@ -127,6 +127,138 @@
   .evo-step .evo-metric { font-size: 0.65em; font-weight: 800; margin-top: 0.3em; }
   .evo-connector { flex: 0 0 3em; display: flex; align-items: center; justify-content: center; padding-top: 0.9em; }
   .evo-connector svg { width: 100%; height: 20px; }
+
+  /* ═══ Morph: One-Line Replacement Animation ═══ */
+  .join-code {
+    display: inline-block; text-align: left;
+    background: #272822; color: #f8f8f2;
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 0.62em; line-height: 1.65;
+    padding: 0.8em 1.4em; border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15); max-width: 92%;
+  }
+  .jl { white-space: pre; min-height: 1.3em; }
+  .jkw { color: #66d9ef; font-weight: 600; }
+  .jstr { color: #e6db74; }
+  .jnum { color: #ae81ff; }
+  .jfn { color: #a6e22e; }
+  .jcmt { color: #75715e; }
+
+  .morph-demo { position: relative; }
+  .morph-titles { position: relative; height: 1.7em; margin-bottom: 0.25em; }
+  .morph-titles h2 {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0;
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 0.4s ease, transform 0.35s ease;
+  }
+  .morph-titles .t1 { opacity: 1; transform: translateY(0); }
+  .step-2 .morph-titles .t1 { opacity: 0; transform: translateY(-12px); }
+  .step-2 .morph-titles .t2 { opacity: 1; transform: translateY(0); }
+  .step-3 .morph-titles .t2 { opacity: 0; transform: translateY(-12px); }
+  .step-3 .morph-titles .t3 { opacity: 1; transform: translateY(0); }
+
+  .morph-stage {
+    display: flex; align-items: flex-start; justify-content: center;
+    gap: 0; max-width: 100%; overflow: hidden;
+    transition: gap 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-3 .morph-stage { gap: 0.5em; }
+
+  .morph-py {
+    position: relative; flex: 0 0 auto;
+    width: 70%; max-width: 700px;
+    transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .step-3 .morph-py { width: 46%; }
+  .morph-py > .join-code {
+    display: block; width: 100%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    transition: opacity 0.5s ease, font-size 0.5s ease;
+  }
+  .step-3 .morph-py > .join-code { font-size: 0.53em; }
+  .step-3 .morph-sql pre code { font-size: 0.55em; }
+  .morph-py .py-old { transition: opacity 0.5s ease; }
+  .morph-py .py-new {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0; z-index: 2; transition: opacity 0.5s ease;
+  }
+  .step-2 .morph-py .py-old, .step-3 .morph-py .py-old { opacity: 0; }
+  .step-2 .morph-py .py-new, .step-3 .morph-py .py-new { opacity: 1; }
+
+  .morph-py::after {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2.6em;
+    border-radius: 10px 10px 0 0;
+    pointer-events: none; z-index: 3; opacity: 0;
+  }
+  .step-2 .morph-py::after, .step-3 .morph-py::after {
+    animation: glowPulse 1.8s ease-out forwards;
+  }
+  @keyframes glowPulse {
+    0%   { opacity: 0; background: transparent; }
+    12%  { opacity: 1; background: rgba(46,125,50,0.22); box-shadow: inset 0 0 40px rgba(46,125,50,0.35), 0 0 20px rgba(46,125,50,0.15); }
+    40%  { opacity: 1; background: rgba(46,125,50,0.08); box-shadow: inset 0 0 15px rgba(46,125,50,0.1); }
+    100% { opacity: 1; background: rgba(46,125,50,0.03); box-shadow: none; }
+  }
+
+  .morph-sql {
+    flex: 0 0 0%; overflow: hidden;
+    opacity: 0; transform: translateX(30px) scale(0.96);
+    transition: flex-basis 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.45s ease 0.15s,
+                transform 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.15s;
+  }
+  .step-3 .morph-sql { flex: 0 0 42%; opacity: 1; transform: translateX(0) scale(1); }
+  .morph-sql pre {
+    margin: 0 !important; width: 100% !important; max-width: 100% !important;
+    display: block !important; box-shadow: 0 4px 24px rgba(0,0,0,0.15) !important;
+  }
+  .morph-sql-tag {
+    font-size: 0.45em; font-weight: 700; color: var(--c-ch-orange);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 0 0 0.25em; text-align: left;
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.3s ease 0.5s, transform 0.3s ease 0.5s;
+  }
+  .step-3 .morph-sql-tag { opacity: 1; transform: translateY(0); }
+
+  .morph-arrow {
+    flex: 0 0 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: flex-basis 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s, opacity 0.35s ease 0.35s;
+  }
+  .step-3 .morph-arrow { flex: 0 0 2em; opacity: 1; }
+  .morph-arrow svg { width: 100%; height: 32px; overflow: visible; }
+  .morph-arrow .arrow-path {
+    fill: none; stroke: var(--c-ch-orange); stroke-width: 2.5;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 80; stroke-dashoffset: 80;
+    transition: stroke-dashoffset 0.6s ease 0.4s;
+  }
+  .step-3 .morph-arrow .arrow-path { stroke-dashoffset: 0; }
+
+  .morph-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    color: var(--c-green); font-weight: 700; font-size: 0.48em;
+    padding: 0.35em 1.2em; border-radius: 20px; margin-top: 0.35em;
+    opacity: 0; transform: scale(0.8) translateY(8px);
+    transition: opacity 0.4s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .step-2 .morph-badge { opacity: 1; transform: scale(1) translateY(0); transition-delay: 0.55s; }
+  .step-3 .morph-badge { opacity: 0; transform: scale(0.8) translateY(-8px); transition-delay: 0s; transition-duration: 0.2s; }
+
+  .morph-captions { position: relative; height: 1.2em; margin-top: 0.1em; }
+  .morph-captions span {
+    position: absolute; left: 0; right: 0;
+    font-size: 0.58em; color: var(--c-muted);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.35s ease, transform 0.3s ease;
+  }
+  .step-2 .morph-captions .cap-2 { opacity: 1; transform: translateY(0); transition-delay: 0.3s; }
+  .step-3 .morph-captions .cap-2 { opacity: 0; transform: translateY(-6px); transition-delay: 0s; }
+  .step-3 .morph-captions .cap-3 { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
 </style>
 </head>
 <body>
@@ -170,32 +302,55 @@
   </div>
 </section>
 
-<!-- ═══ 3. DATASTORE ═══ -->
+<!-- ═══ 3. DATASTORE — ONE-LINE REPLACEMENT (MORPH ANIMATION) ═══ -->
 <section>
-  <h2>DataStore: One-Line Pandas Swap</h2>
-  <pre><code class="language-python" data-trim data-noescape>
-import chdb.datastore as pd  # &lt;- one line!
+  <div class="morph-demo">
+    <div class="morph-titles">
+      <h2 class="t1">Your Pandas Code</h2>
+      <h2 class="t2" style="color: var(--c-green);">One Line Change</h2>
+      <h2 class="t3" style="color: var(--c-ch-orange);">Under the Hood</h2>
+    </div>
 
-df = pd.read_csv("employee_data.csv")
-result = (
-    df[(df['age'] &gt; 25) &amp; (df['salary'] &gt; 50000)]
-    .groupby('city')['salary']
-    .agg(['mean', 'sum', 'count'])
-    .sort_values('mean', ascending=False)
-    .head(10)
-)
-  </code></pre>
-  <p style="font-size: 0.78em; margin-top: 0.4em;">
-    Same Pandas API. Compiled to ClickHouse SQL underneath.
-  </p>
-  <div style="display: flex; gap: 0.8em; justify-content: center; margin-top: 0.4em; font-size: 0.55em; font-weight: 700;">
-    <span style="background:#e8f5e9; color:#2e7d32; padding:0.35em 1em; border-radius:10px;">Up to 4.2&times; faster</span>
-    <span style="background:#fff3e0; color:#e65100; padding:0.35em 1em; border-radius:10px;">23&times; less memory</span>
-    <span style="background:#e3f2fd; color:#1565c0; padding:0.35em 1em; border-radius:10px;">Zero-copy</span>
+    <div class="morph-stage">
+      <div class="morph-py">
+        <div class="py-old join-code"><div class="jl"><span class="jkw">import</span> pandas <span class="jkw">as</span> pd</div><div class="jl"></div><div class="jl">df = pd.<span class="jfn">read_csv</span>(<span class="jstr">"employee_data.csv"</span>)</div><div class="jl">filtered = df[</div><div class="jl">    (df[<span class="jstr">'age'</span>] &gt; <span class="jnum">25</span>) &amp;</div><div class="jl">    (df[<span class="jstr">'salary'</span>] &gt; <span class="jnum">50000</span>)</div><div class="jl">]</div><div class="jl">grouped = filtered.<span class="jfn">groupby</span>(<span class="jstr">'city'</span>)[<span class="jstr">'salary'</span>] \</div><div class="jl">    .<span class="jfn">agg</span>([<span class="jstr">'mean'</span>, <span class="jstr">'sum'</span>, <span class="jstr">'count'</span>])</div><div class="jl">result = grouped.<span class="jfn">sort_values</span>(</div><div class="jl">    <span class="jstr">'mean'</span>, ascending=<span class="jkw">False</span></div><div class="jl">).<span class="jfn">head</span>(<span class="jnum">10</span>)</div></div>
+        <div class="py-new join-code"><div class="jl"><span class="jkw">import</span> chdb.datastore <span class="jkw">as</span> pd  <span class="jcmt"># &lt;- one line!</span></div><div class="jl"></div><div class="jl">df = pd.<span class="jfn">read_csv</span>(<span class="jstr">"employee_data.csv"</span>)</div><div class="jl">filtered = df[</div><div class="jl">    (df[<span class="jstr">'age'</span>] &gt; <span class="jnum">25</span>) &amp;</div><div class="jl">    (df[<span class="jstr">'salary'</span>] &gt; <span class="jnum">50000</span>)</div><div class="jl">]</div><div class="jl">grouped = filtered.<span class="jfn">groupby</span>(<span class="jstr">'city'</span>)[<span class="jstr">'salary'</span>] \</div><div class="jl">    .<span class="jfn">agg</span>([<span class="jstr">'mean'</span>, <span class="jstr">'sum'</span>, <span class="jstr">'count'</span>])</div><div class="jl">result = grouped.<span class="jfn">sort_values</span>(</div><div class="jl">    <span class="jstr">'mean'</span>, ascending=<span class="jkw">False</span></div><div class="jl">).<span class="jfn">head</span>(<span class="jnum">10</span>)</div></div>
+      </div>
+
+      <div class="morph-arrow">
+        <svg viewBox="0 0 60 32">
+          <path class="arrow-path" d="M 4 16 L 44 16 L 38 8 M 44 16 L 38 24" />
+        </svg>
+      </div>
+
+      <div class="morph-sql">
+        <div class="morph-sql-tag">auto-generated ClickHouse SQL &darr;</div>
+        <pre><code class="language-sql" data-trim data-noescape>
+SELECT city,
+       AVG(salary) AS mean,
+       SUM(salary) AS sum,
+       COUNT(salary) AS count
+FROM file('employee_data.csv',
+          'CSVWithNames')
+WHERE age &gt; 25
+  AND salary &gt; 50000
+GROUP BY city
+ORDER BY mean DESC
+LIMIT 10
+        </code></pre>
+      </div>
+    </div>
+
+    <div class="morph-badge">Up to 4.2&times; faster &middot; 23&times; less memory</div>
+
+    <div class="morph-captions">
+      <span class="cap-2">Same API. Same code. <strong style="color: var(--c-green);">ClickHouse speed underneath.</strong></span>
+      <span class="cap-3">Predicate pushdown &middot; Column pruning &middot; Limit propagation &mdash; <strong>automatic</strong></span>
+    </div>
   </div>
-  <p class="dim" style="margin-top: 0.4em;">
-    Deep dive: <a href="https://auxten.com/slides/chdb-clickhouse-shenzhen-meetup-2026">Shenzhen Meetup 2026 deck</a>
-  </p>
+
+  <span class="fragment" data-step="2" style="position:absolute;opacity:0;pointer-events:none;"></span>
+  <span class="fragment" data-step="3" style="position:absolute;opacity:0;pointer-events:none;"></span>
 </section>
 
 <!-- ═══ 4. ZERO-COPY JOURNEY ═══ -->
@@ -295,6 +450,21 @@ Reveal.initialize({
   width: 1280,
   height: 720,
   plugins: [ RevealHighlight ]
+});
+
+Reveal.on('fragmentshown', function(e) {
+  var step = e.fragment.getAttribute('data-step');
+  if (step) {
+    var demo = e.fragment.closest('section').querySelector('.morph-demo');
+    if (demo) demo.classList.add('step-' + step);
+  }
+});
+Reveal.on('fragmenthidden', function(e) {
+  var step = e.fragment.getAttribute('data-step');
+  if (step) {
+    var demo = e.fragment.closest('section').querySelector('.morph-demo');
+    if (demo) demo.classList.remove('step-' + step);
+  }
 });
 </script>
 </body>
