@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>chDB Recent Progress — DataStore &amp; Free-Threaded Python</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #e65100;
+    --c-ch-yellow: #fadb14;
+    --c-ch-orange: #e65100;
+    --c-blue: #1565c0;
+    --c-green: #2e7d32;
+    --c-red: #c62828;
+    --c-muted: #888;
+    --c-body: #2d2d2d;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; }
+
+  .reveal h1, .reveal h2, .reveal h3 { font-weight: 800; text-transform: none; letter-spacing: -0.02em; line-height: 1.2; }
+  .reveal h1 { font-size: 2.2em; color: #1a1a1a; margin-bottom: 0.4em; }
+  .reveal h2 { font-size: 1.4em; color: var(--c-ch-orange); margin-bottom: 0.6em; }
+  .reveal h3 { font-size: 1.05em; color: #bf360c; margin-bottom: 0.4em; }
+
+  .reveal p { line-height: 1.6; margin-bottom: 0.4em; }
+  .reveal section > p { font-size: 0.82em; }
+  .reveal ul, .reveal ol { text-align: left; margin-left: 0.5em; }
+  .reveal li { margin-bottom: 0.4em; font-size: 0.78em; line-height: 1.55; }
+  .reveal li strong { font-weight: 700; }
+
+  .reveal .highlight { color: var(--c-ch-orange); font-weight: 700; }
+  .reveal .hl-green { color: var(--c-green); font-weight: 700; }
+  .reveal .hl-blue { color: var(--c-blue); font-weight: 700; }
+  .reveal .dim { color: var(--c-muted); font-size: 0.65em; letter-spacing: 0.01em; line-height: 1.4; }
+  .reveal .sub { font-size: 0.68em; color: #666; }
+  .reveal .big-number { font-size: 3em; font-weight: 800; line-height: 1; }
+
+  .reveal section img { max-height: 55vh; border: none; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-radius: 10px; }
+  .reveal .no-shadow img, .reveal img.no-shadow { box-shadow: none !important; }
+
+  .reveal pre { width: auto; max-width: 92%; margin: 0.5em auto; box-shadow: 0 2px 12px rgba(0,0,0,0.10); border-radius: 10px; display: inline-block; text-align: left; }
+  .reveal section { text-align: center; }
+  .reveal section ul, .reveal section ol { display: inline-block; text-align: left; }
+  .reveal pre code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 0.62em;
+    line-height: 1.5;
+    padding: 0.8em 1.2em;
+    max-height: 520px;
+    border-radius: 10px;
+  }
+  .reveal code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #f0f0f0;
+    padding: 0.12em 0.3em;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: #c62828;
+  }
+  .reveal pre code { background: #272822; color: #f8f8f2; }
+
+  .reveal blockquote {
+    background: linear-gradient(135deg, #fff3e0 0%, #fff8f0 100%);
+    border-left: 5px solid var(--c-ch-orange);
+    padding: 0.7em 1.1em;
+    font-style: italic;
+    width: 82%;
+    color: #333;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  .reveal .two-col { display: flex; gap: 2em; align-items: center; justify-content: center; }
+  .reveal .two-col > div { flex: 1; }
+  .reveal .two-col img { max-height: 40vh; }
+  .reveal .two-col li { font-size: 0.72em; }
+  .reveal .two-col pre { width: 100%; max-width: 100%; display: block; box-sizing: border-box; }
+  .reveal .two-col pre code { font-size: 0.55em; }
+
+  .title-slide h1 { font-size: 1.6em; line-height: 1.2; margin-bottom: 0.25em; }
+  .title-slide p { color: #555; }
+  .title-slide .sub-info { font-size: 0.58em; color: #999; margin-top: 0; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1em; margin: 0.8em auto; max-width: 92%; }
+  .stat-card { background: linear-gradient(135deg, #f8f9ff 0%, #fff 100%); border: 2px solid #e0e7ff; border-radius: 12px; padding: 0.6em; text-align: center; }
+  .stat-card .num { font-size: 1.8em; font-weight: 800; color: var(--c-ch-orange); line-height: 1.1; }
+  .stat-card .label { font-size: 0.5em; color: #666; margin-top: 0.2em; }
+
+  .arch-flow { display: flex; align-items: center; justify-content: center; gap: 0; margin: 0.6em auto; flex-wrap: wrap; }
+  .arch-box { padding: 0.5em 0.8em; border-radius: 10px; font-size: 0.52em; font-weight: 600; text-align: center; line-height: 1.3; min-width: 6em; }
+  .arch-box.v1 { background: #ffebee; color: #c62828; border: 2px solid #ef9a9a; }
+  .arch-box.v2 { background: #fff3e0; color: #e65100; border: 2px solid #ffcc80; }
+  .arch-box.v4 { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; }
+  .arch-box.pandas { background: #e3f2fd; color: #1565c0; border: 2px solid #90caf9; }
+  .arch-box.ch { background: #fff3e0; color: #e65100; border: 2px solid #ffcc80; }
+  .arch-box.zerocopy { background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7; }
+  .arch-arrow { font-size: 1.2em; color: #999; margin: 0 0.2em; font-weight: 700; }
+  .arch-arrow.good { color: #2e7d32; }
+
+  .checklist {
+    text-align: left; max-width: 90%; margin: 0.4em auto;
+    background: #fff; border: 2px solid #ffcc80; border-radius: 12px;
+    padding: 0.7em 1em;
+  }
+  .checklist li { list-style: none; font-size: 0.7em; margin-bottom: 0.45em; padding-left: 1.6em; position: relative; }
+  .checklist li::before {
+    content: '✓'; position: absolute; left: 0.2em; top: 0;
+    color: var(--c-green); font-weight: 800; font-size: 1.1em;
+  }
+
+  .step-card {
+    background: #fff; border: 2px solid #e0e0e0; border-radius: 14px;
+    padding: 0.7em 0.9em; text-align: left; height: 100%; box-sizing: border-box;
+  }
+  .step-card h3 { font-size: 0.85em; color: var(--c-ch-orange); margin: 0 0 0.3em; }
+  .step-card .num-tag {
+    display: inline-block; background: var(--c-ch-orange); color: #fff;
+    font-weight: 800; font-size: 0.5em; padding: 0.15em 0.5em;
+    border-radius: 6px; margin-right: 0.4em; vertical-align: middle;
+  }
+  .step-card p { font-size: 0.55em; line-height: 1.5; color: #444; margin: 0.2em 0; }
+  .step-card code { font-size: 0.9em; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══ 1. TITLE ═══ -->
+<section class="title-slide">
+  <div style="display: flex; align-items: center; justify-content: center; gap: 1em; margin-bottom: 0.5em;">
+    <img src="logos/chdb-light.png" class="no-shadow" style="height: 64px; box-shadow: none;">
+    <span style="font-size: 0.7em; color: #ccc; font-weight: 300;">+</span>
+    <img src="logos/python-logo.svg" class="no-shadow" style="height: 56px; box-shadow: none;">
+  </div>
+  <h1>chDB Recent Progress<br><span style="color: var(--c-ch-orange);">DataStore</span> &amp; <span style="color: var(--c-blue);">Free-Threaded Python 3.14</span></h1>
+  <p style="font-size: 0.68em; color: #666; margin-top: -0.1em;">One-line Pandas swap &middot; Real no-GIL parallelism in a C++ extension</p>
+  <p style="margin-top: 1em;"><strong>Auxten Wang (王鹏程)</strong> &middot; Technical Director @ ClickHouse</p>
+  <p class="sub-info">2026</p>
+</section>
+
+<!-- ═══ 2. WHAT IS CHDB ═══ -->
+<section>
+  <h2>What is chDB?</h2>
+  <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 0.6em;">
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">In-Process</div>
+      <div class="label">ClickHouse engine<br>No server needed</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">1 Line</div>
+      <div class="label"><code style="font-size:0.85em">pip install chdb</code><br>Zero config</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">300+</div>
+      <div class="label">SQL functions<br>JOINs, CTEs, Window</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" style="font-size: 1.2em;">80+</div>
+      <div class="label">Data formats<br>CSV, Parquet, S3...</div>
+    </div>
+  </div>
+  <pre><code class="language-python" data-trim data-noescape>
+import chdb
+import pandas as pd
+
+df = pd.DataFrame({'user_id': range(1_000_000),
+                   'category': ['A', 'B', 'C'] * 333334})
+
+result = chdb.query("""
+    SELECT category, COUNT(*) as cnt
+    FROM Python(df)
+    GROUP BY category
+""", "DataFrame")
+  </code></pre>
+  <p class="dim">Same ClickHouse engine you already know &mdash; compiled as a shared library, embedded in your Python process.</p>
+</section>
+
+<!-- ═══ 3. DATASTORE ═══ -->
+<section>
+  <h2>DataStore: One-Line Pandas Swap</h2>
+  <div class="two-col" style="gap: 1.5em; align-items: flex-start;">
+    <div>
+      <pre><code class="language-python" data-trim data-noescape style="font-size: 0.55em;">
+import chdb.datastore as pd  # &lt;- one line!
+
+df = pd.read_csv("employee_data.csv")
+filtered = df[
+    (df['age'] &gt; 25) &amp;
+    (df['salary'] &gt; 50000)
+]
+grouped = filtered.groupby('city')['salary'] \
+    .agg(['mean', 'sum', 'count'])
+result = grouped.sort_values(
+    'mean', ascending=False
+).head(10)
+      </code></pre>
+      <p style="font-size: 0.55em; text-align: center; color: var(--c-green); font-weight: 700; margin-top: 0.2em;">
+        Same Pandas API. Compiled to ClickHouse SQL underneath.
+      </p>
+    </div>
+    <div style="text-align: left;">
+      <ul style="font-size: 0.7em;">
+        <li><strong>Lazy</strong> &mdash; every call returns a LazyOp; nothing runs until <code>print()</code>, <code>len()</code>, <code>.columns</code></li>
+        <li><strong>Pushdown</strong> &mdash; predicate, column pruning, limit propagation &mdash; automatic</li>
+        <li><strong>Segment execution</strong> &mdash; chDB does what it can, Pandas handles the rest, handoff via <code>memoryview</code></li>
+        <li><strong>Unified sources</strong> &mdash; local files, S3, PostgreSQL, in-memory DataFrame &mdash; same pipeline</li>
+      </ul>
+      <div style="margin-top: 0.5em; display: flex; gap: 0.6em; justify-content: center; font-size: 0.5em; font-weight: 700;">
+        <span style="background:#e8f5e9; color:#2e7d32; padding:0.3em 0.8em; border-radius:10px;">4.2x faster</span>
+        <span style="background:#fff3e0; color:#e65100; padding:0.3em 0.8em; border-radius:10px;">23x less memory</span>
+      </div>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.4em;">More on DataStore: <a href="https://auxten.com/slides/chdb-clickhouse-shenzhen-meetup-2026">Shenzhen Meetup deck</a> &middot; <a href="https://clickhouse.com/blog/chdb.4-0-pandas-hex">chDB 4.0 + Hex blog</a></p>
+</section>
+
+<!-- ═══ 4. FREE-THREADING: WHY ═══ -->
+<section>
+  <h2>Python 3.14 Free-Threading: The Opportunity</h2>
+  <blockquote style="font-size: 0.78em; width: 88%;">
+    Free-threaded Python lets threads run Python code in parallel &mdash; but C/C++ extensions <strong>do not benefit automatically</strong>. Authors must opt in, remove hidden GIL assumptions, and audit shared state.
+  </blockquote>
+  <img src="logos/gil-chdb.webp" style="max-height: 42vh; margin-top: 0.5em;">
+  <p class="dim" style="margin-top: 0.3em;">
+    chDB embeds a <strong>multi-threaded C++ engine</strong>. Several Python interactions still serialized execution: UDF calls, DataFrame column access, large numbers of strings.
+  </p>
+</section>
+
+<!-- ═══ 5. THREE CONCRETE CHANGES ═══ -->
+<section>
+  <h2>Three Changes That Made No-GIL Pay Off</h2>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7em; margin: 0.4em auto; max-width: 96%;">
+    <div class="step-card">
+      <h3><span class="num-tag">1</span>In-Process Python UDF</h3>
+      <p>Move Python UDF execution into the chDB process &mdash; no subprocess, no IPC.</p>
+      <p>Run UDFs inside the vectorized pipeline, called from worker threads in parallel.</p>
+      <p style="color: var(--c-green); font-weight: 700; margin-top: 0.3em;">Decorator: <code>@chdb.func</code></p>
+    </div>
+    <div class="step-card">
+      <h3><span class="num-tag">2</span>Module GIL-Independent</h3>
+      <p>Declare extension <code>Py_MOD_GIL_NOT_USED</code> &mdash; opt out of the auto-GIL fallback.</p>
+      <p>Audit every piece of global state. Replace plain globals with thread-safe equivalents (atomics, per-thread storage).</p>
+      <p style="color: var(--c-green); font-weight: 700; margin-top: 0.3em;">Result: parallel SQL streams</p>
+    </div>
+    <div class="step-card">
+      <h3><span class="num-tag">3</span>Low-Level Unicode APIs</h3>
+      <p>High-level <code>PyUnicode_AsUTF8</code> needs the GIL. On hot string paths it serializes everything.</p>
+      <p>Read PEP 393 internals directly: kind (Latin-1 / UCS-2 / UCS-4), data pointer, length &mdash; convert in C++.</p>
+      <p style="color: var(--c-green); font-weight: 700; margin-top: 0.3em;">15x faster on string-heavy queries</p>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.3em;">
+    Trade-off: had to step outside the stable ABI &mdash; the limited API was no longer compatible with our performance goals.
+  </p>
+</section>
+
+<!-- ═══ 6. WHAT BROKE / WHAT SCALED ═══ -->
+<section>
+  <h2>What Broke. What Scaled.</h2>
+  <div class="two-col" style="gap: 1.5em; align-items: flex-start;">
+    <div>
+      <h3 style="text-align: left; color: var(--c-red);">Did not scale as expected</h3>
+      <ul style="font-size: 0.68em;">
+        <li>Naive <code>PyObject_*</code> calls in hot loops &mdash; <strong>refcount contention</strong> dominates</li>
+        <li>Shared Python objects across threads &mdash; biased reference counting hits its slow path</li>
+        <li>Stable ABI shims block direct memory access to <code>PyUnicode</code></li>
+        <li>GIL "released" via context manager, but a single forgotten <code>Py_INCREF</code> re-serializes all threads</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="text-align: left; color: var(--c-green);">What actually paid off</h3>
+      <ul style="font-size: 0.68em;">
+        <li>Batching all Python access into <strong>one prepare phase</strong>, then pure C++ work</li>
+        <li>Direct memory layout reads &mdash; no Python C API on the hot path</li>
+        <li>Per-thread arenas for intermediate results &mdash; zero shared mutable state</li>
+        <li>Real wins on <strong>analytical workloads</strong> on a 16-core machine: parallel UDFs, parallel string processing</li>
+      </ul>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.4em;">No-GIL is not a flag. It's an audit.</p>
+</section>
+
+<!-- ═══ 7. PRACTICAL CHECKLIST ═══ -->
+<section>
+  <h2>Practical Checklist for Porting Extensions</h2>
+  <ul class="checklist">
+    <li>Build against the <code>3.14t</code> free-threaded interpreter; flip <code>Py_MOD_GIL_NOT_USED</code> only after the audit, not before.</li>
+    <li>Grep your codebase for global mutable state. Wrap with atomics, mutexes, or move to per-thread storage.</li>
+    <li>Profile under contention &mdash; not just throughput. Refcount cache lines bounce; you'll see it as scaling cliffs, not crashes.</li>
+    <li>On hot paths, replace high-level CPython string APIs with <strong>direct PEP 393 access</strong> (kind + data pointer).</li>
+    <li>Batch Python interactions into a <strong>prepare phase</strong>; release the GIL once, then run pure C++ work in parallel.</li>
+    <li>Decide early whether to leave the stable ABI &mdash; performance-critical extensions usually have to.</li>
+    <li>Benchmark with realistic core counts (8, 16, 32). Single-thread numbers will lie to you.</li>
+  </ul>
+  <p class="dim" style="margin-top: 0.3em;">No ClickHouse knowledge required &mdash; the same pattern applies to any Python C/C++ extension.</p>
+</section>
+
+<!-- ═══ 8. THANK YOU / Q&A ═══ -->
+<section>
+  <h1 style="margin-bottom: 0.5em;">Thank You!</h1>
+  <div style="display: flex; gap: 2em; justify-content: center; align-items: center; margin-bottom: 0.6em;">
+    <img src="logos/chdb-light.png" class="no-shadow" style="height: 80px; box-shadow: none;">
+    <img src="logos/python-logo.svg" class="no-shadow" style="height: 64px; box-shadow: none;">
+  </div>
+  <div style="display: inline-grid; grid-template-columns: auto auto; gap: 0.3em 2.5em; font-size: 0.55em; text-align: left;">
+    <div><strong>GitHub:</strong> <a href="https://github.com/chdb-io/chdb">github.com/chdb-io/chdb</a></div>
+    <div><strong>Free-threading thread:</strong> <a href="https://x.com/chdb_io/status/2041790112443593167">@chdb_io on X</a></div>
+    <div><strong>Docs:</strong> <a href="https://clickhouse.com/docs/chdb">clickhouse.com/docs/chdb</a></div>
+    <div><strong>DataStore deck:</strong> <a href="https://auxten.com/slides/chdb-clickhouse-shenzhen-meetup-2026">Shenzhen Meetup 2026</a></div>
+    <div><strong>PyPI:</strong> <a href="https://pypi.org/project/chdb">pypi.org/project/chdb</a></div>
+    <div><strong>Discord:</strong> <a href="https://discord.gg/D2Daa2fM5K">discord.gg/D2Daa2fM5K</a></div>
+  </div>
+  <h2 style="margin-top: 0.7em; font-size: 1.3em;">Q&amp;A</h2>
+  <p class="dim"><a href="https://x.com/auxten">@auxten</a> &middot; <a href="https://auxten.com">auxten.com</a></p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720,
+  plugins: [ RevealHighlight ]
+});
+</script>
+</body>
+</html>
