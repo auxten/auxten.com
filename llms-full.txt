@@ -70,11 +70,11 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 - Description: Three-layer memory system for AI agents. Hybrid semantic + keyword search, local-first with LAN sharing, built on chDB and local embeddings.
 - Tags: Python, MCP, AI Agents
 
-### gingko
-- URL: https://github.com/auxten/gingko
-- Origin: Built at Baidu
-- Description: P2P file distribution tool, SCP-compatible. Designed for fast cluster-wide file transfer at scale.
-- Tags: C++, P2P, Infrastructure
+### LLM Cluster Viz
+- URL: https://auxten.com/llm-cluster-viz/
+- Origin: Live 3D Demo
+- Description: Interactive 3D tour of how LLMs run on real hardware. Three zoom levels — datacenter, NVL72 rack, chip — for training, inference, MoE, KV cache, and failure recovery.
+- Tags: Three.js, React, LLM, 3D
 
 ---
 

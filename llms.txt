@@ -25,7 +25,7 @@ Auxten Wang is a database engineer and open source builder based in Singapore. H
 - [BotsChat](https://botschat.app): Slack-like messaging for AI agents with E2E encryption.
 - [MacMate](https://macmate.app): Menu-bar companion for headless Mac deployment.
 - [clickmem](https://github.com/auxten/clickmem): Three-layer memory system for AI agents. MCP server.
-- [gingko](https://github.com/auxten/gingko): P2P file distribution tool, built at Baidu.
+- [LLM Cluster Viz](https://auxten.com/llm-cluster-viz/): Interactive 3D tour of how LLMs run on real hardware — datacenter, NVL72 rack, chip.
 
 ## Blog Posts
 
