@@ -10,7 +10,7 @@ I'm Auxten Wang, a database engineer and open source builder based in Singapore.
 
 I created chDB — an embedded ClickHouse engine that lets you run full OLAP SQL anywhere without infrastructure. It started from a simple need: running ClickHouse in Jupyter Notebooks for ML model training instead of waiting on slow Hive clusters. chDB was acquired by ClickHouse Inc. in 2024, and I now work there full-time growing the project and its ecosystem across 7+ language bindings.
 
-Before ClickHouse, I was Principal Engineer at Shopee, Cofounder & CTO of CovenantSQL (decentralized BFT database, 1,500+ stars), and RecSys & Infra Director at 4Paradigm. Earlier in my career, I was Technical Director at eLong, built cluster control for 30,000 servers at Qihoo 360, and created Gingko — Baidu's P2P dataset distribution system — writing 90% of the C++ code. Started my journey as an intern at Douban in 2009.
+Before ClickHouse, I was Principal Engineer at Shopee, Cofounder & CTO of CovenantSQL (decentralized BFT database, 1,500+ stars), and RecSys & Infra Director at 4Paradigm. Earlier in my career, I was Technical Director at eLong, built cluster control for 30,000 servers at Qihoo 360, and worked on Baidu's Noah platform as a DevOps engineer. Started my journey as an intern at Douban in 2009.
 
 Lately, I've been exploring the intersection of databases and AI agents — building memory systems, RAG pipelines, and MCP integrations powered by ClickHouse.
 
@@ -108,7 +108,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 - **2016 — 2018**: 4Paradigm — RecSys & Infra Director. Led recommendation systems and infrastructure at one of China's leading AI companies.
 - **2015 — 2016**: eLong — Technical Director. Led engineering teams. Founded eLong's internal tech university.
 - **2012 — 2015**: Qihoo 360 — Technical Manager. Ops dev, wireless security research. Created 360 Traffic Guard. Designed cluster control for 30,000 servers.
-- **2010 — 2012**: Baidu — OP Engineer. Built Gingko — Baidu's P2P large dataset distribution system in C++ with libevent. Designed architecture and wrote 90% of the code.
+- **2010 — 2012**: Baidu — DevOps Engineer. Worked on Baidu's Noah platform, focusing on DevOps automation, platform reliability, and operations tooling.
 - **2009**: Douban — Intern. Built an automated web testing framework with Python, Selenium, and Xvfb.
 
 ---
