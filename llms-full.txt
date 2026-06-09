@@ -80,6 +80,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 
 ## Conference Talks
 
+- **PyCon SG 2026** (20 June 2026, 11:00-11:30): Giving Your AI Agent a Database Brain: In-Process Analytics with chDB
 - **PythonAsia 2026**: How I Put a Rocket Engine into Python: Porting ClickHouse for High-Performance Apps
 - **CH Meetup SG 2026**: The Journey to Zero-Copy: How chDB Became the Fastest SQL Engine on Pandas DataFrame
 - **OpenClaw SG 2026**: Organizer & Speaker — How I Manage My One-Man Company with OpenClaw
