@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How I Run My One-Man Company with Hermes Agent — PyCon SG 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Type scale (base 36px) ── */
+  /* xxl: 2.2em  xl: 1.5em  lg: 1.1em  base: 1em  sm: 0.82em  xs: 0.68em  xxs: 0.58em */
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #1565c0;
+    --c-blue: #1565c0;
+    --c-orange: #e65100;
+    --c-muted: #888;
+    --c-body: #2d2d2d;
+    --c-blurple: #5865f2;
+    --c-discord-bg: #313338;
+    --c-discord-bg2: #2b2d31;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 36px; }
+
+  /* ── Headings ── */
+  .reveal h1, .reveal h2, .reveal h3 { font-weight: 800; text-transform: none; letter-spacing: -0.02em; line-height: 1.2; }
+  .reveal h1 { font-size: 2.2em; color: #1a1a1a; margin-bottom: 0.4em; }
+  .reveal h2 { font-size: 1.5em; color: var(--c-blue); margin-bottom: 0.7em; }
+  .reveal h3 { font-size: 1.1em; color: #1976d2; margin-bottom: 0.5em; }
+
+  /* ── Body text ── */
+  .reveal p { line-height: 1.6; margin-bottom: 0.4em; }
+  .reveal section > p { font-size: 0.82em; }
+  .reveal ul, .reveal ol { text-align: left; margin-left: 0.5em; }
+  .reveal li { margin-bottom: 0.45em; font-size: 0.82em; line-height: 1.55; }
+  .reveal li strong { font-weight: 700; }
+
+  /* ── Utility ── */
+  .reveal .highlight { color: var(--c-orange); font-weight: 700; }
+  .reveal .dim { color: var(--c-muted); font-size: 0.68em; letter-spacing: 0.01em; line-height: 1.4; }
+  .reveal .sub { font-size: 0.68em; color: #666; }
+  .emoji { font-size: 1.2em; vertical-align: -0.05em; }
+
+  /* ── Images ── */
+  .reveal section img {
+    max-height: 55vh;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-radius: 10px;
+  }
+  .reveal .small-img img { max-height: 35vh; }
+  .reveal .medium-img img { max-height: 45vh; }
+  .reveal .image-slide img { box-shadow: none; border-radius: 10px; max-height: 48vh; max-width: 70%; object-fit: contain; }
+  .reveal .image-slide .dim { margin-top: 0.4em; }
+
+  /* ── Blockquote ── */
+  .reveal blockquote {
+    background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+    border-left: 5px solid var(--c-blue);
+    padding: 0.8em 1.2em;
+    font-style: italic;
+    width: 82%;
+    color: #333;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.88em;
+    line-height: 1.6;
+  }
+  .reveal .quote-slide blockquote { font-size: 0.95em; width: 78%; margin: 0 auto; }
+
+  /* ── Two-column ── */
+  .reveal .two-col {
+    display: flex;
+    gap: 2.5em;
+    align-items: center;
+    justify-content: center;
+  }
+  .reveal .two-col > div { flex: 1; }
+  .reveal .two-col img { max-height: 40vh; }
+  .reveal .two-col li { font-size: 0.78em; }
+
+  /* ── Stack list ── */
+  .reveal .stack-list { columns: 2; column-gap: 2.5em; list-style: none; padding-left: 0; }
+  .reveal .stack-list li { font-size: 0.68em; margin-bottom: 0.5em; break-inside: avoid; padding-left: 0; line-height: 1.5; }
+  .reveal .stack-list strong { color: var(--c-blue); font-weight: 700; }
+
+  /* ── Code ── */
+  .reveal code {
+    background: #f0f0f0;
+    padding: 0.15em 0.35em;
+    border-radius: 5px;
+    font-size: 0.88em;
+    color: #c62828;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Title slide ── */
+  .title-slide h1 { font-size: 2em; line-height: 1.25; margin-bottom: 0.3em; }
+  .title-slide p { color: #555; }
+  .title-slide .sub-info { font-size: 0.62em; color: #999; margin-top: 0; }
+
+  /* ── Sponsor logos ── */
+  .sponsor-logos img { box-shadow: none !important; border-radius: 0 !important; opacity: 0.7; }
+  .no-shadow { box-shadow: none !important; }
+
+  /* ── Five lessons ── */
+  .reveal .lessons { list-style: none; padding-left: 0; }
+  .reveal .lessons li { font-size: 0.78em; margin-bottom: 0.6em; padding-left: 1.6em; text-indent: -1.6em; line-height: 1.5; }
+  .reveal .lessons li strong { font-weight: 700; color: var(--c-body); }
+  .reveal .lessons li span { color: var(--c-muted); font-weight: 400; }
+
+  /* ════════════════ NEW COMPONENTS (Hermes deck) ════════════════ */
+
+  /* ── Discord-style chat card ── */
+  .reveal .chat {
+    width: 90%;
+    margin: 0.2em auto 0;
+    text-align: left;
+    background: var(--c-discord-bg);
+    border-radius: 14px;
+    padding: 0.7em 0.95em 0.85em;
+    box-shadow: 0 6px 22px rgba(0,0,0,0.20);
+  }
+  .reveal .chat.narrow { width: 74%; }
+  .reveal .chat .chan {
+    font-size: 0.5em; color: #b5bac1; font-weight: 700; letter-spacing: 0.02em;
+    border-bottom: 1px solid #3f4147; padding-bottom: 0.45em; margin-bottom: 0.6em;
+  }
+  .reveal .chat .chan::before { content: "# "; color: #80848e; }
+  .reveal .chat .msg { display: flex; gap: 0.55em; margin-bottom: 0.6em; align-items: flex-start; }
+  .reveal .chat .msg:last-child { margin-bottom: 0; }
+  .reveal .chat .avatar {
+    width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+    object-fit: cover; box-shadow: none; margin: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6em; font-weight: 800; color: #fff;
+  }
+  .reveal .chat .avatar.bot { background: linear-gradient(135deg, #5865f2, #7c4dff); }
+  .reveal .chat .body { min-width: 0; flex: 1; }
+  .reveal .chat .who { font-size: 0.56em; font-weight: 700; color: #fff; line-height: 1; }
+  .reveal .chat .who .tag {
+    background: var(--c-blurple); color: #fff; font-size: 0.7em; font-weight: 700;
+    border-radius: 4px; padding: 0.06em 0.34em; margin-left: 0.4em; vertical-align: 0.08em; letter-spacing: 0.02em;
+  }
+  .reveal .chat .who .ts { color: #949ba4; font-size: 0.66em; font-weight: 500; margin-left: 0.5em; }
+  .reveal .chat .bubble { font-size: 0.56em; color: #dbdee1; line-height: 1.5; margin-top: 0.2em; }
+  .reveal .chat .bubble strong { color: #fff; font-weight: 700; }
+  .reveal .chat .bubble .zh { color: #dbdee1; }
+  .reveal .chat .bubble .gloss { color: #949ba4; font-style: italic; font-size: 0.92em; }
+  .reveal .chat .bubble code { background: #1e1f22; color: #c9d1d9; font-size: 0.85em; }
+  .reveal .chat .react {
+    display: inline-flex; align-items: center; gap: 0.3em; margin-top: 0.45em;
+    background: rgba(88,101,242,0.16); border: 1px solid rgba(88,101,242,0.45);
+    border-radius: 8px; padding: 0.1em 0.5em; font-size: 0.5em; color: #c7ccff; font-weight: 600;
+  }
+  .reveal .chat .typing { color: #949ba4; font-size: 0.5em; font-style: italic; }
+
+  /* ── Timeline (agent evolution) ── */
+  .reveal .timeline { list-style: none; padding-left: 0; margin: 0.3em auto 0; width: 92%; }
+  .reveal .timeline li {
+    position: relative; padding-left: 2.6em; margin-bottom: 0.7em; font-size: 0.74em; line-height: 1.45;
+    border-left: 3px solid #d3d8e0; padding-bottom: 0.15em;
+  }
+  .reveal .timeline li::before {
+    content: ""; position: absolute; left: -0.55em; top: 0.15em;
+    width: 0.85em; height: 0.85em; border-radius: 50%; background: var(--c-blue);
+    box-shadow: 0 0 0 4px #e8f0fe;
+  }
+  .reveal .timeline li.now { border-left-color: var(--c-orange); }
+  .reveal .timeline li.now::before { background: var(--c-orange); box-shadow: 0 0 0 4px #fff0e6; }
+  .reveal .timeline .yr { font-weight: 800; color: #1a1a1a; margin-right: 0.5em; }
+  .reveal .timeline li.now .yr { color: var(--c-orange); }
+
+  /* ── Feature grid (what is Hermes) ── */
+  .reveal .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8em 1.6em; width: 94%; margin: 0.3em auto 0; text-align: left; }
+  .reveal .feat-grid .f { font-size: 0.66em; line-height: 1.4; }
+  .reveal .feat-grid .f b { display: block; color: var(--c-blue); font-weight: 800; font-size: 1.02em; }
+  .reveal .feat-grid .f span { color: #555; }
+  .reveal .feat-grid .f .ic { font-size: 1.15em; margin-right: 0.25em; }
+
+  /* ── Compare table (copilot vs coworker) ── */
+  .reveal .compare { display: flex; gap: 1.4em; width: 96%; margin: 0.2em auto 0; }
+  .reveal .compare .col { flex: 1; border-radius: 12px; padding: 0.9em 1.1em; text-align: left; }
+  .reveal .compare .col.a { background: #f1f3f6; border: 1px solid #e0e4ea; }
+  .reveal .compare .col.b { background: linear-gradient(135deg, #eef3ff, #f5f0ff); border: 1px solid #d7e0ff; }
+  .reveal .compare .col h3 { margin-bottom: 0.5em; font-size: 0.92em; }
+  .reveal .compare .col.a h3 { color: #6b7280; }
+  .reveal .compare .col ul { margin: 0; }
+  .reveal .compare .col li { font-size: 0.64em; margin-bottom: 0.4em; line-height: 1.4; }
+
+  /* ── Generic node-diagram bits ── */
+  .reveal .diagram { display: flex; align-items: center; justify-content: center; gap: 0.8em; flex-wrap: wrap; margin-top: 0.4em; }
+  .reveal .node {
+    background: #fff; border: 2px solid var(--c-blue); border-radius: 12px;
+    padding: 0.55em 0.8em; font-size: 0.6em; font-weight: 700; color: #1a1a1a;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.06); line-height: 1.25; text-align: center; min-width: 3.4em;
+  }
+  .reveal .node .ic { display: block; font-size: 1.5em; margin-bottom: 0.1em; }
+  .reveal .node small { display: block; font-weight: 500; color: #777; font-size: 0.78em; }
+  .reveal .node.accent { border-color: var(--c-blurple); background: linear-gradient(135deg, #eef0ff, #f6f1ff); }
+  .reveal .node.warm { border-color: var(--c-orange); }
+  .reveal .node.dark { background: #1e1f22; border-color: #3a3d44; color: #e6e8ec; }
+  .reveal .node.dark small { color: #9aa0a8; }
+  .reveal .arrow { font-size: 1.1em; color: #9aa3b2; font-weight: 800; }
+  .reveal .col-flow { display: flex; flex-direction: column; gap: 0.5em; align-items: center; }
+
+  /* ── Cron table ── */
+  .reveal .cron-table { width: 96%; margin: 0.2em auto 0; border-collapse: collapse; font-size: 0.56em; }
+  .reveal .cron-table td, .reveal .cron-table th { padding: 0.4em 0.7em; text-align: left; border-bottom: 1px solid #e6e9ee; }
+  .reveal .cron-table th { color: #80848e; font-weight: 700; font-size: 0.92em; text-transform: uppercase; letter-spacing: 0.04em; }
+  .reveal .cron-table .when { font-family: 'JetBrains Mono', monospace; color: var(--c-orange); font-weight: 600; white-space: nowrap; }
+  .reveal .cron-table .task { color: #1a1a1a; font-weight: 600; }
+  .reveal .cron-table .task small { display: block; color: #888; font-weight: 400; font-size: 0.9em; }
+  .reveal .cron-table tr.head-row { background: #f6f7f9; }
+
+  /* ── Metric chips ── */
+  .reveal .metrics { display: flex; gap: 0.7em; justify-content: center; flex-wrap: wrap; margin: 0.3em 0; }
+  .reveal .metric { background: #fff; border: 1px solid #e2e6ec; border-radius: 10px; padding: 0.4em 0.8em; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .reveal .metric .v { font-size: 0.9em; font-weight: 800; color: var(--c-blue); line-height: 1.1; }
+  .reveal .metric .k { font-size: 0.5em; color: #888; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* ── Pills row ── */
+  .reveal .pills { display: flex; flex-wrap: wrap; gap: 0.4em; justify-content: center; margin: 0.4em 0; }
+  .reveal .pill { background: #eef2f8; border: 1px solid #dde4ee; border-radius: 999px; padding: 0.2em 0.7em; font-size: 0.56em; color: #34507a; font-weight: 600; }
+  .reveal .pill.warm { background: #fff1e6; border-color: #ffd9b8; color: #b1500a; }
+
+  /* ── Belief-revision ops ── */
+  .reveal .ops { display: flex; gap: 0.55em; justify-content: center; margin: 0.5em auto 0.2em; width: 96%; }
+  .reveal .op { flex: 1; background: #fff; border: 1px solid #e2e6ec; border-top: 3px solid var(--c-blue); border-radius: 10px; padding: 0.5em 0.4em; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .reveal .op b { display: block; font-size: 0.6em; color: #1a1a1a; font-weight: 800; }
+  .reveal .op span { display: block; font-size: 0.45em; color: #888; line-height: 1.3; margin-top: 0.2em; }
+  .reveal .op.warm { border-top-color: var(--c-orange); }
+  .reveal .op.warm b { color: var(--c-orange); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ TITLE ============ -->
+<section class="title-slide">
+  <h1>How I Run My<br>One-Man Company<br>with Hermes Agent</h1>
+  <p><strong>Auxten Wang</strong> · Technical Director @ ClickHouse</p>
+  <p class="sub-info">PyCon Singapore 2026 · The Agent Track</p>
+</section>
+
+<!-- ============ ABOUT ME ============ -->
+<section>
+  <div style="display: flex; align-items: stretch; gap: 2.5em; max-width: 95%; margin: 0 auto;">
+    <div style="flex: 1; text-align: left; display: flex; flex-direction: column; justify-content: center;">
+      <div style="display: flex; align-items: center; gap: 0.8em; margin-bottom: 0.8em;">
+        <img src="logos/head.jpg" style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0;">
+        <div>
+          <h2 style="margin: 0; font-size: 1.2em; line-height: 1.2;">Auxten Wang</h2>
+          <p class="dim" style="margin: 0.2em 0 0;"><strong>@auxten</strong> · <a href="https://auxten.com">auxten.com</a></p>
+        </div>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.72em; line-height: 2;">
+        <li><span class="emoji">&#127970;</span> <strong>Technical Director</strong> @ ClickHouse</li>
+        <li><span class="emoji">&#128640;</span> Creator of <strong>chDB</strong> &mdash; acquired by ClickHouse 2024</li>
+        <li><span class="emoji">&#129516;</span> Maintaining a pile of side projects&hellip; alone</li>
+        <li><span class="emoji">&#128221;</span> Shipping 3 iOS apps as a one-man company</li>
+        <li style="color: #999;">Ex-Shopee &middot; CovenantSQL &middot; Baidu &middot; Qihoo 360</li>
+      </ul>
+    </div>
+    <div style="flex: 0 0 auto; display: flex; align-items: center;">
+      <img src="logos/projects-auxten.png" style="height: 52vh; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTRO 1: AGENT EVOLUTION ============ -->
+<section>
+  <h2>How We Got Here</h2>
+  <p class="dim" style="margin-bottom: 0.5em;">Four years of AI coding, compressed. It moved absurdly fast.</p>
+  <ul class="timeline">
+    <li class="fragment"><span class="yr">2022</span> ChatGPT. Describe a function, copy the answer, paste into your editor.</li>
+    <li class="fragment"><span class="yr">2024</span> Cursor + Claude Code. The AI moves <em>inside</em> the editor &mdash; reads your repo, runs your tests.</li>
+    <li class="fragment"><span class="yr">2025</span> CLI agents &amp; multi-agent pipelines. Codex and Claude Code in the terminal: test &rarr; fix &rarr; review &rarr; benchmark.</li>
+    <li class="fragment now"><span class="yr">2026</span> <span class="highlight">Autonomous, always-on agents.</span> The question stops being "can it code?" and becomes <strong>"can it run without me, 24/7?"</strong></li>
+  </ul>
+</section>
+
+<!-- ============ INTRO 2: COPILOT VS COWORKER ============ -->
+<section>
+  <h2>From Copilot to Coworker</h2>
+  <p class="dim" style="margin-bottom: 0.6em;">Same models underneath. Completely different relationship.</p>
+  <div class="compare">
+    <div class="col a fragment">
+      <h3>IDE Copilot</h3>
+      <ul>
+        <li><strong>You</strong> drive, every keystroke</li>
+        <li>Lives in your editor session</li>
+        <li>Forgets everything when the tab closes</li>
+        <li>Stops the moment you close the laptop</li>
+      </ul>
+    </div>
+    <div class="col b fragment">
+      <h3>Autonomous Agent</h3>
+      <ul>
+        <li>Lives on a server, runs <strong>24/7</strong></li>
+        <li>Persistent memory across sessions</li>
+        <li>Reaches you on chat &mdash; Discord, Telegram&hellip;</li>
+        <li>Learns its own skills, gets better over time</li>
+      </ul>
+    </div>
+  </div>
+  <p class="fragment" style="margin-top: 0.7em; font-size: 0.74em;">Think of it as <span class="highlight">hiring an ops teammate</span>, not buying a faster autocomplete.</p>
+</section>
+
+<!-- ============ INTRO 3: WHAT IS HERMES ============ -->
+<section>
+  <h2>What is Hermes Agent?</h2>
+  <p class="dim" style="margin-bottom: 0.6em;">Open-source autonomous agent by <strong>Nous Research</strong> &middot; MIT &middot; shipped Feb 2026 &middot; ~195k&#9733; on GitHub</p>
+  <div class="feat-grid">
+    <div class="f fragment"><b><span class="ic">&#127968;</span>Self-hosted</b><span>Runs on a $5 VPS or your Mac mini. Your data stays with you.</span></div>
+    <div class="f fragment"><b><span class="ic">&#128241;</span>Talk to it anywhere</b><span>One gateway to Discord, Telegram, Slack, WhatsApp&hellip;</span></div>
+    <div class="f fragment"><b><span class="ic">&#129504;</span>Persistent memory</b><span>Multi-layer memory carries context across every session.</span></div>
+    <div class="f fragment"><b><span class="ic">&#128296;</span>Self-improving</b><span>Built-in learning loop: writes its own reusable skills.</span></div>
+    <div class="f fragment"><b><span class="ic">&#128274;</span>Sandboxed execution</b><span>Runs commands in Docker / SSH / serverless backends.</span></div>
+    <div class="f fragment"><b><span class="ic">&#9201;</span>Always on</b><span>Cron, background jobs, long-running tasks &mdash; no babysitting.</span></div>
+  </div>
+  <p class="fragment dim" style="margin-top: 0.7em;">Not a chatbot. Not a copilot. An agent that lives on your machine and gets smarter every day.</p>
+</section>
+
+<!-- ============ MY USE STACK ============ -->
+<section>
+  <h2>My Use Stack</h2>
+  <p class="dim" style="margin-bottom: 0.7em;">Deliberately boring. One chat app in, the agent does the rest.</p>
+  <div class="diagram">
+    <div class="node"><span class="ic">&#128172;</span>Discord<small>phone + desktop</small></div>
+    <span class="arrow">&#8644;</span>
+    <div class="node accent"><span class="ic">&#9889;</span>Hermes Agent<small>on Mac mini &middot; 24/7</small></div>
+    <span class="arrow">&#8594;</span>
+    <div class="col-flow">
+      <div class="node warm"><span class="ic">&#129504;</span>Personal Codex<small>my own sub &middot; ~$200/mo</small></div>
+      <span class="arrow" style="font-size: 0.7em;">&#8595; failover</span>
+      <div class="node"><span class="ic">&#128257;</span>MiniMax M3<small>via OpenRouter &middot; backup</small></div>
+    </div>
+  </div>
+  <div class="pills" style="margin-top: 1em;">
+    <span class="pill">tmux foreman</span>
+    <span class="pill">MCP tools</span>
+    <span class="pill">imported skills</span>
+    <span class="pill warm">background cron</span>
+    <span class="pill">ClickMem memory</span>
+  </div>
+  <p class="fragment" style="margin-top: 0.6em; font-size: 0.74em;">No new SaaS, no per-seat fees. <span class="highlight">Recurring cost: ~$200/mo</span> &mdash; the Codex subscription I already pay for.</p>
+</section>
+
+<!-- ============ MIGRATION IN ONE SENTENCE ============ -->
+<section>
+  <h2>Migrating My Brain in One Sentence</h2>
+  <p class="dim" style="margin-bottom: 0.5em;">A year of teaching Claude Code, Codex &amp; OpenClaw my skills and conventions. Moving it all to Hermes took&hellip; one message.</p>
+  <div class="chat narrow">
+    <div class="chan">general</div>
+    <div class="msg">
+      <img class="avatar" src="logos/head.jpg">
+      <div class="body">
+        <div class="who">Auxten <span class="ts">May 14</span></div>
+        <div class="bubble">Learn all the skills I defined over on OpenClaw.</div>
+      </div>
+    </div>
+    <div class="msg">
+      <div class="avatar bot">H</div>
+      <div class="body">
+        <div class="who">Hermes <span class="tag">BOT</span> <span class="ts">May 14</span></div>
+        <div class="bubble">Done. Synced <strong>27 custom skills</strong> from <code>~/.openclaw/skills/</code> to <code>~/.hermes/skills/openclaw-imports/</code>.<br>Verified: source 27 &rarr; target, <strong>no mismatch</strong>; <code>skill_view</code> loads fine. New session: <code>/reload-skills</code> and you're set.</div>
+      </div>
+    </div>
+  </div>
+  <p class="fragment" style="margin-top: 0.6em; font-size: 0.74em;">It also reads my <code>CLAUDE.md</code> / <code>AGENTS.md</code> &mdash; the conventions I taught Cursor and Codex <span class="highlight">just carry over.</span></p>
+</section>
+
+<!-- ============ ADVANTAGE 1: NEVER DROPS A TASK ============ -->
+<section>
+  <h2>Why I Trust It &mdash; #1</h2>
+  <h3 style="color:#1a1a1a; margin-bottom:0.6em;">It never silently drops a task</h3>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li class="fragment"><strong>Instant ack.</strong> The second I send a task, it drops a &#9989; on my message &mdash; <em>before</em> any LLM call. Backend model flaky? Doesn't matter; I know it landed.</li>
+        <li class="fragment"><strong>Closed loop.</strong> Every message gets a final result. Success or failure, it always comes back and tells me.</li>
+        <li class="fragment">No more "did it even get my message?" No more staring at a dead chat.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="chan">general</div>
+        <div class="msg">
+          <img class="avatar" src="logos/head.jpg">
+          <div class="body">
+            <div class="who">Auxten <span class="ts">08:00</span></div>
+            <div class="bubble">Check the online status of my 3 apps.</div>
+            <div class="react">&#9989; received &middot; instant</div>
+          </div>
+        </div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span> <span class="ts">08:17</span></div>
+            <div class="bubble">Verdict: nothing critical. Checked Langfuse / GA4 / RevenueCat / ASA&hellip;<span class="typing"> full report &darr;</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="dim" style="margin-top:0.4em; text-align:center;">17 minutes later &mdash; it came back, like it always does.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ADVANTAGE 2: BACKGROUND CRON ============ -->
+<section>
+  <h2>Why I Trust It &mdash; #2</h2>
+  <h3 style="color:#1a1a1a; margin-bottom:0.5em;">Background cron that actually runs my ops</h3>
+  <table class="cron-table">
+    <tr class="head-row"><th>Schedule</th><th>What it does (and reports to Discord)</th></tr>
+    <tr><td class="when">Sun 08:00&ndash;09:30</td><td class="task">Weekly Apple Search Ads optimization for 3 apps<small>per-app keyword/bid tuning, then one roll-up report</small></td></tr>
+    <tr class="fragment"><td class="when">Daily 08:00</td><td class="task">Cross-app anomaly inspection<small>installs / trials / revenue / LLM errors &mdash; read-only, pings me only if something's off</small></td></tr>
+    <tr class="fragment"><td class="when">Daily 10:00</td><td class="task">Emby "pick of the day"<small>one title, tuned to my taste</small></td></tr>
+    <tr class="fragment"><td class="when">Every 14 days</td><td class="task">App Store keyword + metadata refresh, then ship a new version</td></tr>
+    <tr class="fragment"><td class="when">Sat 15:00</td><td class="task">Download the week's new anime episodes to my NAS</td></tr>
+  </table>
+  <p class="fragment highlight" style="margin-top:0.7em; font-size:0.78em;">I optimize ad spend every week and inspect every online task every day &mdash; without lifting a finger.</p>
+</section>
+
+<!-- ============ ADVANTAGE 3: FOREMAN ============ -->
+<section>
+  <h2>Why I Trust It &mdash; #3</h2>
+  <h3 style="color:#1a1a1a; margin-bottom:0.5em;">Hermes as my foreman (&#30417;&#24037;)</h3>
+  <div class="two-col">
+    <div>
+      <div class="col-flow">
+        <div class="node accent"><span class="ic">&#9889;</span>Hermes<small>cc-supervisor</small></div>
+        <span class="arrow" style="font-size:0.8em;">&#8595; drives tmux</span>
+        <div class="diagram" style="gap:0.4em;">
+          <div class="node dark">Claude Code<small>pane 0:0</small></div>
+          <div class="node dark">Codex<small>pane 0:1</small></div>
+        </div>
+      </div>
+      <div class="pills" style="margin-top:0.8em;">
+        <span class="pill">summarize output</span>
+        <span class="pill">chase progress</span>
+        <span class="pill warm">catch fake tests</span>
+      </div>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="chan">dev-ops</div>
+        <div class="msg">
+          <img class="avatar" src="logos/head.jpg">
+          <div class="body">
+            <div class="who">Auxten</div>
+            <div class="bubble">Be a foreman: open a tmux and manage my pile of Claude Code sessions &mdash; summarize key output, chase progress, and quality-review (catch laziness / hallucinations / fake tests).</div>
+          </div>
+        </div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span></div>
+            <div class="bubble">Spun up <code>cc-supervisor</code>; the dashboard refreshes every pane every 30s. Pane <code>0:0</code> (Claude Code) is idle at the prompt with <code>commit</code> typed but not run &mdash; <strong>I won't press Enter to commit on my own unless you explicitly ask.</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="fragment" style="margin-top:0.5em; font-size:0.72em;">An agent&hellip; supervising other agents. And it knows where to <span class="highlight">stop and ask.</span></p>
+</section>
+
+<!-- ============ USE CASE 1: DATA ANALYSIS (intro) ============ -->
+<section>
+  <h2>Use Case 1: Analyzing My Own Apps</h2>
+  <p class="dim" style="margin-bottom:0.7em;">I ship 3 iOS apps solo. Ads, users, revenue, releases, crashes &mdash; scattered across 6 dashboards. So I stopped opening dashboards.</p>
+  <div class="diagram">
+    <div class="col-flow" style="gap:0.3em;">
+      <span class="pill">Apple Search Ads</span>
+      <span class="pill">RevenueCat</span>
+      <span class="pill">GA4</span>
+      <span class="pill">AppsFlyer</span>
+      <span class="pill">D1 / Supabase</span>
+      <span class="pill">Langfuse</span>
+    </div>
+    <span class="arrow">&#8594;</span>
+    <div class="node accent"><span class="ic">&#9889;</span>Hermes<small>+ my ad-ops skills</small></div>
+    <span class="arrow">&#8594;</span>
+    <div class="node"><span class="ic">&#128172;</span>One report<small>in Discord</small></div>
+  </div>
+  <p class="fragment" style="margin-top:0.8em;">Ad spend, user activity, releases &mdash; one agent, one place, <span class="highlight">plain language.</span></p>
+</section>
+
+<!-- ============ USE CASE 1: DATA ANALYSIS (real) ============ -->
+<section>
+  <h2>It Doesn't Just Dump Numbers</h2>
+  <div class="two-col" style="align-items:flex-start; gap:1.4em;">
+    <div>
+      <div class="chat">
+        <div class="chan">app-ads</div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span> <span class="ts">Sun 09:30</span></div>
+            <div class="bubble"><strong>Daily ASA report</strong><br>Yesterday: spend <strong>$106.63</strong> &middot; installs <strong>32</strong> &middot; CPI <strong>$3.33</strong><br>Last 7d: spend $440.16 &middot; installs 104 &middot; CPI $4.23<br>Since re-enabling: 6/14 <strong>2</strong> &rarr; 6/15 <strong>27</strong> &rarr; 6/16 <strong>32</strong> installs &mdash; clear recovery &#9989;</div>
+          </div>
+        </div>
+      </div>
+      <p class="dim" style="text-align:center; margin-top:0.35em;">Weekly ad optimization, per app</p>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="chan">daily-watch</div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span> <span class="ts">08:17</span></div>
+            <div class="bubble"><strong>Verdict: nothing critical</strong>, but 3 medium anomalies.<br>One app's GA4 <code>engagedSessions</code> yesterday <strong>10</strong>, 7-day avg &asymp; 35.8, <strong>&darr; ~72%</strong>; but sessions / users / events all normal &rarr; likely a tracking artifact, not the app being down.</div>
+          </div>
+        </div>
+      </div>
+      <p class="dim" style="text-align:center; margin-top:0.35em;">Daily anomaly inspection</p>
+    </div>
+  </div>
+  <p class="fragment" style="margin-top:0.6em; font-size:0.76em;">It tells me <span class="highlight">whether to panic</span> &mdash; and usually, not to.</p>
+</section>
+
+<!-- ============ USE CASE 2: MOVIES (intro) ============ -->
+<section>
+  <h2>Use Case 2: What Should I Watch Tonight?</h2>
+  <p class="dim" style="margin-bottom:0.6em;">Not everything has to be work. I taught it my taste once&hellip;</p>
+  <div class="pills">
+    <span class="pill">Breaking Bad</span>
+    <span class="pill">Homeland</span>
+    <span class="pill">Game of Thrones</span>
+    <span class="pill">Westworld</span>
+    <span class="pill">House of Cards</span>
+    <span class="pill">Black Mirror</span>
+    <span class="pill">Severance</span>
+    <span class="pill">Fargo</span>
+    <span class="pill">Silicon Valley</span>
+    <span class="pill">EVA</span>
+    <span class="pill">A Mortal's Journey</span>
+  </div>
+  <p class="fragment" style="margin-top:0.7em;">&hellip;and every day at 10am it gives me <span class="highlight">one pick</span> from my own Emby server &mdash; with a reason, and never something I've already seen.</p>
+</section>
+
+<!-- ============ USE CASE 2: MOVIES (real) ============ -->
+<section>
+  <h2>One Pick a Day, With Taste</h2>
+  <div class="two-col" style="align-items:flex-start; gap:1.4em;">
+    <div>
+      <div class="chat">
+        <div class="chan">emby-daily</div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span></div>
+            <div class="bubble"><strong>The Wire</strong><br>Peels back the drug trade, the police, politicians and the press, layer by layer &mdash; the criminal ecosystem of <em>Breaking Bad</em> + the power games of <em>House of Cards</em>.<span class="gloss"> S01E01 is on your Emby.</span></div>
+          </div>
+        </div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span></div>
+            <div class="bubble"><strong>Ozark</strong><br>An ordinary man swallowed by a criminal system, with <em>Billions</em>-style money games &mdash; colder and more oppressive.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="chat">
+        <div class="chan">emby-daily</div>
+        <div class="msg">
+          <img class="avatar" src="logos/head.jpg">
+          <div class="body">
+            <div class="who">Auxten</div>
+            <div class="bubble">Watched Billions &mdash; loved it.</div>
+          </div>
+        </div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span></div>
+            <div class="bubble">Got it &mdash; marked Billions as "watched &amp; liked." I won't recommend it again, but I'll use it as a taste signal to find similar ones.</div>
+          </div>
+        </div>
+        <div class="msg">
+          <img class="avatar" src="logos/head.jpg">
+          <div class="body">
+            <div class="who">Auxten</div>
+            <div class="bubble">Stop recommending Day of the Jackal.</div>
+          </div>
+        </div>
+        <div class="msg">
+          <div class="avatar bot">H</div>
+          <div class="body">
+            <div class="who">Hermes <span class="tag">BOT</span></div>
+            <div class="bubble">Noted. Updated three places: the daily-rec exclusion list + the Emby skill's watched list + your screen-taste memory.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="fragment" style="margin-top:0.5em; font-size:0.72em;">Bonus: every Saturday it grabs the latest episodes of my favorite cultivation anime and uploads them to my NAS. <span class="highlight">A feedback loop, for my couch.</span></p>
+</section>
+
+<!-- ============ THE MEMORY TRAP ============ -->
+<section>
+  <h2>First, the Memory Trap</h2>
+  <p class="fragment">Build on my laptop (Cursor / Claude Code / Codex) &rarr; hand off to Hermes on the mini. Context evaporates.</p>
+  <p class="fragment">The obvious fix: <em>"just remember everything."</em> That's the trap.</p>
+  <p class="fragment">Auto-capture pollutes: a one-week vegetarian trip becomes my <strong>"permanent diet"</strong>; a Firebase idea I dropped months ago still haunts every design.</p>
+  <p class="fragment highlight" style="margin-top:0.3em;">Bad memory is worse than no memory.</p>
+</section>
+
+<!-- ============ CLICKMEM PHILOSOPHY ============ -->
+<section>
+  <h2>ClickMem &mdash; a memory <em>safe</em></h2>
+  <p class="dim" style="margin-bottom:0.3em;">Remember what matters, forget what stopped being true, never treat a passing detail as your identity. A safe, not a firehose.</p>
+  <div class="ops">
+    <div class="op"><b>Expand</b><span>add a belief</span></div>
+    <div class="op"><b>Revise</b><span>replace when better info arrives</span></div>
+    <div class="op"><b>Contract</b><span>forget &mdash; with a reason</span></div>
+    <div class="op"><b>Reinforce</b><span>pin as authoritative</span></div>
+    <div class="op warm"><b>Refuse</b><span>blacklist, never store again</span></div>
+  </div>
+  <ul style="margin-top:0.2em;">
+    <li class="fragment"><strong>Explicit-only.</strong> Two ways in: an agent commits a refined conclusion (<code>clickmem_remember</code>), or I import curated docs (<code>AGENTS.md</code> / <code>CLAUDE.md</code> / rules). Raw chat stays cold &mdash; <strong>never auto-injected.</strong></li>
+    <li class="fragment"><strong>Conflicts surfaced, not hidden.</strong> A new memory that contradicts an old one gets flagged for me to resolve &mdash; not silently stacked.</li>
+  </ul>
+</section>
+
+<!-- ============ CLICKMEM ARCHITECTURE ============ -->
+<section class="image-slide">
+  <h2 style="margin-bottom:0.3em; font-size:1.3em;">One Local Server, Zero Server-Side LLM</h2>
+  <img src="logos/clickmem-architecture.png" style="max-height:495px; max-width:96%;">
+  <p class="dim" style="margin-top:0.3em;">Embedding-only recall, scoped by project / privacy / source &middot; chDB or ClickHouse.</p>
+</section>
+
+<!-- ============ THE BUTTON SOFTWARE COULDN'T CLICK ============ -->
+<section>
+  <h2>The Button Software Couldn't Click</h2>
+  <p class="fragment">Hermes pushed an update &rarr; a pile of macOS permission dialogs.</p>
+  <p class="fragment">macOS <strong>explicitly prevents</strong> software from clicking security dialogs.</p>
+  <p class="fragment">The agent that controls my computer&hellip; can't click "Allow" to control my computer.</p>
+  <p class="fragment"><span class="emoji">&#128161;</span> What if I use <em>hardware</em>?</p>
+</section>
+
+<!-- ============ ROCK 5B + HANDSON ============ -->
+<section>
+  <h2>$182 Rock 5B + IP-KVM</h2>
+  <div class="two-col">
+    <div>
+      <ul>
+        <li>USB HID emulation (keyboard + mouse)</li>
+        <li>HDMI <em>input</em> &mdash; real video capture</li>
+        <li>RK3588 hardware video decoding</li>
+        <li><strong>Agent helps agent:</strong> mutual passwordless SSH &mdash; if one dies, the other revives it</li>
+      </ul>
+      <p class="highlight" style="margin-top:0.6em; font-size:0.82em;">Total system draw: 7 watts</p>
+      <p class="fragment dim">Open-sourced as <a href="https://github.com/auxten/handson">HandsOn</a> &mdash; one MCP interface, many backends (macOS, Rock 5B, PiKVM, NanoKVM).</p>
+    </div>
+    <div>
+      <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/rock5b-ipkvm.jpeg">
+    </div>
+  </div>
+</section>
+
+<!-- ============ PR TO ITSELF ============ -->
+<section>
+  <h2>Submitting a PR to Itself</h2>
+  <ul>
+    <li class="fragment">My agent found a bug &mdash; <em>in its own platform's code.</em></li>
+    <li class="fragment">Plugin reload &rarr; restart loop &rarr; gateway death.</li>
+    <li class="fragment">It diagnosed root cause, wrote a one-line fix + 2 tests.</li>
+    <li class="fragment">Opened the PR under <strong>its own GitHub account.</strong></li>
+    <li class="fragment"><span class="highlight">Three human reviewers approved it.</span></li>
+  </ul>
+</section>
+
+<section class="image-slide">
+  <img src="../blog/how-i-manage-my-one-man-company-with-openclaw/github-pr-41007.png">
+  <p style="margin-top:0.5em; font-size:0.82em;">An AI agent. Finding a bug in the platform it runs on.<br>Submitting a patch. Approved by humans.</p>
+</section>
+
+<!-- ============ THE ONE RULE ============ -->
+<section class="quote-slide">
+  <h2>The One Rule</h2>
+  <blockquote>
+    Treat your agent like a new hire. Give it its own email, its own user account, its own GitHub, its own machine.
+  </blockquote>
+  <p class="fragment" style="margin-top:1em;">Mine literally runs as a separate macOS user on the Mac mini. Blast-radius containment &mdash; if it does something destructive (and it <em>will</em>), it's in its own sandbox.</p>
+  <p class="fragment"><strong>Also: use Time Machine.</strong></p>
+</section>
+
+<!-- ============ THE STACK TODAY ============ -->
+<section>
+  <h2>The Stack Today</h2>
+  <ul class="stack-list">
+    <li><strong>Daily dev:</strong> <a href="https://cursor.com">Cursor</a> + <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> + <a href="https://openai.com/codex">Codex</a></li>
+    <li><strong>24/7 agent:</strong> <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a> on Mac mini</li>
+    <li><strong>Comms:</strong> Discord (phone + desktop)</li>
+    <li><strong>Backend LLM:</strong> my personal Codex sub + OpenRouter MiniMax M3 backup</li>
+    <li><strong>Memory:</strong> <a href="https://github.com/auxten/clickmem">ClickMem</a> &mdash; chDB + Qwen3</li>
+    <li><strong>Hardware:</strong> <a href="https://github.com/auxten/handson">HandsOn</a> IP-KVM (Rock 5B)</li>
+  </ul>
+  <p class="fragment highlight" style="margin-top:1em; font-size:0.82em;">Recurring cost: ~$200/month &mdash; the Codex subscription I already pay for.</p>
+</section>
+
+<!-- ============ 5 LESSONS ============ -->
+<section>
+  <h2>Five Things I'd Tell You</h2>
+  <ol class="lessons">
+    <li class="fragment"><strong>Infrastructure &gt; prompts.</strong> <span>&mdash; System engineering is the moat.</span></li>
+    <li class="fragment"><strong>One sentence can migrate your whole brain.</strong> <span>&mdash; Portable skills + memory beat any lock-in.</span></li>
+    <li class="fragment"><strong>Bad memory is worse than no memory.</strong> <span>&mdash; A real partner has to be able to forget.</span></li>
+    <li class="fragment"><strong>Reliability earns trust.</strong> <span>&mdash; Instant ack + a closed loop beat raw capability.</span></li>
+    <li class="fragment"><strong>Treat it like a coworker, not a tool.</strong> <span>&mdash; Containment = safety + freedom.</span></li>
+  </ol>
+</section>
+
+<!-- ============ END ============ -->
+<section>
+  <h1 style="margin-bottom: 0.2em;">Keep Building,<br>Keep Fresh.</h1>
+  <p class="sub" style="margin-bottom: 1.2em;">
+    <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a> &middot;
+    <a href="https://github.com/chdb-io/chdb">chDB</a> &middot;
+    <a href="https://github.com/auxten/clickmem">ClickMem</a> &middot;
+    <a href="https://github.com/auxten/handson">HandsOn</a>
+  </p>
+  <p>
+    <a href="https://x.com/auxten">@auxten</a> &middot;
+    <a href="https://auxten.com">auxten.com</a>
+  </p>
+  <h2 style="margin-top: 1em;">Q&amp;A <span class="emoji">&#9889;</span></h2>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720
+});
+</script>
+</body>
+</html>
