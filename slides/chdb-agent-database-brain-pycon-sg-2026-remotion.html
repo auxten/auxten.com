@@ -710,13 +710,20 @@ sess.query("SELECT count() FROM file('log.pq')")</code></pre>
         </div>
         <p style="margin-top:18px;color:var(--ink);font-size:23px;">Three sources, one query, no load step.</p>
       </div>
-      <pre style="align-self:center;"><code class="language-python">chdb.query("""
+      <div>
+        <pre><code class="language-python">chdb.query("""
   SELECT u.name, u.age, o.total
   FROM url('https://api.co/users.parquet') u
   JOIN file('orders.csv')      o ON o.uid = u.uid
   JOIN Python(enriched_df)     e ON e.uid = u.uid
   WHERE u.age > 25
 """)</code></pre>
+        <div style="margin-top:14px;font-size:18px;font-weight:900;color:var(--muted);">same join, pandas-style (runs on chDB):</div>
+        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import datastore as pd
+(pd.read_parquet("https://api.co/users.parquet")
+   .merge(pd.read_csv("orders.csv"), on="uid")
+   .merge(pd.DataFrame(enriched_df), on="uid"))</code></pre>
+      </div>
     </div>
   </div>
 </section>
@@ -764,13 +771,20 @@ sess.query("SELECT count() FROM file('log.pq')")</code></pre>
         <div class="card" style="border-color:var(--green);margin-top:24px;"><h3 class="green">cosineDistance</h3><p>how close two meanings are, as a number (0 = identical)</p></div>
         <p style="margin-top:22px;font-size:22px;color:var(--muted);">Need project, tags, or task-history? Add WHERE / JOIN lines &mdash; same query.</p>
       </div>
-      <pre style="align-self:center;"><code class="language-sql">SELECT
+      <div>
+        <pre><code class="language-sql">SELECT
   content,
   1 - cosineDistance(embedding, query_vec) AS meaning
 FROM memories
 WHERE status = 'active'
 ORDER BY pinned DESC, meaning DESC
 LIMIT 8</code></pre>
+        <div style="margin-top:14px;font-size:18px;font-weight:900;color:var(--muted);">same recall, pandas-style:</div>
+        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import datastore as pd
+m = pd.read_parquet("memories.parquet")
+m[m.status == "active"].sort_values(
+    "pinned", ascending=False).head(8)</code></pre>
+      </div>
     </div>
   </div>
 </section>
