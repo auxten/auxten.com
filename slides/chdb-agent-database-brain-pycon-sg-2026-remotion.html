@@ -1017,10 +1017,10 @@ LIMIT 10
 </section>
 
 <section>
-  <div class="topbar"><span>Example project</span><span class="right"><span class="meter"><span style="width:62.5%"></span></span>10 / 16</span></div>
+  <div class="topbar"><span>Agent memory</span><span class="right"><span class="meter"><span style="width:62.5%"></span></span>10 / 16</span></div>
   <div class="frame">
-    <h2>ClickMem: an example built on chDB</h2>
-    <p style="margin-top:16px;font-size:26px;">A small open-source agent memory, with chDB doing the remembering.</p>
+    <h2>What good agent memory needs</h2>
+    <p style="margin-top:16px;font-size:26px;">Memory the agent can filter, rank, and grow &mdash; not a prompt blob.</p>
     <div class="grid3" style="margin-top:44px;">
       <div class="card green" style="height:250px;"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg><h3 class="green" style="margin-top:8px;">Memories are rows</h3><p style="margin-top:12px;color:var(--green);">Filter, rank, and audit them with plain SQL.</p></div>
       <div class="card blue" style="height:250px;"><svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6M11 8v6"/></svg><h3 class="blue" style="margin-top:8px;">Recall = SQL + vector</h3><p style="margin-top:12px;color:var(--blue);">Meaning and rules in one query.</p></div>
@@ -1030,9 +1030,9 @@ LIMIT 10
 </section>
 
 <section>
-  <div class="topbar"><span>ClickMem</span><span class="right"><span class="meter"><span style="width:68.75%"></span></span>11 / 16</span></div>
+  <div class="topbar"><span>Memory lifecycle</span><span class="right"><span class="meter"><span style="width:68.75%"></span></span>11 / 16</span></div>
   <div class="frame">
-    <h2>ClickMem: memory with a lifecycle</h2>
+    <h2>Agent memory has a lifecycle</h2>
     <div class="flow" style="margin-top:46px;">
       <div class="card green" style="width:210px;height:150px;"><h3>remember</h3><p style="margin-top:14px;color:var(--green);">explicit decision</p></div>
       <div class="arrow">&rarr;</div>
@@ -1125,10 +1125,11 @@ sess.query("""CREATE OR REPLACE VIEW memories AS
 </section>
 
 <section>
-  <div class="topbar"><span>Build it</span><span class="right"><span class="meter"><span style="width:93.75%"></span></span>15 / 16</span></div>
+  <div class="topbar"><span>ClickMem</span><span class="right"><span class="meter"><span style="width:93.75%"></span></span>15 / 16</span></div>
   <div class="frame">
-    <h2>Build this afternoon: mini ClickMem</h2>
-    <div class="flow" style="margin-top:36px;">
+    <h2>Meet ClickMem</h2>
+    <p style="margin-top:10px;font-size:23px;">That whole pattern &mdash; lifecycle, recall, local-first &mdash; packaged as an open-source project on chDB. Build the core yourself:</p>
+    <div class="flow" style="margin-top:22px;">
       <div class="card green" style="width:200px;height:175px;"><h3>create</h3><p style="margin-top:10px;color:var(--green);">memories table</p></div>
       <div class="arrow">&rarr;</div>
       <div class="card yellow" style="width:200px;height:175px;"><h3>insert</h3><p style="margin-top:10px;color:var(--ink);">explicit decisions</p></div>
