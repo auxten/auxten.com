@@ -1006,14 +1006,13 @@ LIMIT 10
   <div class="frame">
     <h2>Join anything with SQL</h2>
     <div style="text-align:center;margin-top:24px;">
-      <div class="join-code"><div class="jl"><span class="jfn">chdb.query</span>(<span class="jstr">"""</span></div><div class="jl">  <span class="jkw">SELECT</span> name, age, purchase_total</div><div class="jl">  <span class="jkw">FROM</span> <span class="jsrc jsrc-http">url(<span class="jstr">'https://api.co/users.parquet'</span>)</span> users <span class="jbadge jbadge-http">HTTP</span></div><div class="jl">  <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-csv">file(<span class="jstr">'orders.csv'</span>)</span> orders <span class="jbadge jbadge-csv">CSV</span></div><div class="jl">    <span class="jkw">ON</span> users.uid = orders.uid</div><div class="jl">  <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-py">Python(processed_df)</span> enriched <span class="jbadge jbadge-py">DataFrame</span></div><div class="jl">    <span class="jkw">ON</span> enriched.uid = users.uid</div><div class="jl"><span class="jstr">"""</span>)</div></div>
+      <div class="join-code" style="font-size:16px;"><div class="jl"><span class="jfn">chdb.query</span>(<span class="jstr">"""</span></div><div class="jl">  <span class="jkw">SELECT</span> name, age, purchase_total</div><div class="jl">  <span class="jkw">FROM</span> <span class="jsrc jsrc-http">url(<span class="jstr">'https://api.co/users.parquet'</span>)</span> users <span class="jbadge jbadge-http">HTTP</span></div><div class="jl">  <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-csv">file(<span class="jstr">'orders.csv'</span>)</span> orders <span class="jbadge jbadge-csv">CSV</span></div><div class="jl">    <span class="jkw">ON</span> users.uid = orders.uid</div><div class="jl">  <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-py">Python(processed_df)</span> enriched <span class="jbadge jbadge-py">DataFrame</span></div><div class="jl">    <span class="jkw">ON</span> enriched.uid = users.uid</div><div class="jl"><span class="jstr">"""</span>)</div></div>
     </div>
     <p style="margin-top:14px;text-align:center;color:var(--ink);font-size:23px;">Three sources, one query &mdash; no load step.</p>
     <div style="text-align:center;margin-top:12px;font-size:18px;font-weight:900;color:var(--muted);">same join, pandas-style (runs on chDB):</div>
-    <pre class="small" style="margin-top:8px !important;"><code class="language-python">import chdb.datastore as pd
-(pd.read_parquet("https://api.co/users.parquet")
-   .merge(pd.read_csv("orders.csv"), on="uid")
-   .merge(pd.DataFrame(enriched_df), on="uid"))</code></pre>
+    <div style="text-align:center;margin-top:8px;">
+      <div class="join-code" style="font-size:16px;"><div class="jl"><span class="jkw">import</span> chdb.datastore <span class="jkw">as</span> pd</div><div class="jl">(pd.<span class="jsrc jsrc-http">read_parquet(<span class="jstr">'https://api.co/users.parquet'</span>)</span> <span class="jbadge jbadge-http">HTTP</span></div><div class="jl">   .<span class="jfn">merge</span>(pd.<span class="jsrc jsrc-csv">read_csv(<span class="jstr">'orders.csv'</span>)</span>, on=<span class="jstr">'uid'</span>) <span class="jbadge jbadge-csv">CSV</span></div><div class="jl">   .<span class="jfn">merge</span>(pd.<span class="jsrc jsrc-py">DataFrame(enriched_df)</span>, on=<span class="jstr">'uid'</span>)) <span class="jbadge jbadge-py">DataFrame</span></div></div>
+    </div>
   </div>
 </section>
 
@@ -1126,18 +1125,23 @@ sess.query("CREATE OR REPLACE VIEW memories_cloud AS SELECT * FROM remote('cloud
   <div class="frame">
     <h2>Build this afternoon: mini ClickMem</h2>
     <div class="flow" style="margin-top:36px;">
-      <div class="card green" style="width:200px;height:130px;"><h3>create</h3><p style="margin-top:10px;color:var(--green);">memories table</p></div>
+      <div class="card green" style="width:200px;height:175px;"><h3>create</h3><p style="margin-top:10px;color:var(--green);">memories table</p></div>
       <div class="arrow">&rarr;</div>
-      <div class="card yellow" style="width:200px;height:130px;"><h3>insert</h3><p style="margin-top:10px;color:var(--ink);">explicit decisions</p></div>
+      <div class="card yellow" style="width:200px;height:175px;"><h3>insert</h3><p style="margin-top:10px;color:var(--ink);">explicit decisions</p></div>
       <div class="arrow">&rarr;</div>
-      <div class="card blue" style="width:200px;height:130px;"><h3>recall</h3><p style="margin-top:10px;color:var(--blue);">SQL + vector</p></div>
+      <div class="card blue" style="width:200px;height:175px;"><h3>recall</h3><p style="margin-top:10px;color:var(--blue);">similarity + filter</p></div>
       <div class="arrow">&rarr;</div>
-      <div class="card dark" style="width:200px;height:130px;"><h3 style="color:#fff;">evaluate</h3><p style="margin-top:10px;color:#c8ced6;">which memory helped?</p></div>
+      <div class="card dark" style="width:200px;height:175px;"><h3 style="color:#fff;">evaluate</h3><p style="margin-top:10px;color:#c8ced6;">which memory helped?</p></div>
     </div>
-    <pre class="small" style="margin-top:36px !important;"><code class="language-python">sess = chs.Session("./agent_context")
+    <pre class="small" style="margin-top:24px !important;"><code class="language-python">sess = chs.Session("./agent_context")
 sess.query("CREATE TABLE memories (...) ENGINE = MergeTree ORDER BY id")
 sess.query("INSERT INTO memories VALUES (...)")
-sess.query("SELECT content FROM memories ORDER BY cosineDistance(embedding, ?) LIMIT 8")</code></pre>
+sess.query("""
+  SELECT content FROM memories
+  WHERE created_at > now() - INTERVAL 30 DAY  -- filter
+  ORDER BY cosineDistance(embedding, ?) LIMIT 8  -- similarity
+""")</code></pre>
+    <p style="margin-top:12px;font-size:20px;color:var(--muted);">Embeddings: <strong style="color:var(--ink);">Qwen/Qwen3-Embedding-0.6B</strong> via sentence-transformers, runs locally.</p>
   </div>
 </section>
 
