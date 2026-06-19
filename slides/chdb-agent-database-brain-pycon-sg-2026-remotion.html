@@ -1114,8 +1114,12 @@ m[m.status == "active"].sort_values(
       <div class="arrow" style="font-size:54px;">&rarr;</div>
       <div class="card blue" style="width:340px;height:200px;"><div style="font-size:70px;font-weight:900;">Day 100</div><p style="margin-top:14px;color:var(--blue);">ClickHouse Server or Cloud when memory is shared or large</p></div>
     </div>
-    <pre class="small" style="margin-top:40px !important;"><code class="language-python"># Same SQL surface; the view points at a remote cluster
-sess.query("CREATE OR REPLACE VIEW memories_cloud AS SELECT * FROM remote('cloud...', db, memories)")</code></pre>
+    <pre class="small" style="margin-top:28px !important;"><code class="language-python"># Day 1 — query local memory
+sess.query("SELECT content FROM memories WHERE project = 'checkout'")
+
+# Day 100 — repoint the same name at the cluster (SELECT unchanged)
+sess.query("""CREATE OR REPLACE VIEW memories AS
+              SELECT * FROM remote('cloud:9440', db, memories)""")</code></pre>
     <p style="margin-top:18px;font-size:23px;color:var(--muted);">Honest note: remote reads pay the network cost again &mdash; keep the hot path local.</p>
   </div>
 </section>
