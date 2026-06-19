@@ -552,7 +552,7 @@
 <div class="slides">
 
 <section>
-  <div class="topbar"><span>PyCon Singapore 2026</span><span class="right"><span class="meter"><span style="width:7.14%"></span></span>01 / 14</span></div>
+  <div class="topbar"><span>PyCon Singapore 2026</span><span class="right"><span class="meter"><span style="width:6.67%"></span></span>01 / 15</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns: 0.68fr 0.32fr;">
       <div>
@@ -573,7 +573,7 @@
 </section>
 
 <section>
-  <div class="topbar"><span>The pain</span><span class="right"><span class="meter"><span style="width:14.29%"></span></span>02 / 14</span></div>
+  <div class="topbar"><span>The pain</span><span class="right"><span class="meter"><span style="width:13.33%"></span></span>02 / 15</span></div>
   <div class="frame">
     <h2>A familiar agent failure</h2>
     <div class="grid3" style="margin-top:40px;">
@@ -597,7 +597,7 @@
 </section>
 
 <section>
-  <div class="topbar"><span>The idea</span><span class="right"><span class="meter"><span style="width:21.43%"></span></span>03 / 14</span></div>
+  <div class="topbar"><span>The idea</span><span class="right"><span class="meter"><span style="width:20%"></span></span>03 / 15</span></div>
   <div class="frame">
     <h2 style="width:920px;">Your agent's context is really a pile of data</h2>
     <p style="margin-top:14px;font-size:25px;">"Context engineering" just means deciding what the agent sees each step. That's four kinds of data:</p>
@@ -614,7 +614,7 @@
 </section>
 
 <section>
-  <div class="topbar"><span>Why a database</span><span class="right"><span class="meter"><span style="width:28.57%"></span></span>04 / 14</span></div>
+  <div class="topbar"><span>Why a database</span><span class="right"><span class="meter"><span style="width:26.67%"></span></span>04 / 15</span></div>
   <div class="frame">
     <h2>"Can't I just use what I already have?"</h2>
     <div class="grid2" style="margin-top:28px;grid-template-columns:1fr 1fr;height:auto;gap:16px;">
@@ -624,13 +624,13 @@
       <div class="card"><h3 class="red">Vector DB</h3><p style="margin-top:8px;">Similarity only. Can't filter + join + aggregate + audit in one query.</p></div>
     </div>
     <div class="card yellow" style="margin-top:26px;font-size:28px;font-weight:900;line-height:1.22;">
-      Vector search is one operator. Agent memory is the whole data system around it.
+      Vector search is just an index. Agent memory is the whole database around it.
     </div>
   </div>
 </section>
 
 <section>
-  <div class="topbar"><span>ClickHouse</span><span class="right"><span class="meter"><span style="width:35.71%"></span></span>05 / 14</span></div>
+  <div class="topbar"><span>ClickHouse</span><span class="right"><span class="meter"><span style="width:33.33%"></span></span>05 / 15</span></div>
   <div class="frame">
     <h2>ClickHouse in 60 seconds</h2>
     <p style="margin-top:12px;font-size:25px;">If you've never met it (most of this room hasn't), here's all you need:</p>
@@ -646,7 +646,7 @@
 </section>
 
 <section>
-  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:42.86%"></span></span>06 / 14</span></div>
+  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:40%"></span></span>06 / 15</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.55fr 0.45fr;">
       <div>
@@ -676,7 +676,22 @@ sess.query("SELECT count() FROM file('log.pq')")</code></pre>
 </section>
 
 <section>
-  <div class="topbar"><span>Multi-source SQL</span><span class="right"><span class="meter"><span style="width:50%"></span></span>07 / 14</span></div>
+  <div class="topbar"><span>chDB API</span><span class="right"><span class="meter"><span style="width:46.67%"></span></span>07 / 15</span></div>
+  <div class="frame">
+    <h2>chDB drops into your Python data stack</h2>
+    <div class="grid3" style="margin-top:44px;">
+      <div class="card green" style="height:250px;"><h3 class="green">70+ data formats</h3><p style="margin-top:14px;color:var(--green);">Parquet, CSV, JSON, Arrow, ORC &mdash; read and write, no converters.</p></div>
+      <div class="card blue" style="height:250px;"><h3 class="blue">Zero-copy pandas &amp; Arrow</h3><p style="margin-top:14px;color:var(--blue);">Query a DataFrame or Arrow table in place &mdash; no copy, no load step.</p></div>
+      <div class="card yellow" style="height:250px;"><h3>Pandas-style API</h3><p style="margin-top:14px;color:var(--ink);">Prefer DataFrames to raw SQL? chDB speaks that too.</p></div>
+    </div>
+    <div class="card dark" style="margin-top:30px;font-size:28px;font-weight:900;line-height:1.22;">
+      It fits your existing pandas / Arrow code &mdash; you don't rebuild around it.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Multi-source SQL</span><span class="right"><span class="meter"><span style="width:53.33%"></span></span>08 / 15</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.42fr 0.58fr;">
       <div>
@@ -707,27 +722,20 @@ sess.query("SELECT count() FROM file('log.pq')")</code></pre>
 </section>
 
 <section>
-  <div class="topbar"><span>Memory model</span><span class="right"><span class="meter"><span style="width:57.14%"></span></span>08 / 14</span></div>
+  <div class="topbar"><span>Example project</span><span class="right"><span class="meter"><span style="width:60%"></span></span>09 / 15</span></div>
   <div class="frame">
-    <h2>Good agent memory is just a row</h2>
-    <div class="table-grid" style="margin-top:30px;grid-template-columns:1.5fr 0.85fr 0.75fr 0.6fr 0.55fr;">
-      <div class="head">content</div><div class="head">project</div><div class="head">tags</div><div class="head">status</div><div class="head">pinned</div>
-      <div>Use chDB file() for local Parquet checks.</div><div>auxten/chdb</div><div>parquet, fidelity</div><div>active</div><div>true</div>
-      <div>This repo standardizes on uv, not Poetry.</div><div>agent/codex</div><div>workflow</div><div>active</div><div>false</div>
+    <h2>ClickMem: an example built on chDB</h2>
+    <p style="margin-top:16px;font-size:26px;">A small open-source agent memory, with chDB doing the remembering.</p>
+    <div class="grid3" style="margin-top:44px;">
+      <div class="card green" style="height:250px;"><h3 class="green">Memories are rows</h3><p style="margin-top:14px;color:var(--green);">Filter, rank, and audit them with plain SQL.</p></div>
+      <div class="card blue" style="height:250px;"><h3 class="blue">Recall = SQL + vector</h3><p style="margin-top:14px;color:var(--blue);">Meaning and rules in one query.</p></div>
+      <div class="card yellow" style="height:250px;"><h3>Local now, cloud later</h3><p style="margin-top:14px;color:var(--ink);">Same SQL from laptop to ClickHouse.</p></div>
     </div>
-    <pre class="small" style="margin-top:24px !important;"><code class="language-python">sess.query("""
-CREATE TABLE memories (
-  id UUID, content String, project String,
-  tags Array(String), status String, pinned UInt8,
-  embedding Array(Float32)
-) ENGINE = MergeTree ORDER BY id   -- MergeTree = the on-disk table; ignore the tuning for now
-""")</code></pre>
-    <p style="margin-top:16px;font-size:24px;color:var(--ink);">Once memory is a row, recall is SQL. <strong>ClickMem</strong> is a small open-source store I built on exactly this.</p>
   </div>
 </section>
 
 <section>
-  <div class="topbar"><span>ClickMem</span><span class="right"><span class="meter"><span style="width:64.29%"></span></span>09 / 14</span></div>
+  <div class="topbar"><span>ClickMem</span><span class="right"><span class="meter"><span style="width:66.67%"></span></span>10 / 15</span></div>
   <div class="frame">
     <h2>ClickMem: memory with a lifecycle</h2>
     <div class="flow" style="margin-top:46px;">
@@ -747,7 +755,7 @@ CREATE TABLE memories (
 </section>
 
 <section>
-  <div class="topbar"><span>Recall SQL</span><span class="right"><span class="meter"><span style="width:71.43%"></span></span>10 / 14</span></div>
+  <div class="topbar"><span>Recall SQL</span><span class="right"><span class="meter"><span style="width:73.33%"></span></span>11 / 15</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.46fr 0.54fr;">
       <div>
@@ -768,7 +776,7 @@ LIMIT 8</code></pre>
 </section>
 
 <section>
-  <div class="topbar"><span>Local hot path</span><span class="right"><span class="meter"><span style="width:78.57%"></span></span>11 / 14</span></div>
+  <div class="topbar"><span>Local hot path</span><span class="right"><span class="meter"><span style="width:80%"></span></span>12 / 15</span></div>
   <div class="frame">
     <h2>Recall sits inside the agent loop</h2>
     <div style="margin-top:48px;">
@@ -792,7 +800,7 @@ LIMIT 8</code></pre>
 </section>
 
 <section>
-  <div class="topbar"><span>Scale path</span><span class="right"><span class="meter"><span style="width:85.71%"></span></span>12 / 14</span></div>
+  <div class="topbar"><span>Scale path</span><span class="right"><span class="meter"><span style="width:86.67%"></span></span>13 / 15</span></div>
   <div class="frame">
     <h2>Start local, scale to ClickHouse</h2>
     <div class="flow" style="margin-top:48px;">
@@ -807,7 +815,7 @@ sess.query("CREATE OR REPLACE VIEW memories_cloud AS SELECT * FROM remote('cloud
 </section>
 
 <section>
-  <div class="topbar"><span>Build it</span><span class="right"><span class="meter"><span style="width:92.86%"></span></span>13 / 14</span></div>
+  <div class="topbar"><span>Build it</span><span class="right"><span class="meter"><span style="width:93.33%"></span></span>14 / 15</span></div>
   <div class="frame">
     <h2>Build this afternoon: mini ClickMem</h2>
     <div class="flow" style="margin-top:36px;">
@@ -827,7 +835,7 @@ sess.query("SELECT content FROM memories ORDER BY cosineDistance(embedding, ?) L
 </section>
 
 <section>
-  <div class="topbar"><span>Close</span><span class="right"><span class="meter"><span style="width:100%"></span></span>14 / 14</span></div>
+  <div class="topbar"><span>Close</span><span class="right"><span class="meter"><span style="width:100%"></span></span>15 / 15</span></div>
   <div class="frame">
     <h2>Three takeaways</h2>
     <div style="margin-top:30px;">
