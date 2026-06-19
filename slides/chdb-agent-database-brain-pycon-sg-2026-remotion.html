@@ -541,6 +541,39 @@
     font-weight: 900;
   }
 
+  /* Join Anything — styled code block (ported from PythonAsia deck) */
+  .join-code {
+    display: inline-block;
+    text-align: left;
+    background: var(--code);
+    color: #f8f8f2;
+    font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    font-size: 19px;
+    line-height: 1.62;
+    padding: 18px 26px;
+    border-radius: 10px;
+    box-shadow: 0 18px 46px rgba(0,0,0,0.18);
+    max-width: 100%;
+  }
+  .jl { white-space: pre; min-height: 1.3em; }
+  .jkw { color: #66d9ef; font-weight: 600; }
+  .jstr { color: #e6db74; }
+  .jnum { color: #ae81ff; }
+  .jfn { color: #a6e22e; }
+  .jcmt { color: #75715e; }
+  .jsrc { padding: 0.08em 0.3em; border-radius: 4px; font-weight: 600; }
+  .jsrc-http { background: rgba(21,101,192,0.3); color: #82b1ff; border-bottom: 2px solid rgba(144,202,249,0.6); }
+  .jsrc-csv { background: rgba(230,81,0,0.3); color: #ffcc80; border-bottom: 2px solid rgba(255,204,128,0.6); }
+  .jsrc-py { background: rgba(46,125,50,0.3); color: #a5d6a7; border-bottom: 2px solid rgba(165,214,167,0.6); }
+  .jsrc-http .jstr { color: #bbdefb; }
+  .jsrc-csv .jstr { color: #ffe0b2; }
+  .jbadge { font-size: 0.72em; font-weight: 700; padding: 0.15em 0.55em; border-radius: 10px; margin-left: 0.6em; vertical-align: middle; letter-spacing: 0.02em; }
+  .jbadge-http { background: #e3f2fd; color: #1565c0; border: 1.5px solid #90caf9; }
+  .jbadge-csv { background: #fff3e0; color: #e65100; border: 1.5px solid #ffcc80; }
+  .jbadge-py { background: #e8f5e9; color: #2e7d32; border: 1.5px solid #a5d6a7; }
+
   .reveal .controls,
   .reveal .progress {
     color: var(--orange);
@@ -649,8 +682,8 @@
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.55fr 0.45fr;">
       <div>
-        <h2 style="font-size:46px;">chDB: ClickHouse inside Python</h2>
-        <p style="margin-top:12px;color:var(--ink);font-size:22px;line-height:1.25;">The same engine, embedded in your process. No server, no daemon, no network hop.</p>
+        <h2 style="font-size:44px;">chDB: a rocket engine on a bicycle</h2>
+        <p style="margin-top:12px;color:var(--ink);font-size:22px;line-height:1.25;">The ClickHouse engine, embedded in your Python process &mdash; SQLite-simple, 100&times; faster for analytics.</p>
         <pre class="chdb-mini-code" style="margin-top:16px !important;"><code class="language-python"># pip install chdb
 from chdb import session as chs
 sess = chs.Session("./agent")
@@ -692,38 +725,16 @@ sess.query("SELECT count() FROM file('log.pq')")</code></pre>
 <section>
   <div class="topbar"><span>Multi-source SQL</span><span class="right"><span class="meter"><span style="width:53.33%"></span></span>08 / 15</span></div>
   <div class="frame">
-    <div class="grid2" style="grid-template-columns:0.42fr 0.58fr;">
-      <div>
-        <h2 style="font-size:50px;">Join anything with SQL</h2>
-        <div class="source-card compact card" style="border-color:var(--blue);margin-top:24px;">
-          <div class="source-icon" style="background:var(--blue);">HTTP</div>
-          <div><h3>url(...)</h3><p>Remote Parquet, CSV, JSON.</p></div>
-        </div>
-        <div class="source-card compact card" style="border-color:var(--green);">
-          <div class="source-icon" style="background:var(--green);">FILE</div>
-          <div><h3>file(...)</h3><p>Local CSV, Parquet, Arrow.</p></div>
-        </div>
-        <div class="source-card compact card" style="border-color:var(--orange);">
-          <div class="source-icon" style="background:var(--orange);">PY</div>
-          <div><h3>Python(...)</h3><p>An in-process DataFrame.</p></div>
-        </div>
-        <p style="margin-top:18px;color:var(--ink);font-size:23px;">Three sources, one query, no load step.</p>
-      </div>
-      <div>
-        <pre><code class="language-python">chdb.query("""
-  SELECT u.name, u.age, o.total
-  FROM url('https://api.co/users.parquet') u
-  JOIN file('orders.csv')      o ON o.uid = u.uid
-  JOIN Python(enriched_df)     e ON e.uid = u.uid
-  WHERE u.age > 25
-""")</code></pre>
-        <div style="margin-top:14px;font-size:18px;font-weight:900;color:var(--muted);">same join, pandas-style (runs on chDB):</div>
-        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import chdb.datastore as pd
+    <h2>Join anything with SQL</h2>
+    <div style="text-align:center;margin-top:24px;">
+      <div class="join-code"><div class="jl"><span class="jfn">chdb.query</span>(<span class="jstr">"""</span></div><div class="jl">  <span class="jkw">SELECT</span> name, age, purchase_total</div><div class="jl">  <span class="jkw">FROM</span> <span class="jsrc jsrc-http">url(<span class="jstr">'https://api.co/users.parquet'</span>)</span> users <span class="jbadge jbadge-http">HTTP</span></div><div class="jl">  <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-csv">file(<span class="jstr">'orders.csv'</span>)</span> orders <span class="jbadge jbadge-csv">CSV</span></div><div class="jl">    <span class="jkw">ON</span> users.uid = orders.uid</div><div class="jl">  <span class="jkw">LEFT JOIN</span> <span class="jsrc jsrc-py">Python(processed_df)</span> enriched <span class="jbadge jbadge-py">DataFrame</span></div><div class="jl">    <span class="jkw">ON</span> enriched.uid = users.uid</div><div class="jl"><span class="jstr">"""</span>)</div></div>
+    </div>
+    <p style="margin-top:14px;text-align:center;color:var(--ink);font-size:23px;">Three sources, one query &mdash; no load step.</p>
+    <div style="text-align:center;margin-top:12px;font-size:18px;font-weight:900;color:var(--muted);">same join, pandas-style (runs on chDB):</div>
+    <pre class="small" style="margin-top:8px !important;"><code class="language-python">import chdb.datastore as pd
 (pd.read_parquet("https://api.co/users.parquet")
    .merge(pd.read_csv("orders.csv"), on="uid")
    .merge(pd.DataFrame(enriched_df), on="uid"))</code></pre>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -781,8 +792,11 @@ LIMIT 8</code></pre>
         <div style="margin-top:14px;font-size:18px;font-weight:900;color:var(--muted);">same recall, pandas-style:</div>
         <pre class="small" style="margin-top:8px !important;"><code class="language-python">import chdb.datastore as pd
 m = pd.read_parquet("memories.parquet")
+m = m.assign(
+    meaning=1 - pd.F.cosineDistance(
+        m.embedding, pd.F.array(*query_vec)))
 m[m.status == "active"].sort_values(
-    "pinned", ascending=False).head(8)</code></pre>
+    ["pinned", "meaning"], ascending=False).head(8)</code></pre>
       </div>
     </div>
   </div>
