@@ -612,6 +612,7 @@
   .morph-py {
     position: relative; flex: 0 0 auto;
     width: 70%; max-width: 700px;
+    overflow: hidden;
     transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .step-3 .morph-py { width: 46%; }
@@ -621,7 +622,7 @@
     box-shadow: 0 4px 24px rgba(0,0,0,0.15);
     transition: opacity 0.5s ease, font-size 0.5s ease;
   }
-  .step-3 .morph-py > .join-code { font-size: 0.78em; }
+  .step-3 .morph-py > .join-code { font-size: 16px; }
   .step-3 .morph-sql pre code { font-size: 16px; }
   .morph-py .py-old { transition: opacity 0.5s ease; }
   .morph-py .py-new {
@@ -1146,7 +1147,7 @@ sess.query("SELECT content FROM memories ORDER BY cosineDistance(embedding, ?) L
     <h2>Three takeaways</h2>
     <div style="margin-top:30px;">
       <div class="card takeaway"><div class="num">01</div><div><h3>Context is data.</h3><p>Filter it, rank it, join it, evaluate it.</p></div></div>
-      <div class="card yellow takeaway"><div class="num">02</div><div><h3>Recall is a query.</h3><p>Semantic meaning + simple rules, in one SQL.</p></div></div>
+      <div class="card takeaway"><div class="num">02</div><div><h3>Recall is a query.</h3><p>Semantic meaning + simple rules, in one SQL.</p></div></div>
       <div class="card takeaway"><div class="num">03</div><div><h3>Local first.</h3><p>chDB now; ClickHouse when shared or large.</p></div></div>
     </div>
     <div class="card dark" style="margin-top:26px;display:flex;align-items:center;justify-content:space-between;">
@@ -1155,7 +1156,7 @@ sess.query("SELECT content FROM memories ORDER BY cosineDistance(embedding, ?) L
         <span style="font-size:20px;color:#c8ced6;">github.com/chdb-io/chdb &nbsp;&middot;&nbsp; github.com/auxten/clickmem</span>
       </div>
       <div style="display:flex;align-items:center;gap:16px;">
-        <img class="logo" src="logos/chdb-light.png" alt="chDB logo" style="width:64px;height:64px;">
+        <img class="logo" src="logos/chdb-light.png" alt="chDB logo" style="width:64px;height:64px;filter:brightness(0) invert(1);">
         <div style="font-size:32px;font-weight:900;color:#fff;">Q&amp;A</div>
       </div>
     </div>
