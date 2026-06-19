@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giving Your AI Agent a Database Brain - PyCon SG 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #e65100;
+    --c-ch-yellow: #fadb14;
+    --c-ch-orange: #e65100;
+    --c-blue: #1565c0;
+    --c-green: #2e7d32;
+    --c-red: #c62828;
+    --c-muted: #7a7a7a;
+    --c-border: #e5e7eb;
+    --c-card: #ffffff;
+    --c-ink: #1a1a1a;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; }
+  .reveal section { text-align: center; }
+  .reveal h1, .reveal h2, .reveal h3 {
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    line-height: 1.18;
+  }
+  .reveal h1 { font-size: 1.95em; color: var(--c-ink); margin-bottom: 0.3em; }
+  .reveal h2 { font-size: 1.42em; color: var(--c-ch-orange); margin-bottom: 0.55em; }
+  .reveal h3 { font-size: 0.95em; color: #bf360c; margin-bottom: 0.35em; }
+  .reveal p { line-height: 1.55; margin-bottom: 0.35em; }
+  .reveal section > p { font-size: 0.8em; }
+  .reveal ul, .reveal ol { display: inline-block; text-align: left; margin: 0.2em 0 0 0.4em; }
+  .reveal li { margin-bottom: 0.42em; font-size: 0.76em; line-height: 1.48; }
+  .reveal li strong { font-weight: 800; }
+  .reveal a { color: var(--c-blue); }
+
+  .highlight { color: var(--c-ch-orange); font-weight: 800; }
+  .hl-green { color: var(--c-green); font-weight: 800; }
+  .hl-blue { color: var(--c-blue); font-weight: 800; }
+  .muted { color: var(--c-muted); }
+  .dim { color: var(--c-muted); font-size: 0.62em; letter-spacing: 0.01em; line-height: 1.4; }
+  .sub { color: #555; font-size: 0.68em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .reveal code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #f2f3f5;
+    color: #c62828;
+    border-radius: 4px;
+    padding: 0.1em 0.28em;
+    font-size: 0.84em;
+  }
+  .reveal pre {
+    width: auto;
+    max-width: 94%;
+    display: inline-block;
+    text-align: left;
+    margin: 0.25em auto;
+    border-radius: 10px;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.12);
+  }
+  .reveal pre code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #272822;
+    color: #f8f8f2;
+    font-size: 0.56em;
+    line-height: 1.44;
+    padding: 0.85em 1.1em;
+    border-radius: 10px;
+    max-height: 530px;
+  }
+
+  .title-slide h1 { font-size: 1.7em; line-height: 1.18; margin-bottom: 0.2em; }
+  .title-slide .subtitle { color: #555; font-size: 0.74em; margin-top: 0; }
+  .title-slide .speaker { color: #333; font-size: 0.68em; margin-top: 0.9em; }
+  .title-slide .sub-info { color: #888; font-size: 0.56em; margin-top: 0.15em; }
+  .logo-line { display: flex; gap: 1.2em; align-items: center; justify-content: center; margin: 0.2em 0 0.8em; }
+  .logo-line img { box-shadow: none !important; border-radius: 0 !important; }
+
+  .reveal section img {
+    max-height: 56vh;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+  }
+  .reveal img.no-shadow, .reveal .no-shadow img { box-shadow: none !important; }
+  .hero-img { max-height: 46vh !important; }
+
+  .two-col {
+    display: flex;
+    gap: 1.6em;
+    align-items: center;
+    justify-content: center;
+    width: 96%;
+    margin: 0 auto;
+  }
+  .two-col > div { flex: 1; min-width: 0; }
+  .two-col.top { align-items: flex-start; }
+  .two-col li { font-size: 0.7em; }
+  .two-col pre { max-width: 100%; display: block; }
+  .two-col pre code { font-size: 0.47em; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75em;
+    width: 94%;
+    margin: 0.45em auto;
+  }
+  .cards.two { grid-template-columns: repeat(2, 1fr); }
+  .card {
+    background: var(--c-card);
+    border: 1.5px solid var(--c-border);
+    border-radius: 10px;
+    padding: 0.62em 0.72em;
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  .card h3 { color: var(--c-ink); margin: 0 0 0.28em; font-size: 0.72em; }
+  .card p { color: #565656; margin: 0; font-size: 0.55em; line-height: 1.45; }
+  .card.accent { border-color: #ffcc80; background: #fff8ef; }
+  .card.green { border-color: #a5d6a7; background: #f4fbf4; }
+  .card.blue { border-color: #90caf9; background: #f3f8ff; }
+  .card.red { border-color: #ef9a9a; background: #fff5f5; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.7em;
+    width: 94%;
+    margin: 0.5em auto;
+  }
+  .stat {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55em 0.35em;
+    text-align: center;
+  }
+  .stat .num { font-size: 1.45em; font-weight: 800; color: var(--c-ch-orange); line-height: 1.05; }
+  .stat .label { color: #666; font-size: 0.45em; line-height: 1.35; margin-top: 0.2em; }
+
+  .flow {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.45em;
+    width: 96%;
+    margin: 0.45em auto;
+    flex-wrap: wrap;
+  }
+  .node {
+    background: #fff;
+    border: 2px solid var(--c-blue);
+    border-radius: 10px;
+    padding: 0.5em 0.7em;
+    font-size: 0.56em;
+    font-weight: 800;
+    line-height: 1.25;
+    min-width: 5.8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .node small { display: block; font-weight: 500; color: #777; font-size: 0.78em; margin-top: 0.12em; }
+  .node.green { border-color: var(--c-green); background: #f4fbf4; }
+  .node.orange { border-color: var(--c-ch-orange); background: #fff8ef; }
+  .node.dark { border-color: #3a3d44; background: #25272d; color: #f3f4f6; }
+  .node.dark small { color: #aab0ba; }
+  .arrow { display: flex; align-items: center; font-size: 0.86em; color: #9aa3af; font-weight: 800; }
+
+  table.bench {
+    width: 94%;
+    margin: 0.4em auto;
+    border-collapse: collapse;
+    font-size: 0.52em;
+  }
+  table.bench th {
+    background: #25272d;
+    color: #fff;
+    text-align: left;
+    padding: 0.52em 0.65em;
+    font-weight: 800;
+  }
+  table.bench td {
+    padding: 0.48em 0.65em;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+  table.bench tr:nth-child(even) td { background: #f7f8fa; }
+  .winner { color: var(--c-green); font-weight: 800; }
+  .loser { color: var(--c-red); font-weight: 800; }
+
+  blockquote {
+    background: linear-gradient(135deg, #fff3e0 0%, #fff8f0 100%);
+    border-left: 5px solid var(--c-ch-orange);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75em 1.05em;
+    width: 80%;
+    font-size: 0.78em;
+    color: #333;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .callout {
+    display: inline-block;
+    background: #1f2328;
+    color: #fff;
+    border-radius: 12px;
+    padding: 0.7em 1.0em;
+    font-size: 0.72em;
+    line-height: 1.45;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+  }
+  .pill-row { display: flex; gap: 0.45em; justify-content: center; flex-wrap: wrap; width: 94%; margin: 0.5em auto; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.25em 0.72em;
+    font-size: 0.52em;
+    font-weight: 800;
+    background: #eef3ff;
+    color: var(--c-blue);
+    border: 1.5px solid #c8dcff;
+  }
+  .pill.orange { background: #fff3e0; color: var(--c-ch-orange); border-color: #ffcc80; }
+  .pill.green { background: #e8f5e9; color: var(--c-green); border-color: #a5d6a7; }
+  .pill.dark { background: #25272d; color: #fff; border-color: #25272d; }
+
+  .trusted-logos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.42em 0.55em;
+    width: 82%;
+    margin: 0.55em auto 0.2em;
+    align-items: center;
+  }
+  .trusted-logos .logo-cell {
+    height: 42px;
+    border: 1px solid #eceff3;
+    border-radius: 8px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25em 0.45em;
+  }
+  .trusted-logos img {
+    max-height: 28px !important;
+    max-width: 120px !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .ops { display: flex; gap: 0.55em; justify-content: center; margin: 0.55em auto 0.25em; width: 96%; }
+  .op {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e2e6ec;
+    border-top: 3px solid var(--c-blue);
+    border-radius: 10px;
+    padding: 0.5em 0.4em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .op b { display: block; font-size: 0.6em; color: #1a1a1a; font-weight: 800; }
+  .op span { display: block; font-size: 0.45em; color: #888; line-height: 1.3; margin-top: 0.2em; }
+  .op.warm { border-top-color: var(--c-ch-orange); }
+  .op.warm b { color: var(--c-ch-orange); }
+
+  .timeline {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.25em auto;
+    width: 90%;
+  }
+  .timeline li {
+    position: relative;
+    border-left: 3px solid #d4d8df;
+    padding-left: 1.1em;
+    padding-bottom: 0.25em;
+    margin-bottom: 0.55em;
+    font-size: 0.7em;
+    line-height: 1.42;
+  }
+  .timeline li::before {
+    content: "";
+    position: absolute;
+    left: -0.47em;
+    top: 0.12em;
+    width: 0.75em;
+    height: 0.75em;
+    background: var(--c-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px #e8f0fe;
+  }
+  .timeline li.now { border-left-color: var(--c-ch-orange); }
+  .timeline li.now::before { background: var(--c-ch-orange); box-shadow: 0 0 0 4px #fff0e6; }
+
+  .image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7em;
+    width: 92%;
+    margin: 0.35em auto 0;
+  }
+  .image-grid img { max-height: 33vh !important; width: 100%; object-fit: contain; background: #fff; }
+
+  .split-code pre code { font-size: 0.44em; }
+  .reveal section.wide-code pre { display: inline-block; width: auto; max-width: 92%; box-sizing: border-box; }
+  .reveal section.wide-code pre code { display: block; width: auto; box-sizing: border-box; font-size: 0.70em; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section class="title-slide">
+  <div class="logo-line">
+    <img src="logos/chdb-light.png" alt="chDB" style="height: 72px;">
+    <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="height: 44px;">
+  </div>
+  <h1>Giving Your AI Agent<br>a Database Brain</h1>
+  <p class="subtitle">In-Process Analytics with <strong>chDB</strong></p>
+  <p class="speaker"><strong>Auxten Wang</strong> &middot; Technical Director @ ClickHouse &middot; Creator of chDB</p>
+  <p class="sub-info">PyCon Singapore 2026 &middot; 20-25 min</p>
+  <aside class="notes">
+    Keep the submitted title. The thesis underneath it is: context engineering needs a local database.
+  </aside>
+</section>
+
+<section>
+  <div style="display: flex; align-items: center; gap: 2.0em; max-width: 760px; margin: 0 auto;">
+    <div style="flex: 1; text-align: left;">
+      <div style="display: flex; align-items: center; gap: 0.75em; margin-bottom: 0.7em;">
+        <img src="logos/head.jpg" alt="Auxten Wang" style="width: 74px; height: 74px; border-radius: 50%; object-fit: cover;">
+        <div>
+          <h2 style="margin: 0; color: #1a1a1a; font-size: 1.15em;">Auxten Wang</h2>
+          <p class="dim" style="margin: 0.2em 0 0;"><strong>@auxten</strong> &middot; <a href="https://auxten.com">auxten.com</a></p>
+        </div>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.68em; line-height: 1.9;">
+        <li><strong>Technical Director</strong> @ ClickHouse</li>
+        <li>Creator of <strong>chDB</strong>, acquired by ClickHouse in 2024</li>
+        <li>Built embedded databases, distributed SQL, and agent tooling</li>
+        <li>Ex-Shopee &middot; CovenantSQL &middot; Baidu &middot; Qihoo 360</li>
+      </ul>
+    </div>
+    <div style="flex: 0 0 auto;">
+      <img src="logos/chdb-light.png" alt="chDB" class="no-shadow" style="height: 190px; border-radius: 0;">
+    </div>
+  </div>
+  <aside class="notes">
+    Keep this short. The credential that matters here is: I created chDB, and I spend a lot of time thinking about how database engines sit inside applications.
+  </aside>
+</section>
+
+<section>
+  <h2>A Familiar Agent Failure</h2>
+  <div class="cards">
+    <div class="card red">
+      <h3>Yesterday</h3>
+      <p>The agent tried a migration path, hit a production constraint, and found the correct workaround.</p>
+    </div>
+    <div class="card accent">
+      <h3>Today</h3>
+      <p>A new task asks for a similar fix. The agent reads the prompt, but not yesterday's decision.</p>
+    </div>
+    <div class="card blue">
+      <h3>Result</h3>
+      <p>It repeats the failed plan, burns tool calls, and only recovers after more logs and retries.</p>
+    </div>
+  </div>
+  <blockquote class="fragment">
+    The problem is not that the model is dumb.<br>
+    <strong>The right context was not queryable at the right time.</strong>
+  </blockquote>
+  <aside class="notes">
+    Start with the failure. A coding agent forgetting a prior decision is a common experience for Claude Code, Cursor, Codex, or any tool-calling agent.
+  </aside>
+</section>
+
+<section>
+  <h2>Context Engineering Needs a Local Database</h2>
+  <div class="two-col">
+    <div>
+      <img src="chdb-agent-local-engine/fig-01-hero.png" alt="Local data layer versus remote data layer" class="hero-img">
+    </div>
+    <div>
+      <ul>
+        <li class="fragment"><strong>Instructions</strong>: rules, constraints, preferences.</li>
+        <li class="fragment"><strong>Working data</strong>: files, tables, API results, logs.</li>
+        <li class="fragment"><strong>Memory</strong>: decisions, facts, prior solutions.</li>
+        <li class="fragment"><strong>Evaluation history</strong>: what worked, what failed, what changed.</li>
+      </ul>
+    </div>
+  </div>
+  <p class="fragment" style="font-size: 0.78em;">
+    Recall means: before each agent step, find the few facts that matter now.
+  </p>
+  <aside class="notes">
+    Define recall in plain language. Context is not one prompt blob once it includes instructions, working data, memories, and eval history.
+  </aside>
+</section>
+
+<section>
+  <h2>Why Not Just a Vector DB?</h2>
+  <div class="cards">
+    <div class="card blue">
+      <h3>Vector Search Is Useful</h3>
+      <p>It finds text that is semantically close to the current task.</p>
+    </div>
+    <div class="card red">
+      <h3>But Memory Has Rules</h3>
+      <p>Project scope, privacy, status, tags, conflicts, and pinned decisions matter.</p>
+    </div>
+    <div class="card green">
+      <h3>And History Matters</h3>
+      <p>What worked last time? Which memory was edited? Which run failed?</p>
+    </div>
+  </div>
+  <blockquote class="fragment">
+    Vector search is one operator.<br>
+    <strong>Agent memory is the whole data system around it.</strong>
+  </blockquote>
+  <aside class="notes">
+    Answer the obvious question early. The argument is not against vector search; it is against using vector search as the entire memory architecture.
+  </aside>
+</section>
+
+<section>
+  <h2>ClickHouse in 60 Seconds</h2>
+  <div class="cards">
+    <div class="card accent">
+      <h3>Analytical Database</h3>
+      <p>ClickHouse is an open-source database for fast SQL over large tables: logs, events, metrics, traces, and product data.</p>
+    </div>
+    <div class="card blue">
+      <h3>Columnar Engine</h3>
+      <p>It stores data by column, so scans, filters, joins, and aggregations over millions or billions of rows stay fast.</p>
+    </div>
+    <div class="card green">
+      <h3>More Than Storage</h3>
+      <p>It also gives you a serious query engine: SQL, JSON, arrays, text search, and vector distance functions.</p>
+    </div>
+  </div>
+  <p class="dim" style="margin-top: 0.35em;">Trusted in production by teams building AI, developer tools, infrastructure, and commerce.</p>
+  <div class="trusted-logos">
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/anthropic_small_a6ab486d34.svg" alt="Anthropic"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/cursor_136f34ab68.svg" alt="Cursor"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/character_3a9027ce90_4085d9ac89.svg" alt="Character.AI"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/sierra_321b705206.svg" alt="Sierra"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/vercel_fa4c139b66.svg" alt="Vercel"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/trusted_by_gitlab_2c2904bdb2.svg" alt="GitLab"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/trusted_by_cloudflare_74f4bc587e.svg" alt="Cloudflare"></div>
+    <div class="logo-cell"><img src="logos/clickhouse-trusted/shopee_logo_1_f68ba1df69.svg" alt="Shopee"></div>
+  </div>
+  <blockquote class="fragment">
+    Think of it as the engine you use when <strong>asking questions over lots of data</strong> is the hot path.
+  </blockquote>
+  <aside class="notes">
+    Do not assume the room knows ClickHouse. Explain it as an analytical database and query engine before introducing chDB. The logo strip is from the ClickHouse homepage trusted-by section.
+  </aside>
+</section>
+
+<section>
+  <h2>chDB: ClickHouse Inside Python</h2>
+  <div class="cards">
+    <div class="card accent">
+      <h3>Same Engine</h3>
+      <p>chDB embeds the ClickHouse analytical engine directly into your Python process.</p>
+    </div>
+    <div class="card blue">
+      <h3>Persistent Session</h3>
+      <p><code>chs.Session("./agent")</code> gives the agent local tables on disk.</p>
+    </div>
+    <div class="card green">
+      <h3>No Server Required</h3>
+      <p><code>pip install chdb</code>, import it, and query local context immediately.</p>
+    </div>
+  </div>
+  <pre><code class="language-python" data-trim>
+pip install chdb
+
+from chdb import session as chs
+
+sess = chs.Session("./agent_context")
+sess.query("SELECT count() FROM file('events.parquet', Parquet)")
+  </code></pre>
+  <p class="dim">SQLite-level deployability, ClickHouse-level analytical power.</p>
+  <aside class="notes">
+    Now the ClickHouse reference has context. chDB is the embedded version we can put on the agent's hot path.
+  </aside>
+</section>
+
+<section>
+  <h2>One SQL Interface for Files, Tables, and Memory</h2>
+  <div class="cards">
+    <div class="card green">
+      <h3>Local Context</h3>
+      <p>Files, DataFrames, Arrow tables, JSON logs, and persistent local memory tables.</p>
+    </div>
+    <div class="card blue">
+      <h3>Remote Context</h3>
+      <p>S3, HTTP, Postgres, MySQL, MongoDB, and ClickHouse Cloud via table functions.</p>
+    </div>
+    <div class="card accent">
+      <h3>Memory Context</h3>
+      <p>Rows with project, tags, privacy, status, embeddings, and event history.</p>
+    </div>
+  </div>
+  <p class="fragment" style="font-size: 0.78em; margin-top: 0.6em;">
+    The point is not "more connectors". The point is <span class="highlight">one query surface for context</span>.
+  </p>
+  <aside class="notes">
+    This replaces the database feature-list feeling. Every capability is described as a context source the agent can query.
+  </aside>
+</section>
+
+<section class="wide-code">
+  <h2>Check Local and Remote Data with One Query</h2>
+  <pre><code class="language-sql" data-trim style="font-size: 0.58em; line-height: 1.30;">
+WITH
+local AS (
+  SELECT count() AS rows, sum(amount) AS revenue,
+         groupBitXor(cityHash64(order_id, user_id, amount, status)) AS checksum
+  FROM file('orders.parquet', Parquet)
+),
+cloud AS (
+  SELECT count() AS rows, sum(amount) AS revenue,
+         groupBitXor(cityHash64(order_id, user_id, amount, status)) AS checksum
+  FROM remoteSecure('cloud:9440', 'prod', 'orders', 'agent_user', '***')
+)
+SELECT local.rows = cloud.rows AS same_count,
+       local.revenue = cloud.revenue AS same_revenue,
+       local.checksum = cloud.checksum AS same_rows
+FROM local, cloud;
+  </code></pre>
+  <p class="dim">
+    This is a high-confidence sync check, not magic. The agent gets one auditable answer before trusting the data.
+  </p>
+  <aside class="notes">
+    Keep this short. It shows data federation plus data fidelity in one local SQL statement without making it the main story.
+  </aside>
+</section>
+
+<section>
+  <h2>Good Agent Memory Must Be a Row</h2>
+  <table class="bench" style="font-size: 0.48em;">
+    <thead>
+      <tr><th>Column</th><th>Example</th><th>Why the agent needs it</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>content</strong></td><td>Use chDB <code>file()</code> for local Parquet checks.</td><td>the fact to recall</td></tr>
+      <tr><td><strong>project_id</strong></td><td><code>auxten/chdb</code></td><td>scope the memory</td></tr>
+      <tr><td><strong>tags</strong></td><td><code>["parquet", "fidelity"]</code></td><td>structured filtering</td></tr>
+      <tr><td><strong>status</strong></td><td><code>active</code> / <code>conflicted</code></td><td>avoid stale beliefs</td></tr>
+      <tr><td><strong>embedding</strong></td><td><code>[0.02, -0.11, ...]</code></td><td>semantic recall</td></tr>
+    </tbody>
+  </table>
+  <p class="dim">Once memory is a row, recall can use SQL: filters, joins, vector score, and history.</p>
+  <aside class="notes">
+    Make memory concrete before introducing ClickMem. The key is that a memory has content plus metadata and an embedding.
+  </aside>
+</section>
+
+<section>
+  <h2>ClickMem Lifecycle</h2>
+  <div class="flow">
+    <div class="node green">remember<br><small>explicit decision</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node orange">recall<br><small>project + tags + vector</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node dark">conflict?<br><small>similar but different</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node green">revise<br><small>keep the better belief</small></div>
+  </div>
+  <div class="cards two" style="margin-top: 0.75em;">
+    <div class="card red">
+      <h3>Bad memory</h3>
+      <p>"Use Poetry for this repo." Later the repo standard changes to <code>uv</code>.</p>
+    </div>
+    <div class="card green">
+      <h3>Database fix</h3>
+      <p>The old row becomes <code>conflicted</code>; the revised row becomes the active memory.</p>
+    </div>
+  </div>
+  <p class="dim">ClickMem is explicit-only: raw transcripts are cold storage, not automatic prompt injection.</p>
+  <aside class="notes">
+    Explain the five operations as database lifecycle, not as abstract belief theory. The audience needs the row-level story.
+  </aside>
+</section>
+
+<section>
+  <h2>Where ClickMem Runs</h2>
+  <img src="logos/clickmem-architecture.png" alt="ClickMem architecture" style="max-height: 53vh; max-width: 96%;">
+  <p class="dim" style="margin-top: 0.25em;">
+    Agent adapters + local server + chDB backend. Six tables: memories, history, projects, blacklist, raw transcripts, events.
+  </p>
+  <aside class="notes">
+    Do not over-explain the diagram. Point to the important parts: explicit memory, cold raw transcripts, local chDB, optional ClickHouse backend.
+  </aside>
+</section>
+
+<section class="wide-code">
+  <h2>One Query Can Rank Memory by Meaning, Rules, and Past Use</h2>
+  <pre><code class="language-sql" data-trim style="font-size: 0.56em; line-height: 1.30;">
+SELECT
+  m.id,
+  m.content,
+  1 - cosineDistance(m.embedding, {query_vec:Array(Float32)}) AS meaning,
+  count(e.id) AS used_before
+FROM memories AS m
+LEFT JOIN events AS e
+  ON e.memory_id = m.id AND e.project_id = m.project_id
+WHERE m.project_id = {project:String}
+  AND m.status = 'active'
+  AND hasAny(m.tags, {tags:Array(String)})
+GROUP BY m.id, m.content, m.embedding, m.pinned
+ORDER BY m.pinned DESC, meaning DESC, used_before DESC
+LIMIT 8;
+  </code></pre>
+  <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 0.55em;">
+    <div class="stat"><div class="num">WHERE</div><div class="label">structured project, status, tags</div></div>
+    <div class="stat"><div class="num">cosine</div><div class="label">semantic recall over 256d embeddings</div></div>
+    <div class="stat"><div class="num">events</div><div class="label">task-history signal from prior runs</div></div>
+  </div>
+  <p class="dim">This is the whole point: recall is a database query, not a prompt concatenation trick.</p>
+  <aside class="notes">
+    Explain the query left to right. The production query adds privacy, conflicted memories, cross-project rules, and FINAL when needed.
+  </aside>
+</section>
+
+<section>
+  <h2>Slow Memory Calls Waste Tokens</h2>
+  <div class="two-col top">
+    <div>
+      <ul>
+        <li>Recall sits inside the agent loop.</li>
+        <li>Network jitter becomes thinking-time jitter.</li>
+        <li>Retries resend conversation context.</li>
+        <li>Hot memory is queried many times in one session.</li>
+      </ul>
+    </div>
+    <div>
+      <table class="bench" style="width: 100%; font-size: 0.43em; margin-top: 0;">
+        <thead>
+          <tr><th>Arm</th><th>p95</th><th>p99</th><th>Fail %</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>local</strong></td><td class="winner">1.7 ms</td><td class="winner">2.8 ms</td><td class="winner">0.00</td></tr>
+          <tr><td>remote @ 0.5%</td><td>93 ms</td><td>450 ms</td><td>0.46</td></tr>
+          <tr><td>remote @ 2%</td><td>99 ms</td><td class="loser">2,000 ms</td><td>1.90</td></tr>
+          <tr><td>remote @ 5%</td><td class="loser">643 ms</td><td class="loser">2,000 ms</td><td>4.68</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="dim">Same recall query; the remote arm adds network tax, timeout, and retry behavior.</p>
+  <aside class="notes">
+    Be clear about scope: this isolates the cost of making hot recall a network dependency. It is not a claim that remote ClickHouse is slow.
+  </aside>
+</section>
+
+<section class="wide-code">
+  <h2>Start Local, Scale to ClickHouse</h2>
+  <pre><code class="language-python" data-trim style="font-size: 0.58em; line-height: 1.30;">
+# Day 1: prototype locally
+sess = chs.Session("./agent_brain")
+sess.query("SELECT * FROM memories WHERE project_id = 'checkout'")
+
+# Day 100: shared memory or too much data for one laptop
+sess.query("""
+CREATE OR REPLACE VIEW memories AS
+SELECT *
+FROM remoteSecure(
+    'company.clickhouse.cloud:9440',
+    'agent', 'memories',
+    'agent_user', '***'
+)
+""")
+
+# The agent's SQL does not change.
+sess.query("SELECT * FROM memories WHERE project_id = 'checkout'")
+  </code></pre>
+  <blockquote style="font-size: 0.68em; margin-top: 0.35em;">
+    Local first. Remote when you need sharing, sync, or scale.
+  </blockquote>
+  <aside class="notes">
+    This is the escape hatch, not the main story. The SQL surface is the same.
+  </aside>
+</section>
+
+<section>
+  <h2>Build This Afternoon: Mini ClickMem</h2>
+  <div class="flow">
+    <div class="node green">create<br><small>memories table</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node orange">insert<br><small>explicit decisions</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node blue">recall<br><small>SQL + vector score</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node dark">evaluate<br><small>which memory helped?</small></div>
+  </div>
+  <pre><code class="language-python" data-trim style="font-size: 0.58em; line-height: 1.30;">
+from chdb import session as chs
+
+sess = chs.Session("./agent_context")
+sess.query("CREATE TABLE IF NOT EXISTS memories (...) ENGINE = MergeTree ORDER BY id")
+sess.query("INSERT INTO memories VALUES (...)")
+sess.query("SELECT content FROM memories ORDER BY cosineDistance(embedding, ?) LIMIT 8")
+  </code></pre>
+  <p class="dim">The full ClickMem project adds lifecycle, conflicts, adapters, dashboard, and ClickHouse backend.</p>
+  <aside class="notes">
+    Give the hackathon audience one concrete build path. The real project is richer, but the first step is small.
+  </aside>
+</section>
+
+<section>
+  <h2>Three Takeaways</h2>
+  <ol>
+    <li class="fragment"><strong>Context engineering needs a database.</strong> Dynamic context must be filtered, ranked, joined, verified, and evaluated.</li>
+    <li class="fragment"><strong>Recall should be one SQL.</strong> Structured filters, vector similarity, and task-history signals belong in the same query.</li>
+    <li class="fragment"><strong>Start local, scale cleanly.</strong> chDB locally; ClickHouse Server or Cloud when the memory/data layer becomes shared.</li>
+  </ol>
+  <div class="callout fragment" style="margin-top: 0.8em;">
+    chDB is ClickHouse inside Python:<br>
+    <strong>the local database for agent context.</strong>
+  </div>
+  <aside class="notes">
+    Close with the core sentence: context engineering needs a local database.
+  </aside>
+</section>
+
+<section>
+  <h1 style="margin-bottom: 0.45em;">Thank You</h1>
+  <div class="logo-line">
+    <img src="logos/chdb-light.png" alt="chDB" style="height: 90px;">
+    <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="height: 58px;">
+  </div>
+  <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.62em; line-height: 2; text-align: center;">
+    <li><strong>chDB:</strong> <a href="https://github.com/chdb-io/chdb">github.com/chdb-io/chdb</a></li>
+    <li><strong>Docs:</strong> <a href="https://clickhouse.com/docs/chdb">clickhouse.com/docs/chdb</a></li>
+    <li><strong>ClickMem:</strong> <a href="https://github.com/auxten/clickmem">github.com/auxten/clickmem</a></li>
+    <li><strong>Benchmark:</strong> <a href="https://github.com/auxten/agent-local-vs-remote">github.com/auxten/agent-local-vs-remote</a></li>
+    <li><strong>Me:</strong> <a href="https://x.com/auxten">@auxten</a> &middot; <a href="https://auxten.com">auxten.com</a></li>
+  </ul>
+  <h2 style="margin-top: 0.75em;">Q&amp;A</h2>
+  <aside class="notes">
+    Leave this up during questions. The links are the handoff.
+  </aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720,
+  plugins: [ RevealHighlight, RevealNotes ]
+});
+</script>
+</body>
+</html>

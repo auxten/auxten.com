@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giving Your AI Agent a Database Brain - PyCon SG 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fbfbf8;
+    --ink: #161616;
+    --muted: #69707d;
+    --faint: #eef1f4;
+    --border: #e2e6eb;
+    --yellow: #fadb14;
+    --orange: #e65100;
+    --blue: #1565c0;
+    --green: #2e7d32;
+    --red: #c62828;
+    --dark: #1f2328;
+    --code: #272822;
+  }
+
+  html,
+  body,
+  .reveal,
+  .reveal .slides,
+  .reveal .slides section {
+    background: var(--paper);
+  }
+
+  .reveal {
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 30px;
+  }
+
+  .reveal .slides section {
+    box-sizing: border-box;
+    height: 720px;
+    padding: 0;
+    text-align: left;
+    overflow: hidden;
+  }
+
+  .reveal .slides section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(22,22,22,0.035) 1px, transparent 1px),
+      linear-gradient(rgba(22,22,22,0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.62;
+    pointer-events: none;
+  }
+
+  .frame {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    padding: 78px 54px 54px;
+  }
+
+  .topbar {
+    position: absolute;
+    top: 34px;
+    left: 54px;
+    right: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 800;
+    z-index: 3;
+  }
+
+  .topbar .right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .meter {
+    width: 170px;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e7e9ee;
+  }
+
+  .meter span {
+    display: block;
+    height: 100%;
+    background: var(--orange);
+  }
+
+  h1,
+  h2,
+  h3,
+  p {
+    margin: 0;
+  }
+
+  h1 {
+    color: var(--ink);
+    font-size: 70px;
+    font-weight: 900;
+    letter-spacing: 0;
+    line-height: 0.98;
+  }
+
+  h2 {
+    color: var(--ink);
+    font-size: 58px;
+    font-weight: 900;
+    letter-spacing: 0;
+    line-height: 1.03;
+  }
+
+  h3 {
+    color: var(--ink);
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+
+  p {
+    color: var(--muted);
+    font-size: 27px;
+    font-weight: 700;
+    line-height: 1.32;
+  }
+
+  .orange { color: var(--orange); }
+  .blue { color: var(--blue); }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .muted { color: var(--muted); }
+  .mono { font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    align-items: center;
+    height: 100%;
+  }
+
+  .grid2 > * {
+    min-width: 0;
+  }
+
+  .grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .card {
+    box-sizing: border-box;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 14px 36px rgba(20,20,20,0.08);
+  }
+
+  .card.yellow { background: #fff8d7; border-color: #f0d74a; }
+  .card.blue { background: #eef6ff; border-color: #86bdf2; color: var(--blue); }
+  .card.green { background: #eff9ef; border-color: #9ad59c; color: var(--green); }
+  .card.red { background: #fff0f0; border-color: #f1a2a2; color: var(--red); }
+  .card.dark { background: var(--dark); border-color: var(--dark); color: #fff; }
+
+  .card p {
+    font-size: 23px;
+    line-height: 1.28;
+  }
+
+  .idea-card {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .idea-svg {
+    width: 100%;
+    height: 128px;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .idea-svg text {
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 900;
+    letter-spacing: 0;
+  }
+
+  .need-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .need-list div {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+    align-items: center;
+    color: var(--ink);
+    font-size: 21px;
+    font-weight: 900;
+    line-height: 1.16;
+  }
+
+  .card.dark .need-list div {
+    color: #f3f4f6;
+  }
+
+  .chdb-facts {
+    gap: 8px;
+  }
+
+  .chdb-facts div {
+    grid-template-columns: 22px 1fr;
+    gap: 8px;
+    font-size: 18px;
+    line-height: 1.1;
+  }
+
+  .chdb-facts .dot {
+    width: 12px;
+    height: 12px;
+  }
+
+  pre.chdb-mini-code code {
+    font-size: 13px;
+    line-height: 1.22;
+    padding: 13px 16px;
+  }
+
+  .process-diagram {
+    position: relative;
+    min-height: 430px;
+    padding: 22px;
+    background: #fff;
+  }
+
+  .process-box {
+    position: relative;
+    height: 340px;
+    border: 3px solid #d7dce4;
+    border-radius: 18px;
+    background:
+      linear-gradient(90deg, rgba(22,22,22,0.03) 1px, transparent 1px),
+      linear-gradient(rgba(22,22,22,0.03) 1px, transparent 1px),
+      #fbfbf8;
+    background-size: 26px 26px;
+    padding: 18px;
+  }
+
+  .process-label {
+    position: absolute;
+    left: 18px;
+    top: 14px;
+    color: var(--muted);
+    font-size: 18px;
+    font-weight: 900;
+  }
+
+  .engine-core {
+    position: absolute;
+    left: 176px;
+    top: 166px;
+    width: 286px;
+    height: 118px;
+    border-radius: 18px;
+    background: var(--dark);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 44px rgba(0,0,0,0.18);
+  }
+
+  .engine-core img {
+    width: 52px;
+    height: 52px;
+    margin: 0 0 6px !important;
+    box-shadow: none !important;
+  }
+
+  .mini-node {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 112px;
+    height: 54px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: #fff;
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 900;
+    text-align: center;
+    line-height: 1.05;
+    box-shadow: 0 10px 24px rgba(20,20,20,0.08);
+  }
+
+  .mini-node.blue { border-color: #86bdf2; background: #eef6ff; color: var(--blue); }
+  .mini-node.green { border-color: #9ad59c; background: #eff9ef; color: var(--green); }
+  .mini-node.orange { border-color: #f0b271; background: #fff3e0; color: var(--orange); }
+  .mini-node.red { border-color: #f1a2a2; background: #fff0f0; color: var(--red); }
+
+  .process-arrow {
+    position: absolute;
+    color: #9aa2ad;
+    font-size: 26px;
+    font-weight: 900;
+  }
+
+  .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--orange);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    border: 2px solid var(--blue);
+    border-radius: 999px;
+    padding: 0 16px;
+    color: var(--blue);
+    background: #fff;
+    font-size: 22px;
+    font-weight: 900;
+    white-space: nowrap;
+  }
+
+  .pill.green { border-color: var(--green); color: var(--green); }
+  .pill.orange { border-color: var(--orange); color: var(--orange); }
+  .pill.dark { border-color: var(--dark); color: var(--dark); }
+
+  .logo {
+    display: block;
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    box-shadow: none !important;
+    border: 0 !important;
+    margin: 0 !important;
+  }
+
+  .logo-row {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .trusted-logos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .logo-cell {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+  }
+
+  .source-card {
+    display: grid;
+    grid-template-columns: 104px 1fr;
+    gap: 16px;
+    align-items: center;
+    margin-top: 14px;
+  }
+
+  .source-card.compact {
+    grid-template-columns: 86px 1fr;
+    gap: 12px;
+    margin-top: 10px;
+    padding: 14px;
+  }
+
+  .source-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 72px;
+    border-radius: 10px;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .source-card.compact .source-icon {
+    height: 56px;
+    font-size: 18px;
+  }
+
+  .source-card.compact h3 {
+    font-size: 24px;
+  }
+
+  .source-card.compact p {
+    font-size: 19px;
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .arrow {
+    color: #9aa2ad;
+    font-size: 36px;
+    font-weight: 900;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 230px 1fr 120px;
+    gap: 16px;
+    align-items: center;
+    margin-top: 20px;
+  }
+
+  .bar-track {
+    height: 34px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e7e9ee;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+  }
+
+  .table-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.75fr 0.75fr 0.75fr 0.95fr;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 14px 36px rgba(20,20,20,0.08);
+  }
+
+  .table-grid div {
+    padding: 17px 18px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .table-grid .head {
+    color: var(--orange);
+    background: #fff8d7;
+    font-size: 17px;
+    text-transform: uppercase;
+  }
+
+  .table-grid div:nth-child(5n) { border-right: 0; }
+  .table-grid div:nth-last-child(-n+5) { border-bottom: 0; }
+
+  pre {
+    width: 100%;
+    margin: 0 !important;
+    border-radius: 10px;
+    box-shadow: 0 18px 46px rgba(0,0,0,0.18);
+  }
+
+  .reveal pre code {
+    box-sizing: border-box;
+    max-height: none;
+    padding: 22px 26px;
+    border-radius: 10px;
+    color: #f7f7f7;
+    background: var(--code);
+    font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+    font-size: 18px;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    line-height: 1.35;
+  }
+
+  .small-code .reveal pre code,
+  pre.small code {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  pre.recall-code code {
+    font-size: 14.5px;
+    line-height: 1.25;
+    padding: 18px 20px;
+  }
+
+  .diagram-img {
+    width: 100%;
+    height: 420px;
+    object-fit: contain;
+    border: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  .takeaway {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 22px;
+    align-items: center;
+    margin-top: 16px;
+  }
+
+  .num {
+    color: var(--orange);
+    font-size: 46px;
+    font-weight: 900;
+  }
+
+  .reveal .controls,
+  .reveal .progress {
+    color: var(--orange);
+  }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section>
+  <div class="topbar"><span>PyCon Singapore 2026</span><span class="right"><span class="meter"><span style="width:6.25%"></span></span>01 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns: 0.68fr 0.32fr;">
+      <div>
+        <div class="logo-row" style="margin-bottom: 34px;">
+          <img class="logo" src="logos/chdb-light.png" alt="chDB logo" style="width:88px;height:88px;">
+          <img class="logo" src="logos/clickhouse-logo-black.svg" alt="ClickHouse logo" style="width:260px;height:64px;">
+        </div>
+        <h1>Giving Your AI Agent a Database Brain: In-Process Analytics with chDB</h1>
+        <p style="margin-top:28px;font-size:30px;">Auxten Wang &middot; Technical Director @ ClickHouse &middot; Creator of chDB</p>
+      </div>
+      <div class="card dark" style="height:380px;display:flex;align-items:center;justify-content:center;flex-direction:column;border:7px solid var(--yellow);">
+        <div class="mono" style="font-size:86px;font-weight:900;">SQL</div>
+        <div style="font-size:27px;font-weight:900;color:#c8ced6;margin-top:14px;">inside Python</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>The story</span><span class="right"><span class="meter"><span style="width:12.5%"></span></span>02 / 16</span></div>
+  <div class="frame">
+    <h2 style="width:760px;">Context engineering needs a local database</h2>
+    <div class="grid3" style="margin-top:36px;">
+      <div class="card blue idea-card">
+        <svg class="idea-svg" viewBox="0 0 240 128" role="img" aria-label="Files APIs and DataFrames flowing into SQL">
+          <rect x="8" y="10" width="64" height="32" rx="8" fill="#1565c0" opacity="0.92"></rect>
+          <rect x="8" y="48" width="64" height="32" rx="8" fill="#2e7d32" opacity="0.92"></rect>
+          <rect x="8" y="86" width="64" height="32" rx="8" fill="#e65100" opacity="0.92"></rect>
+          <text x="40" y="31" text-anchor="middle" font-size="13" fill="#fff">FILE</text>
+          <text x="40" y="69" text-anchor="middle" font-size="13" fill="#fff">API</text>
+          <text x="40" y="107" text-anchor="middle" font-size="13" fill="#fff">DF</text>
+          <path d="M78 26 C112 26 116 64 146 64" stroke="#1565c0" stroke-width="5" fill="none" stroke-linecap="round"></path>
+          <path d="M78 64 L146 64" stroke="#2e7d32" stroke-width="5" fill="none" stroke-linecap="round"></path>
+          <path d="M78 102 C112 102 116 64 146 64" stroke="#e65100" stroke-width="5" fill="none" stroke-linecap="round"></path>
+          <rect x="146" y="32" width="82" height="64" rx="14" fill="#1f2328"></rect>
+          <text x="187" y="71" text-anchor="middle" font-size="25" fill="#fadb14">SQL</text>
+        </svg>
+        <h3>Working data</h3>
+        <p>Files, API results, DataFrames, warehouse slices.</p>
+      </div>
+      <div class="card green idea-card">
+        <svg class="idea-svg" viewBox="0 0 240 128" role="img" aria-label="Memory table rows with tags and vectors">
+          <rect x="12" y="12" width="124" height="92" rx="12" fill="#fff" stroke="#2e7d32" stroke-width="4"></rect>
+          <path d="M12 40 H136 M12 66 H136 M50 12 V104 M92 12 V104" stroke="#2e7d32" stroke-width="3" opacity="0.55"></path>
+          <rect x="24" y="74" width="54" height="16" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"></rect>
+          <rect x="84" y="74" width="40" height="16" rx="8" fill="#fff8d7" stroke="#e65100" stroke-width="2"></rect>
+          <text x="51" y="87" text-anchor="middle" font-size="10" fill="#2e7d32">repo</text>
+          <text x="104" y="87" text-anchor="middle" font-size="10" fill="#e65100">fix</text>
+          <circle cx="168" cy="36" r="7" fill="#2e7d32"></circle>
+          <circle cx="190" cy="52" r="7" fill="#1565c0"></circle>
+          <circle cx="174" cy="78" r="7" fill="#e65100"></circle>
+          <circle cx="212" cy="82" r="7" fill="#2e7d32"></circle>
+          <path d="M168 36 L190 52 L174 78 L212 82 M168 36 L174 78" stroke="#69707d" stroke-width="3" fill="none" opacity="0.7"></path>
+          <text x="190" y="113" text-anchor="middle" font-size="13" fill="#2e7d32">semantic recall</text>
+        </svg>
+        <h3>Memory</h3>
+        <p>Decisions, preferences, repo facts, previous fixes.</p>
+      </div>
+      <div class="card yellow idea-card">
+        <svg class="idea-svg" viewBox="0 0 240 128" role="img" aria-label="Observability traces and metrics">
+          <path d="M24 28 H210" stroke="#69707d" stroke-width="4" stroke-linecap="round"></path>
+          <circle cx="42" cy="28" r="8" fill="#2e7d32"></circle>
+          <circle cx="102" cy="28" r="8" fill="#1565c0"></circle>
+          <circle cx="168" cy="28" r="8" fill="#e65100"></circle>
+          <rect x="36" y="50" width="72" height="18" rx="9" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"></rect>
+          <rect x="86" y="76" width="104" height="18" rx="9" fill="#eef6ff" stroke="#1565c0" stroke-width="2"></rect>
+          <rect x="132" y="102" width="72" height="18" rx="9" fill="#fff3e0" stroke="#e65100" stroke-width="2"></rect>
+          <path d="M24 112 L62 96 L96 100 L136 70 L174 82 L216 46" stroke="#e65100" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+          <text x="68" y="64" text-anchor="middle" font-size="10" fill="#2e7d32">tool</text>
+          <text x="138" y="90" text-anchor="middle" font-size="10" fill="#1565c0">trace</text>
+        </svg>
+        <h3>Observability</h3>
+        <p>Traces, tool calls, failures, evals, run history.</p>
+      </div>
+    </div>
+    <div class="card dark" style="margin-top:34px;font-size:36px;font-weight:900;line-height:1.22;">
+      The agent problem is not just "store more context". It is "query the right context at the right time".
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Harness architecture</span><span class="right"><span class="meter"><span style="width:18.75%"></span></span>03 / 16</span></div>
+  <div class="frame">
+    <h2>Agent harness architecture needs more than retrieval</h2>
+    <div class="grid3" style="margin-top:42px;">
+      <div class="card" style="height:360px;">
+        <h3>Markdown files</h3>
+        <pre class="small" style="margin-top:18px !important;box-shadow:none;"><code class="language-markdown">CLAUDE.md
+AGENTS.md
+notes/*.md</code></pre>
+        <p style="margin-top:18px;">Good for instructions. Bad for query, provenance, conflict handling, and cross-session history.</p>
+      </div>
+      <div class="card blue" style="height:360px;">
+        <h3>Vector search</h3>
+        <div style="height:88px;margin-top:24px;position:relative;">
+          <div style="position:absolute;left:22px;top:34px;width:64px;height:22px;border-radius:999px;background:#1565c0;"></div>
+          <div style="position:absolute;left:112px;top:14px;width:34px;height:34px;border-radius:999px;background:#86bdf2;"></div>
+          <div style="position:absolute;left:172px;top:50px;width:34px;height:34px;border-radius:999px;background:#86bdf2;"></div>
+          <div style="position:absolute;left:226px;top:22px;width:34px;height:34px;border-radius:999px;background:#86bdf2;"></div>
+          <svg viewBox="0 0 280 90" style="position:absolute;inset:0;width:100%;height:100%;">
+            <path d="M86 45 L112 31 M86 45 L172 67 M86 45 L226 39" stroke="#1565c0" stroke-width="4" fill="none" opacity="0.6"></path>
+          </svg>
+        </div>
+        <p style="margin-top:18px;color:var(--blue);">Good for semantic match. Not enough for scope, status, privacy, joins, replay, or evals.</p>
+      </div>
+      <div class="card dark" style="height:360px;">
+        <h3 style="color:#fff;">Agent harness needs</h3>
+        <div class="need-list">
+          <div><span class="dot"></span><span>structured state</span></div>
+          <div><span class="dot"></span><span>semantic recall</span></div>
+          <div><span class="dot"></span><span>run and tool history</span></div>
+          <div><span class="dot"></span><span>conflict and revision</span></div>
+          <div><span class="dot"></span><span>replay and evaluation</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card yellow" style="margin-top:28px;font-size:30px;font-weight:900;line-height:1.2;">
+      A harness is a small data system on the hot path of every agent turn.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Database shape</span><span class="right"><span class="meter"><span style="width:25%"></span></span>04 / 16</span></div>
+  <div class="frame">
+    <h2>The database shape of agent context</h2>
+    <div class="grid3" style="margin-top:46px;">
+      <div class="card green" style="height:245px;">
+        <h3>Tables</h3>
+        <p style="margin-top:18px;color:var(--green);">runs, messages, memories, tool calls, eval results.</p>
+      </div>
+      <div class="card blue" style="height:245px;">
+        <h3>Indexes</h3>
+        <p style="margin-top:18px;color:var(--blue);">project, time, status, tags, text, vector embedding.</p>
+      </div>
+      <div class="card yellow" style="height:245px;">
+        <h3>Queries</h3>
+        <p style="margin-top:18px;color:var(--ink);">filter, join, rank, aggregate, replay, audit.</p>
+      </div>
+    </div>
+    <div class="card dark" style="margin-top:42px;">
+      <div class="flow" style="justify-content:space-between;">
+        <div style="font-size:30px;font-weight:900;">structured rows</div>
+        <div class="arrow">&rarr;</div>
+        <div style="font-size:30px;font-weight:900;">vector operator</div>
+        <div class="arrow">&rarr;</div>
+        <div style="font-size:30px;font-weight:900;">SQL recall</div>
+        <div class="arrow">&rarr;</div>
+        <div style="font-size:30px;font-weight:900;">eval loop</div>
+      </div>
+    </div>
+    <p style="margin-top:34px;font-size:32px;color:var(--ink);font-weight:900;">That is why the local primitive should be an analytical database, not only a retrieval API.</p>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>ClickHouse</span><span class="right"><span class="meter"><span style="width:31.25%"></span></span>05 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns: 0.42fr 0.58fr;">
+      <div>
+        <img class="logo" src="logos/clickhouse-logo-black.svg" alt="ClickHouse logo" style="width:360px;height:92px;margin-bottom:38px !important;">
+        <h2>ClickHouse in 60 seconds</h2>
+        <p style="margin-top:28px;">An open-source analytical database for fast SQL over large tables.</p>
+      </div>
+      <div>
+        <div class="trusted-logos">
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/anthropic_small_a6ab486d34.svg" alt="Anthropic"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/cursor_136f34ab68.svg" alt="Cursor"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/character_3a9027ce90_4085d9ac89.svg" alt="Character AI"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/sierra_321b705206.svg" alt="Sierra"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/vercel_fa4c139b66.svg" alt="Vercel"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/trusted_by_gitlab_2c2904bdb2.svg" alt="GitLab"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/trusted_by_cloudflare_74f4bc587e.svg" alt="Cloudflare"></div>
+          <div class="logo-cell"><img class="logo" src="logos/clickhouse-trusted/shopee_logo_1_f68ba1df69.svg" alt="Shopee"></div>
+        </div>
+        <div class="card yellow" style="margin-top:24px;font-size:28px;font-weight:900;line-height:1.2;">
+          Use it when asking questions over lots of data is on the hot path.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>ClickHouse mental model</span><span class="right"><span class="meter"><span style="width:37.5%"></span></span>06 / 16</span></div>
+  <div class="frame">
+    <h2>For Python developers: think "fast analytical kernel"</h2>
+    <div class="grid3" style="margin-top:46px;">
+      <div class="card"><h3 class="blue">Columnar storage</h3><p style="margin-top:16px;">Read only the columns needed by the query.</p></div>
+      <div class="card"><h3 class="green">Vectorized execution</h3><p style="margin-top:16px;">Process batches of values, not one row at a time.</p></div>
+      <div class="card"><h3 class="orange">Table functions</h3><p style="margin-top:16px;">Treat files, URLs, S3, and databases as SQL tables.</p></div>
+    </div>
+    <pre style="margin-top:42px !important;"><code class="language-python">chdb.query("SELECT count(), avg(latency_ms) FROM file('trace.parquet', Parquet)")</code></pre>
+    <p style="margin-top:28px;">chDB keeps that query engine, but runs it in your Python process.</p>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:43.75%"></span></span>07 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.46fr 0.54fr;">
+      <div>
+        <h2 style="font-size:48px;">ClickHouse as a Python function call</h2>
+        <p style="margin-top:14px;color:var(--ink);font-size:22px;line-height:1.22;">chDB embeds the ClickHouse engine inside your Python process, so the agent can query local state without a server hop.</p>
+        <div class="need-list chdb-facts" style="margin-top:20px;">
+          <div><span class="dot"></span><span><strong>In-process:</strong> no daemon, socket, or network round trip.</span></div>
+          <div><span class="dot"></span><span><strong>Same engine:</strong> ClickHouse SQL, JOINs, CTEs, table functions.</span></div>
+          <div><span class="dot"></span><span><strong>Local session DB:</strong> persistent MergeTree tables for agent memory.</span></div>
+        </div>
+        <pre class="chdb-mini-code" style="margin-top:18px !important;"><code class="language-python"># pip install chdb
+from chdb import session as chs
+sess = chs.Session("./agent_context")
+sess.query("SELECT version()")</code></pre>
+      </div>
+      <div class="card process-diagram">
+        <div class="process-box">
+          <div class="process-label">one Python process</div>
+          <div class="mini-node red" style="right:22px;top:18px;height:42px;min-width:128px;font-size:17px;">no server hop</div>
+          <div class="mini-node blue" style="left:22px;top:82px;">agent<br>code</div>
+          <div class="mini-node orange" style="left:252px;top:72px;">chdb.query<br><span class="mono" style="font-size:14px;">SQL</span></div>
+          <div class="process-arrow" style="left:154px;top:96px;">&rarr;</div>
+          <div class="process-arrow" style="left:305px;top:132px;transform:rotate(90deg);">&rarr;</div>
+          <div class="engine-core">
+            <img src="logos/chdb-light.png" alt="chDB logo">
+            <div style="font-size:27px;font-weight:900;">ClickHouse Engine</div>
+            <div style="font-size:17px;color:#c8ced6;font-weight:800;margin-top:4px;">native library</div>
+          </div>
+          <div class="mini-node green" style="left:24px;bottom:24px;">files<br><span class="mono" style="font-size:14px;">file()</span></div>
+          <div class="mini-node green" style="left:182px;bottom:24px;">DataFrame<br><span class="mono" style="font-size:14px;">Python()</span></div>
+          <div class="mini-node green" style="right:24px;bottom:24px;">local tables<br><span class="mono" style="font-size:14px;">MergeTree</span></div>
+          <div class="process-arrow" style="left:110px;bottom:86px;transform:rotate(-35deg);">&rarr;</div>
+          <div class="process-arrow" style="left:294px;bottom:86px;transform:rotate(-90deg);">&rarr;</div>
+          <div class="process-arrow" style="right:126px;bottom:86px;transform:rotate(-145deg);">&rarr;</div>
+        </div>
+        <div style="margin-top:18px;text-align:center;font-size:25px;font-weight:900;color:var(--ink);">
+          Local like SQLite. Analytical like ClickHouse.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Multi-source SQL</span><span class="right"><span class="meter"><span style="width:50%"></span></span>08 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.43fr 0.57fr;">
+      <div>
+        <h2 style="font-size:52px;">Join anything with SQL</h2>
+        <div class="source-card compact card" style="border-color:var(--blue);">
+          <div class="source-icon" style="background:var(--blue);">HTTP</div>
+          <div><h3>url(...)</h3><p>Remote Parquet, CSV, JSON.</p></div>
+        </div>
+        <div class="source-card compact card" style="border-color:var(--green);">
+          <div class="source-icon" style="background:var(--green);">FILE</div>
+          <div><h3>file(...)</h3><p>Local CSV, Parquet, Arrow.</p></div>
+        </div>
+        <div class="source-card compact card" style="border-color:var(--orange);">
+          <div class="source-icon" style="background:var(--orange);">PY</div>
+          <div><h3>Python(...)</h3><p>In-process DataFrame.</p></div>
+        </div>
+        <p style="margin-top:18px;color:var(--ink);font-size:24px;">Three data sources. One query. No ETL.</p>
+      </div>
+      <pre><code class="language-python">chdb.query("""
+  SELECT name, age, purchase_total
+  FROM url('https://api.example.com/users.parquet') users
+  LEFT JOIN file('local_orders.csv') orders
+    ON users.uid = orders.uid
+  LEFT JOIN Python(processed_df) enriched
+    ON enriched.uid = users.uid
+  WHERE age > 25
+  ORDER BY purchase_total DESC
+  LIMIT 1000
+""")</code></pre>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Data federation + fidelity</span><span class="right"><span class="meter"><span style="width:56.25%"></span></span>09 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.52fr 0.48fr;">
+      <div>
+        <h2>Data federation is also a data check</h2>
+        <div class="grid3" style="margin-top:42px;">
+          <div class="card green" style="text-align:center;"><div style="font-size:52px;font-weight:900;">&#10003;</div><h3>count</h3></div>
+          <div class="card green" style="text-align:center;"><div style="font-size:52px;font-weight:900;">&#10003;</div><h3>revenue</h3></div>
+          <div class="card green" style="text-align:center;"><div style="font-size:52px;font-weight:900;">&#10003;</div><h3>checksum</h3></div>
+        </div>
+        <p style="margin-top:42px;">Before an agent trusts a file, it can compare it with the source of truth using the same SQL surface.</p>
+      </div>
+      <pre><code class="language-python">chdb.query("""
+WITH local AS (
+  SELECT count() rows,
+         sum(amount) revenue,
+         groupBitXor(cityHash64(*)) checksum
+  FROM file('orders.parquet', Parquet)
+),
+cloud AS (
+  SELECT count() rows,
+         sum(amount) revenue,
+         groupBitXor(cityHash64(*)) checksum
+  FROM remoteSecure('cloud:9440', db, orders, ...)
+)
+SELECT
+  local.rows = cloud.rows AS same_count,
+  local.revenue = cloud.revenue AS same_revenue,
+  local.checksum = cloud.checksum AS same_rows
+FROM local, cloud
+""")</code></pre>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Memory model</span><span class="right"><span class="meter"><span style="width:62.5%"></span></span>10 / 16</span></div>
+  <div class="frame">
+    <h2>Good agent memory must be a row</h2>
+    <div class="table-grid" style="margin-top:52px;">
+      <div class="head">content</div><div class="head">project</div><div class="head">tags</div><div class="head">status</div><div class="head">embedding</div>
+      <div>Use chDB file() for local Parquet checks.</div><div>auxten/chdb</div><div>parquet, fidelity</div><div>active</div><div>[0.02, -0.11, ...]</div>
+      <div>Repo uses uv, not Poetry.</div><div>agent/codex</div><div>workflow</div><div>active</div><div>[0.08, 0.31, ...]</div>
+    </div>
+    <pre class="small" style="margin-top:34px !important;"><code class="language-python">sess.query("""
+CREATE TABLE memories (
+  id UUID,
+  project_id LowCardinality(String),
+  content String,
+  tags Array(String),
+  status Enum8('active' = 1, 'contracted' = 2),
+  embedding Array(Float32),
+  created_at DateTime64(3)
+) ENGINE = MergeTree
+ORDER BY (project_id, status, created_at)
+""")</code></pre>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>ClickMem</span><span class="right"><span class="meter"><span style="width:68.75%"></span></span>11 / 16</span></div>
+  <div class="frame">
+    <h2>ClickMem: memory as a database lifecycle</h2>
+    <div class="flow" style="margin-top:58px;">
+      <div class="card green" style="width:220px;height:160px;"><h3>remember</h3><p style="margin-top:18px;">explicit decision</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="card blue" style="width:220px;height:160px;"><h3>recall</h3><p style="margin-top:18px;">project + vector</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="card red" style="width:220px;height:160px;"><h3>conflict?</h3><p style="margin-top:18px;">similar but different</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="card green" style="width:220px;height:160px;"><h3>revise</h3><p style="margin-top:18px;">better belief wins</p></div>
+    </div>
+    <div class="grid2" style="margin-top:54px;height:auto;">
+      <div class="card red"><h3>Old memory</h3><p style="margin-top:16px;color:var(--red);">"Use Poetry for this repo."</p></div>
+      <div class="card green"><h3>Revised memory</h3><p style="margin-top:16px;color:var(--green);">"This repo now standardizes on uv."</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Recall SQL</span><span class="right"><span class="meter"><span style="width:75%"></span></span>12 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.49fr 0.51fr;">
+      <div>
+        <h2 style="font-size:54px;">Recall is one SQL query</h2>
+        <p style="margin-top:18px;color:var(--ink);">Structured filters + vector meaning + task history.</p>
+        <div style="display:grid;gap:14px;margin-top:30px;">
+          <div class="card" style="border-color:var(--blue);"><h3 class="blue">WHERE</h3><p>project + status + tags + privacy</p></div>
+          <div class="card" style="border-color:var(--green);"><h3 class="green">cosineDistance</h3><p>semantic recall against the query embedding</p></div>
+          <div class="card" style="border-color:var(--orange);"><h3 class="orange">JOIN events</h3><p>what solved a similar task before</p></div>
+        </div>
+      </div>
+      <pre class="recall-code"><code class="language-python">chdb.query("""
+SELECT
+  m.id,
+  m.content,
+  1 - cosineDistance(m.embedding, {query_vec}) AS meaning,
+  countIf(e.event = 'used_in_answer') AS used_before,
+  max(e.created_at) AS last_used
+FROM memories AS m
+LEFT JOIN memory_events AS e ON e.memory_id = m.id
+WHERE m.project_id = 'checkout-agent'
+  AND m.status = 'active'
+  AND hasAny(m.tags, ['sql', 'parquet', 'fidelity'])
+GROUP BY m.id, m.content, m.embedding, m.pinned
+ORDER BY m.pinned DESC, meaning DESC, used_before DESC
+LIMIT 8
+""")</code></pre>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>ClickMem architecture</span><span class="right"><span class="meter"><span style="width:81.25%"></span></span>13 / 16</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.36fr 0.64fr;">
+      <div>
+        <h2>Where ClickMem runs</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:34px;">
+          <span class="pill green">agent adapters</span>
+          <span class="pill">local server</span>
+          <span class="pill orange">chDB backend</span>
+          <span class="pill dark">ClickHouse sync</span>
+        </div>
+        <p style="margin-top:34px;">Hot recall stays local. Durable sharing can graduate to ClickHouse without changing the query model.</p>
+      </div>
+      <div class="card" style="padding:18px;">
+        <img class="diagram-img" src="logos/clickmem-architecture.png" alt="ClickMem architecture">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Local hot path</span><span class="right"><span class="meter"><span style="width:87.5%"></span></span>14 / 16</span></div>
+  <div class="frame">
+    <h2>Slow memory calls waste tokens</h2>
+    <div style="margin-top:62px;">
+      <div class="bar-row">
+        <h3>local in-process recall</h3>
+        <div class="bar-track"><div class="bar-fill" style="width:18%;background:var(--green);"></div></div>
+        <h3 class="green">2.8 ms</h3>
+      </div>
+      <div class="bar-row">
+        <h3>remote recall with retries</h3>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--red);"></div></div>
+        <h3 class="red">2,000 ms</h3>
+      </div>
+    </div>
+    <div class="grid3" style="margin-top:58px;">
+      <div class="card"><h3>p99 call</h3><p style="margin-top:14px;">local 2.8 ms vs remote timeout tail.</p></div>
+      <div class="card"><h3>8-call turn</h3><p style="margin-top:14px;">local p95 ~12 ms vs remote 1.5-4.5 s.</p></div>
+      <div class="card"><h3>wasted tokens</h3><p style="margin-top:14px;">local ~0 vs remote 580-6,100 per turn.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Scale path</span><span class="right"><span class="meter"><span style="width:93.75%"></span></span>15 / 16</span></div>
+  <div class="frame">
+    <h2>Start local, scale to ClickHouse</h2>
+    <div class="flow" style="margin-top:70px;">
+      <div class="card yellow" style="width:360px;height:220px;"><div style="font-size:76px;font-weight:900;">Day 1</div><p style="margin-top:16px;color:var(--ink);">chDB session on laptop or agent runtime</p></div>
+      <div class="arrow" style="font-size:58px;">&rarr;</div>
+      <div class="card blue" style="width:360px;height:220px;"><div style="font-size:76px;font-weight:900;">Day 100</div><p style="margin-top:16px;color:var(--blue);">ClickHouse Server or Cloud</p></div>
+    </div>
+    <pre style="margin-top:52px !important;"><code class="language-python"># Day 1: hot memory is local
+sess.query("""SELECT * FROM memories WHERE project_id = 'checkout'""")
+
+# Day 100: same query surface, remote table behind a view
+sess.query("""CREATE VIEW memories AS
+              SELECT * FROM remote('cloud...', db, memories, ...)""")</code></pre>
+  </div>
+</section>
+
+<section>
+  <div class="topbar"><span>Close</span><span class="right"><span class="meter"><span style="width:100%"></span></span>16 / 16</span></div>
+  <div class="frame">
+    <h2>Three takeaways</h2>
+    <div style="margin-top:42px;">
+      <div class="card takeaway"><div class="num">01</div><div><h3>Context is data.</h3><p>Filter it, rank it, join it, evaluate it.</p></div></div>
+      <div class="card yellow takeaway"><div class="num">02</div><div><h3>Recall is a query.</h3><p>Structured rules + vector meaning + task history.</p></div></div>
+      <div class="card takeaway"><div class="num">03</div><div><h3>Local first.</h3><p>chDB now; ClickHouse when shared or large.</p></div></div>
+    </div>
+    <div style="position:absolute;right:70px;bottom:55px;display:flex;align-items:center;gap:18px;">
+      <img class="logo" src="logos/chdb-light.png" alt="chDB logo" style="width:74px;height:74px;">
+      <div style="font-size:34px;font-weight:900;">Q&amp;A</div>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    controls: true,
+    progress: true,
+    slideNumber: "c/t",
+    transition: "fade",
+    transitionSpeed: "fast",
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 4,
+    controlsTutorial: false,
+    plugins: [RevealHighlight]
+  });
+</script>
+</body>
+</html>
