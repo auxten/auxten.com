@@ -510,6 +510,25 @@ sess.query("SELECT count() FROM file('events.parquet', Parquet)")
 </section>
 
 <section>
+  <h2>You Already Have SQLite, pandas, DuckDB &mdash; Why chDB?</h2>
+  <table class="bench" style="font-size: 0.46em;">
+    <thead>
+      <tr><th>Tool</th><th>Great at</th><th>Gap for agent memory</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>SQLite</strong></td><td>tiny embedded state, in the stdlib</td><td>row-store; no columnar scan, vector distance, or remote federation</td></tr>
+      <tr><td><strong>pandas</strong></td><td>in-memory analysis</td><td>dies past RAM; can't query a remote file you never loaded</td></tr>
+      <tr><td><strong>DuckDB</strong></td><td>embedded analytical SQL (closest)</td><td>different engine &mdash; no clean path to a ClickHouse cluster later</td></tr>
+      <tr><td><strong>Chroma / pgvector</strong></td><td>similarity search</td><td>similarity only; can't filter + join + aggregate + audit in one query</td></tr>
+    </tbody>
+  </table>
+  <p class="dim">chDB's edge: <strong>one ClickHouse SQL surface from laptop to cluster</strong>, with vectors and federation built in. Use the others when they're enough.</p>
+  <aside class="notes">
+    Pre-empt the three reflex questions: isn't this just SQLite / pandas / DuckDB? Concede where each is fine; the differentiator is one engine from local to cloud, plus native vectors and federation.
+  </aside>
+</section>
+
+<section>
   <h2>One SQL Interface for Files, Tables, and Memory</h2>
   <div class="cards">
     <div class="card green">
@@ -549,7 +568,7 @@ cloud AS (
 )
 SELECT local.rows = cloud.rows AS same_count,
        local.revenue = cloud.revenue AS same_revenue,
-       local.checksum = cloud.checksum AS same_rows
+       local.checksum = cloud.checksum AS same_checksum
 FROM local, cloud;
   </code></pre>
   <p class="dim">
@@ -571,6 +590,7 @@ FROM local, cloud;
       <tr><td><strong>project_id</strong></td><td><code>auxten/chdb</code></td><td>scope the memory</td></tr>
       <tr><td><strong>tags</strong></td><td><code>["parquet", "fidelity"]</code></td><td>structured filtering</td></tr>
       <tr><td><strong>status</strong></td><td><code>active</code> / <code>conflicted</code></td><td>avoid stale beliefs</td></tr>
+      <tr><td><strong>pinned</strong></td><td><code>true</code> / <code>false</code></td><td>canonical decisions rank first</td></tr>
       <tr><td><strong>embedding</strong></td><td><code>[0.02, -0.11, ...]</code></td><td>semantic recall</td></tr>
     </tbody>
   </table>
@@ -700,7 +720,7 @@ FROM remoteSecure(
 sess.query("SELECT * FROM memories WHERE project_id = 'checkout'")
   </code></pre>
   <blockquote style="font-size: 0.68em; margin-top: 0.35em;">
-    Local first. Remote when you need sharing, sync, or scale.
+    Local first. Go remote for sharing, sync, or scale &mdash; knowing remote reads pay the network cost again.
   </blockquote>
   <aside class="notes">
     This is the escape hatch, not the main story. The SQL surface is the same.
