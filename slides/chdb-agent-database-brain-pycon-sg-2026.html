@@ -552,33 +552,6 @@ sess.query("SELECT count() FROM file('events.parquet', Parquet)")
   </aside>
 </section>
 
-<section class="wide-code">
-  <h2>Check Local and Remote Data with One Query</h2>
-  <pre><code class="language-sql" data-trim style="font-size: 0.58em; line-height: 1.30;">
-WITH
-local AS (
-  SELECT count() AS rows, sum(amount) AS revenue,
-         groupBitXor(cityHash64(order_id, user_id, amount, status)) AS checksum
-  FROM file('orders.parquet', Parquet)
-),
-cloud AS (
-  SELECT count() AS rows, sum(amount) AS revenue,
-         groupBitXor(cityHash64(order_id, user_id, amount, status)) AS checksum
-  FROM remoteSecure('cloud:9440', 'prod', 'orders', 'agent_user', '***')
-)
-SELECT local.rows = cloud.rows AS same_count,
-       local.revenue = cloud.revenue AS same_revenue,
-       local.checksum = cloud.checksum AS same_checksum
-FROM local, cloud;
-  </code></pre>
-  <p class="dim">
-    This is a high-confidence sync check, not magic. The agent gets one auditable answer before trusting the data.
-  </p>
-  <aside class="notes">
-    Keep this short. It shows data federation plus data fidelity in one local SQL statement without making it the main story.
-  </aside>
-</section>
-
 <section>
   <h2>Good Agent Memory Must Be a Row</h2>
   <table class="bench" style="font-size: 0.48em;">
