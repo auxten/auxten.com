@@ -518,7 +518,7 @@ sess.query("SELECT count() FROM file('events.parquet', Parquet)")
     <tbody>
       <tr><td><strong>SQLite</strong></td><td>tiny embedded state, in the stdlib</td><td>row-store; no columnar scan, vector distance, or remote federation</td></tr>
       <tr><td><strong>pandas</strong></td><td>in-memory analysis</td><td>dies past RAM; can't query a remote file you never loaded</td></tr>
-      <tr><td><strong>DuckDB</strong></td><td>embedded analytical SQL (closest)</td><td>different engine &mdash; no clean path to a ClickHouse cluster later</td></tr>
+      <tr><td><strong>DuckDB</strong></td><td>embedded analytical SQL (closest)</td><td>thinner data-format support; no mature managed cloud</td></tr>
       <tr><td><strong>Chroma / pgvector</strong></td><td>similarity search</td><td>similarity only; can't filter + join + aggregate + audit in one query</td></tr>
     </tbody>
   </table>

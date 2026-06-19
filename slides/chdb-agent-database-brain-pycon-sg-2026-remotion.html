@@ -620,7 +620,7 @@
     <div class="grid2" style="margin-top:28px;grid-template-columns:1fr 1fr;height:auto;gap:16px;">
       <div class="card"><h3 class="blue">SQLite</h3><p style="margin-top:8px;">Great for tiny state. No columnar scan, no vector distance, no remote files.</p></div>
       <div class="card"><h3 class="green">pandas</h3><p style="margin-top:8px;">Great in memory. Dies past RAM; can't query a remote file you never loaded.</p></div>
-      <div class="card"><h3 class="orange">DuckDB</h3><p style="margin-top:8px;">Closest match. Different engine &mdash; no clean path to a ClickHouse cluster later.</p></div>
+      <div class="card"><h3 class="orange">DuckDB</h3><p style="margin-top:8px;">Closest match &mdash; but thinner data-format support and no mature cloud.</p></div>
       <div class="card"><h3 class="red">Vector DB</h3><p style="margin-top:8px;">Similarity only. Can't filter + join + aggregate + audit in one query.</p></div>
     </div>
     <div class="card yellow" style="margin-top:26px;font-size:28px;font-weight:900;line-height:1.22;">
