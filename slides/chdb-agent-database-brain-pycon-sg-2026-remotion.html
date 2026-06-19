@@ -719,7 +719,7 @@ sess.query("SELECT count() FROM file('log.pq')")</code></pre>
   WHERE u.age > 25
 """)</code></pre>
         <div style="margin-top:14px;font-size:18px;font-weight:900;color:var(--muted);">same join, pandas-style (runs on chDB):</div>
-        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import datastore as pd
+        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import chdb.datastore as pd
 (pd.read_parquet("https://api.co/users.parquet")
    .merge(pd.read_csv("orders.csv"), on="uid")
    .merge(pd.DataFrame(enriched_df), on="uid"))</code></pre>
@@ -780,7 +780,7 @@ WHERE status = 'active'
 ORDER BY pinned DESC, meaning DESC
 LIMIT 8</code></pre>
         <div style="margin-top:14px;font-size:18px;font-weight:900;color:var(--muted);">same recall, pandas-style:</div>
-        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import datastore as pd
+        <pre class="small" style="margin-top:8px !important;"><code class="language-python">import chdb.datastore as pd
 m = pd.read_parquet("memories.parquet")
 m[m.status == "active"].sort_values(
     "pinned", ascending=False).head(8)</code></pre>
