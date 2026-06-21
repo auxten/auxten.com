@@ -262,7 +262,6 @@
         <li><span class="emoji">&#127970;</span> <strong>Technical Director</strong> @ ClickHouse</li>
         <li><span class="emoji">&#128640;</span> Creator of <strong>chDB</strong> &mdash; acquired by ClickHouse 2024</li>
         <li><span class="emoji">&#129516;</span> Maintaining a pile of side projects&hellip; alone</li>
-        <li><span class="emoji">&#128221;</span> Shipping 3 iOS apps as a one-man company</li>
         <li style="color: #999;">Ex-Shopee &middot; CovenantSQL &middot; Baidu &middot; Qihoo 360</li>
       </ul>
     </div>
@@ -501,7 +500,7 @@
           <div class="avatar bot">H</div>
           <div class="body">
             <div class="who">Hermes <span class="tag">BOT</span> <span class="ts">Sun 09:30</span></div>
-            <div class="bubble"><strong>Daily ASA report</strong><br>Yesterday: spend <strong>$106.63</strong> &middot; installs <strong>32</strong> &middot; CPI <strong>$3.33</strong><br>Last 7d: spend $440.16 &middot; installs 104 &middot; CPI $4.23<br>Since re-enabling: 6/14 <strong>2</strong> &rarr; 6/15 <strong>27</strong> &rarr; 6/16 <strong>32</strong> installs &mdash; clear recovery &#9989;</div>
+            <div class="bubble"><strong>Daily ASA report</strong><br>Yesterday: spend <strong style="filter:blur(7px)">$106.63</strong> &middot; installs <strong>32</strong> &middot; CPI <strong style="filter:blur(7px)">$3.33</strong><br>Last 7d: spend <span style="filter:blur(7px)">$440.16</span> &middot; installs 104 &middot; CPI <span style="filter:blur(7px)">$4.23</span><br>Since re-enabling: 6/14 <strong>2</strong> &rarr; 6/15 <strong>27</strong> &rarr; 6/16 <strong>32</strong> installs &mdash; clear recovery &#9989;</div>
           </div>
         </div>
       </div>
@@ -615,14 +614,16 @@
 
 <!-- ============ CLICKMEM PHILOSOPHY ============ -->
 <section>
-  <h2>ClickMem &mdash; a memory <em>safe</em></h2>
-  <p class="dim" style="margin-bottom:0.3em;">Remember what matters, forget what stopped being true, never treat a passing detail as your identity. A safe, not a firehose.</p>
-  <div class="ops">
-    <div class="op"><b>Expand</b><span>add a belief</span></div>
-    <div class="op"><b>Revise</b><span>replace when better info arrives</span></div>
-    <div class="op"><b>Contract</b><span>forget &mdash; with a reason</span></div>
-    <div class="op"><b>Reinforce</b><span>pin as authoritative</span></div>
-    <div class="op warm"><b>Refuse</b><span>blacklist, never store again</span></div>
+  <h2>ClickMem &mdash; memory with a <em>lifecycle</em></h2>
+  <p class="dim" style="margin-bottom:0.4em;">Remember what matters, forget what stopped being true, never treat a passing detail as your identity. A safe, not a firehose.</p>
+  <div style="display:flex; align-items:center; justify-content:center; gap:0.5em; margin:0.4em auto 0.5em; flex-wrap:wrap;">
+    <div class="node">remember<small>explicit decision</small></div>
+    <span class="arrow">&rarr;</span>
+    <div class="node accent">recall<small>similarity + filter</small></div>
+    <span class="arrow">&rarr;</span>
+    <div class="node warm">conflict?<small>similar but different</small></div>
+    <span class="arrow">&rarr;</span>
+    <div class="node">revise<small>better belief wins</small></div>
   </div>
   <ul style="margin-top:0.2em;">
     <li class="fragment"><strong>Explicit-only.</strong> Two ways in: an agent commits a refined conclusion (<code>clickmem_remember</code>), or I import curated docs (<code>AGENTS.md</code> / <code>CLAUDE.md</code> / rules). Raw chat stays cold &mdash; <strong>never auto-injected.</strong></li>
