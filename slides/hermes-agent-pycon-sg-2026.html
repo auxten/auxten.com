@@ -274,12 +274,13 @@
 <!-- ============ INTRO 1: AGENT EVOLUTION ============ -->
 <section>
   <h2>How We Got Here</h2>
-  <p class="dim" style="margin-bottom: 0.5em;">Four years of AI coding, compressed. It moved absurdly fast.</p>
+  <p class="dim" style="margin-bottom: 0.5em;">Four years of AI coding, compressed &mdash; and the tools keep converging.</p>
   <ul class="timeline">
-    <li class="fragment"><span class="yr">2022</span> ChatGPT. Describe a function, copy the answer, paste into your editor.</li>
+    <li class="fragment"><span class="yr">2022</span> ChatGPT. Code completion &mdash; describe a function, copy, paste.</li>
     <li class="fragment"><span class="yr">2024</span> Cursor + Claude Code. The AI moves <em>inside</em> the editor &mdash; reads your repo, runs your tests.</li>
-    <li class="fragment"><span class="yr">2025</span> CLI agents &amp; multi-agent pipelines. Codex and Claude Code in the terminal: test &rarr; fix &rarr; review &rarr; benchmark.</li>
-    <li class="fragment now"><span class="yr">2026</span> <span class="highlight">Autonomous, always-on agents.</span> The question stops being "can it code?" and becomes <strong>"can it run without me, 24/7?"</strong></li>
+    <li class="fragment"><span class="yr">2025</span> CLI agents: Claude Code, Codex, OpenClaw &mdash; test &rarr; fix &rarr; review &rarr; benchmark, in the terminal.</li>
+    <li class="fragment"><span class="yr">2025</span> Then they grew a clock. Codex &amp; Claude Code add scheduled tasks; OpenClaw runs always-on &mdash; every tool starts to look the same: <span class="highlight">memory, cron, autonomy.</span></li>
+    <li class="fragment now"><span class="yr">2026</span> <span class="highlight">Autonomous, always-on agents.</span> Not "can it code?" but <strong>"can it run without me, 24/7?"</strong></li>
   </ul>
 </section>
 
@@ -308,6 +309,13 @@
     </div>
   </div>
   <p class="fragment" style="margin-top: 0.7em; font-size: 0.74em;">Think of it as <span class="highlight">hiring an ops teammate</span>, not buying a faster autocomplete.</p>
+</section>
+
+<!-- ============ THE AGENTS CONVERGED &mdash; RANKING ============ -->
+<section class="image-slide">
+  <h2 style="margin-bottom:0.3em;">They All Converged &mdash; and Hermes Leads</h2>
+  <img src="logos/agent-ranking.png" style="max-height:515px; max-width:92%;">
+  <p class="dim" style="margin-top:0.3em;">Code completion &rarr; Cursor &rarr; Claude Code &rarr; OpenClaw &rarr; cron-driven CLI agents &mdash; all grew memory, schedules, autonomy. By daily token volume, <strong>Hermes Agent now tops the leaderboard.</strong></p>
 </section>
 
 <!-- ============ INTRO 3: WHAT IS HERMES ============ -->
@@ -393,7 +401,7 @@
           <img class="avatar" src="logos/head.jpg">
           <div class="body">
             <div class="who">Auxten <span class="ts">08:00</span></div>
-            <div class="bubble">Check the online status of my 3 apps.</div>
+            <div class="bubble">Check the online status of my apps.</div>
             <div class="react">&#9989; received &middot; instant</div>
           </div>
         </div>
@@ -416,7 +424,7 @@
   <h3 style="color:#1a1a1a; margin-bottom:0.5em;">Background cron that actually runs my ops</h3>
   <table class="cron-table">
     <tr class="head-row"><th>Schedule</th><th>What it does (and reports to Discord)</th></tr>
-    <tr><td class="when">Sun 08:00&ndash;09:30</td><td class="task">Weekly Apple Search Ads optimization for 3 apps<small>per-app keyword/bid tuning, then one roll-up report</small></td></tr>
+    <tr><td class="when">Sun 08:00&ndash;09:30</td><td class="task">Weekly ad-campaign optimization across my apps<small>per-app keyword/bid tuning, then one roll-up report</small></td></tr>
     <tr class="fragment"><td class="when">Daily 08:00</td><td class="task">Cross-app anomaly inspection<small>installs / trials / revenue / LLM errors &mdash; read-only, pings me only if something's off</small></td></tr>
     <tr class="fragment"><td class="when">Daily 10:00</td><td class="task">Emby "pick of the day"<small>one title, tuned to my taste</small></td></tr>
     <tr class="fragment"><td class="when">Every 14 days</td><td class="task">App Store keyword + metadata refresh, then ship a new version</td></tr>
@@ -471,15 +479,15 @@
 <!-- ============ USE CASE 1: DATA ANALYSIS (intro) ============ -->
 <section>
   <h2>Use Case 1: Analyzing My Own Apps</h2>
-  <p class="dim" style="margin-bottom:0.7em;">I ship 3 iOS apps solo. Ads, users, revenue, releases, crashes &mdash; scattered across 6 dashboards. So I stopped opening dashboards.</p>
+  <p class="dim" style="margin-bottom:0.7em;">I ship my own apps solo. Ads, users, revenue, releases, crashes &mdash; scattered across a pile of dashboards. So I stopped opening dashboards.</p>
   <div class="diagram">
     <div class="col-flow" style="gap:0.3em;">
-      <span class="pill">Apple Search Ads</span>
-      <span class="pill">RevenueCat</span>
-      <span class="pill">GA4</span>
-      <span class="pill">AppsFlyer</span>
-      <span class="pill">D1 / Supabase</span>
-      <span class="pill">Langfuse</span>
+      <span class="pill">Ad network</span>
+      <span class="pill">Revenue</span>
+      <span class="pill">Analytics</span>
+      <span class="pill">Attribution</span>
+      <span class="pill">App DB</span>
+      <span class="pill">LLM traces</span>
     </div>
     <span class="arrow">&#8594;</span>
     <div class="node accent"><span class="ic">&#9889;</span>Hermes<small>+ my ad-ops skills</small></div>
