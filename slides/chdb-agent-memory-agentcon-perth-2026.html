@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Agent's Memory Shouldn't Be a Markdown File - AgentCon Perth 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fbfbf8;
+    --ink: #161616;
+    --muted: #4b525b;
+    --faint: #eef1f4;
+    --border: #e2e6eb;
+    --yellow: #fadb14;
+    --orange: #e65100;
+    --blue: #1565c0;
+    --green: #2e7d32;
+    --red: #c62828;
+    --dark: #1f2328;
+    --code: #272822;
+  }
+
+  html, body, .reveal, .reveal .slides, .reveal .slides section { background: var(--paper); }
+
+  .reveal {
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 30px;
+  }
+
+  .reveal .slides section {
+    box-sizing: border-box;
+    height: 720px;
+    padding: 0;
+    text-align: left;
+    overflow: hidden;
+  }
+
+  .reveal .slides section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(22,22,22,0.035) 1px, transparent 1px),
+      linear-gradient(rgba(22,22,22,0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.28;
+    pointer-events: none;
+  }
+
+  .frame { position: absolute; inset: 0; box-sizing: border-box; padding: 78px 54px 54px; }
+
+  .topbar {
+    position: absolute; top: 34px; left: 54px; right: 54px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--muted); font-size: 20px; font-weight: 800; z-index: 3;
+  }
+  .topbar .right { display: flex; align-items: center; gap: 10px; }
+  .meter { width: 170px; height: 6px; overflow: hidden; border-radius: 999px; background: #e7e9ee; }
+  .meter span { display: block; height: 100%; background: var(--orange); }
+
+  h1, h2, h3, p { margin: 0; }
+  h1 { color: var(--ink); font-size: 66px; font-weight: 900; line-height: 1.0; letter-spacing: -0.5px; }
+  h2 { color: var(--ink); font-size: 54px; font-weight: 900; line-height: 1.04; letter-spacing: -0.5px; }
+  h3 { color: var(--ink); font-size: 28px; font-weight: 900; line-height: 1.1; }
+  p  { color: var(--muted); font-size: 27px; font-weight: 700; line-height: 1.32; }
+
+  .orange { color: var(--orange); }
+  .blue { color: var(--blue); }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .muted { color: var(--muted); }
+  .mono { font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace; }
+  em { font-style: italic; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; height: 100%; }
+  .grid2 > * { min-width: 0; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+  .card {
+    box-sizing: border-box; background: #fff; border: 2px solid var(--border);
+    border-radius: 10px; padding: 24px; box-shadow: 0 14px 36px rgba(20,20,20,0.08);
+  }
+  .card.yellow { background: #fff8d7; border-color: #f0d74a; }
+  .card.blue { background: #eef6ff; border-color: #86bdf2; color: var(--blue); }
+  .card.green { background: #eff9ef; border-color: #9ad59c; color: var(--green); }
+  .card.red { background: #fff0f0; border-color: #f1a2a2; color: var(--red); }
+  .card.dark { background: var(--dark); border-color: var(--dark); color: #fff; }
+  .card p { font-size: 23px; line-height: 1.28; }
+
+  .need-list { display: grid; gap: 12px; margin-top: 18px; }
+  .need-list div {
+    display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: center;
+    color: var(--ink); font-size: 22px; font-weight: 800; line-height: 1.18;
+  }
+  .card.dark .need-list div { color: #f3f4f6; }
+  .dot { width: 13px; height: 13px; border-radius: 999px; background: var(--orange); }
+  .x { color: var(--red); font-weight: 900; font-size: 22px; line-height: 1; }
+  .ok { color: var(--green); font-weight: 900; font-size: 22px; line-height: 1; }
+
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 42px;
+    border: 2px solid var(--blue); border-radius: 999px; padding: 0 18px;
+    color: var(--blue); background: #fff; font-size: 22px; font-weight: 900; white-space: nowrap;
+  }
+  .pill.green { border-color: var(--green); color: var(--green); }
+  .pill.orange { border-color: var(--orange); color: var(--orange); }
+  .pill.dark { border-color: var(--dark); color: var(--dark); }
+
+  .flow { display: flex; align-items: center; gap: 16px; }
+  .arrow { color: #9aa2ad; font-size: 36px; font-weight: 900; }
+
+  .logo { display: block; object-fit: contain; max-width: 100%; max-height: 100%; box-shadow: none !important; border: 0 !important; margin: 0 !important; }
+  .logo-row { display: flex; gap: 24px; align-items: center; }
+
+  .diagram-img { width: 100%; height: 430px; object-fit: contain; border: 0 !important; box-shadow: none !important; margin: 0 !important; }
+
+  .takeaway { display: grid; grid-template-columns: 84px 1fr; gap: 22px; align-items: center; margin-top: 16px; }
+  .num { color: var(--orange); font-size: 46px; font-weight: 900; }
+
+  pre { width: 100%; margin: 0 !important; border-radius: 10px; box-shadow: 0 18px 46px rgba(0,0,0,0.18); }
+  .reveal pre code {
+    box-sizing: border-box; max-height: none; padding: 22px 26px; border-radius: 10px;
+    color: #f7f7f7; background: var(--code);
+    font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+    font-size: 19px; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; line-height: 1.4;
+  }
+  pre.small code { font-size: 16px; line-height: 1.34; }
+
+  /* "memory.md" file blob visual */
+  .mdfile {
+    background: #fff; border: 2px solid var(--border); border-radius: 12px;
+    box-shadow: 0 18px 44px rgba(20,20,20,0.12); overflow: hidden;
+  }
+  .mdfile .bar {
+    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    background: #f3f5f8; border-bottom: 2px solid var(--border);
+    font-weight: 900; color: var(--muted); font-size: 20px;
+  }
+  .mdfile .bar .dotred, .mdfile .bar .doty, .mdfile .bar .dotg { width: 12px; height: 12px; border-radius: 999px; }
+  .mdfile .bar .dotred { background: #ff5f57; } .mdfile .bar .doty { background: #febc2e; } .mdfile .bar .dotg { background: #28c840; }
+  .mdfile .body { padding: 18px 22px; font-family: "JetBrains Mono", Menlo, monospace; font-size: 18px; line-height: 1.55; color: var(--ink); }
+  .mdfile .body .h { color: var(--blue); font-weight: 700; }
+  .mdfile .body .li { color: #3a4048; }
+  .mdfile .body .fade1 { opacity: 0.6; } .mdfile .body .fade2 { opacity: 0.35; } .mdfile .body .fade3 { opacity: 0.18; }
+
+  .table-grid {
+    display: grid; grid-template-columns: 1.5fr 0.9fr 0.9fr;
+    border: 2px solid var(--border); border-radius: 10px; overflow: hidden;
+    background: #fff; box-shadow: 0 14px 36px rgba(20,20,20,0.08);
+  }
+  .table-grid div { padding: 15px 18px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 21px; font-weight: 800; line-height: 1.2; }
+  .table-grid .head { color: var(--orange); background: #fff8d7; font-size: 18px; text-transform: uppercase; }
+  .table-grid div:nth-child(3n) { border-right: 0; }
+  .table-grid div:nth-last-child(-n+3) { border-bottom: 0; }
+  .table-grid .c { text-align: center; }
+
+  .reveal .controls, .reveal .progress { color: var(--orange); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- 01 — Title -->
+<section>
+  <div class="topbar"><span>AgentCon Perth 2026</span><span class="right"><span class="meter"><span style="width:4.5%"></span></span>01 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns: 0.66fr 0.34fr;">
+      <div>
+        <div class="logo-row" style="margin-bottom: 28px;">
+          <img class="logo" src="logos/chdb-light.png" alt="chDB logo" style="width:80px;height:80px;">
+          <img class="logo" src="logos/clickhouse-logo-black.svg" alt="ClickHouse logo" style="width:240px;height:58px;">
+        </div>
+        <h1>Your Agent's Memory<br>Shouldn't Be a<br><span class="orange">Markdown File</span></h1>
+        <p style="margin-top:24px;font-size:29px;color:var(--ink);">Give it a database brain instead &mdash; with chDB.</p>
+        <p style="margin-top:18px;font-size:24px;">Auxten Wang &middot; Technical Director @ ClickHouse &middot; Creator of chDB</p>
+      </div>
+      <div class="card dark" style="height:380px;display:flex;align-items:center;justify-content:center;flex-direction:column;border:7px solid var(--yellow);gap:10px;">
+        <div class="mono" style="font-size:34px;font-weight:900;color:#c8ced6;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:4px;">memory.md</div>
+        <div style="font-size:34px;color:#9aa2ad;font-weight:900;">&darr;</div>
+        <div class="mono" style="font-size:76px;font-weight:900;">SQL</div>
+        <div style="font-size:22px;font-weight:900;color:#c8ced6;">a real local database</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 — About me -->
+<section>
+  <div class="topbar"><span>About me</span><span class="right"><span class="meter"><span style="width:9.1%"></span></span>02 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:max-content max-content;justify-content:center;gap:96px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:20px;margin-bottom:26px;">
+          <img src="logos/head.jpg" alt="Auxten Wang" style="width:96px;height:96px;border-radius:50%;object-fit:cover;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+          <div>
+            <h2 style="font-size:46px;">Auxten Wang</h2>
+            <p style="margin-top:6px;font-size:24px;color:var(--ink);"><strong>@auxten</strong> &middot; auxten.com</p>
+          </div>
+        </div>
+        <div class="need-list" style="gap:16px;">
+          <div><span class="dot"></span><span>Technical Director @ <strong>ClickHouse</strong></span></div>
+          <div><span class="dot"></span><span>Creator of <strong>chDB</strong> &mdash; acquired by ClickHouse in 2024</span></div>
+          <div><span class="dot"></span><span>Building <strong>ClickMem</strong> &mdash; agent memory on chDB</span></div>
+          <div><span class="dot"></span><span class="muted">Ex-Shopee &middot; CovenantSQL &middot; Baidu &middot; 360 &middot; 4Paradigm</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;">
+        <img class="logo" src="logos/chdb-light.png" alt="chDB" style="width:180px;height:180px;">
+        <img class="logo" src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="width:240px;height:auto;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 — The status quo: the markdown memory file -->
+<section>
+  <div class="topbar"><span>The status quo</span><span class="right"><span class="meter"><span style="width:13.6%"></span></span>03 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.52fr 0.48fr;">
+      <div>
+        <h2>How agents "remember" today</h2>
+        <p style="margin-top:18px;">Append lines to a text file &mdash; <span class="mono">memory.md</span>, <span class="mono">CLAUDE.md</span>, <span class="mono">AGENTS.md</span> &mdash; then paste the whole thing back into the prompt.</p>
+        <div class="logo-row" style="margin-top:24px;gap:12px;">
+          <span class="pill dark">memory.md</span><span class="pill dark">CLAUDE.md</span><span class="pill dark">AGENTS.md</span>
+        </div>
+        <p style="margin-top:24px;font-size:23px;">It works on day one. It does not survive contact with a real session.</p>
+      </div>
+      <div class="mdfile">
+        <div class="bar"><span class="dotred"></span><span class="doty"></span><span class="dotg"></span>&nbsp;memory.md</div>
+        <div class="body">
+          <div class="h"># Project notes</div>
+          <div class="li">- user prefers TypeScript</div>
+          <div class="li">- API base = api.acme.dev</div>
+          <div class="li fade1">- use Poetry for this repo</div>
+          <div class="li fade1">- deploy on Fridays (?)</div>
+          <div class="li fade2">- actually, repo moved to uv</div>
+          <div class="li fade2">- prod base = api.acme.com</div>
+          <div class="li fade3">- ... 2,000 more lines ...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 — A familiar failure -->
+<section>
+  <div class="topbar"><span>The pain</span><span class="right"><span class="meter"><span style="width:18.2%"></span></span>04 / 22</span></div>
+  <div class="frame">
+    <h2>A familiar agent failure</h2>
+    <div class="grid3" style="margin-top:36px;">
+      <div class="card yellow" style="height:230px;"><h3 style="margin-top:4px;">Yesterday</h3><p style="margin-top:12px;color:var(--ink);">It hit a constraint and found the fix that worked.</p></div>
+      <div class="card red" style="height:230px;"><h3 style="margin-top:4px;">Today</h3><p style="margin-top:12px;color:var(--red);">Same task. It reads the prompt &mdash; not yesterday's fix.</p></div>
+      <div class="card blue" style="height:230px;"><h3 style="margin-top:4px;">Result</h3><p style="margin-top:12px;color:var(--blue);">Repeats the failed plan. Burns tool calls on retries.</p></div>
+    </div>
+    <div class="card dark" style="margin-top:34px;font-size:33px;font-weight:900;line-height:1.22;">
+      The model isn't dumb. The right context just wasn't <span class="orange">queryable in time</span>.
+    </div>
+  </div>
+</section>
+
+<!-- 05 — Why the markdown file fails -->
+<section>
+  <div class="topbar"><span>Why it breaks</span><span class="right"><span class="meter"><span style="width:22.7%"></span></span>05 / 22</span></div>
+  <div class="frame">
+    <h2>A markdown file is write-only memory</h2>
+    <div class="need-list" style="margin-top:30px;gap:16px;">
+      <div><span class="x">&#10007;</span><span><strong>No query.</strong> You load all of it (context bloat) or grep it (no ranking by relevance).</span></div>
+      <div><span class="x">&#10007;</span><span><strong>No recency, no dedup.</strong> Stale notes sit next to fresh ones; nothing decays.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>No similarity.</strong> It can't answer "what's related to what I'm doing <em>now</em>?"</span></div>
+      <div><span class="x">&#10007;</span><span><strong>No revision, no audit.</strong> When did the belief change? From what, to what?</span></div>
+      <div><span class="x">&#10007;</span><span><strong>It only grows.</strong> Straight into the context window: more tokens, slower, needle lost.</span></div>
+    </div>
+    <div class="card yellow" style="margin-top:26px;font-size:27px;font-weight:900;line-height:1.22;">
+      A bigger prompt is not a memory. It's a bill.
+    </div>
+  </div>
+</section>
+
+<!-- 06 — Reframe: context is data -->
+<section>
+  <div class="topbar"><span>The reframe</span><span class="right"><span class="meter"><span style="width:27.3%"></span></span>06 / 22</span></div>
+  <div class="frame">
+    <h2>Your agent's context is really data</h2>
+    <p style="margin-top:12px;font-size:24px;">Four kinds of it &mdash; and recall is <em>choosing the few that matter now</em>.</p>
+    <img class="diagram-img" src="logos/fig-context-is-data.png" alt="Context is four kinds of data; recall is a query" style="height:330px;margin-top:14px !important;">
+    <div class="card dark" style="margin-top:18px;font-size:29px;font-weight:900;line-height:1.2;">
+      Recall = find the few facts that matter <em>now</em>. <span class="orange">A query, not a bigger prompt.</span>
+    </div>
+  </div>
+</section>
+
+<!-- 07 — Can't I just use X? -->
+<section>
+  <div class="topbar"><span>Why a database</span><span class="right"><span class="meter"><span style="width:31.8%"></span></span>07 / 22</span></div>
+  <div class="frame">
+    <h2>"Can't I just use what I have?"</h2>
+    <div class="grid2" style="margin-top:24px;grid-template-columns:1fr 1fr;height:auto;gap:16px;">
+      <div class="card"><h3 class="blue">SQLite</h3><p style="margin-top:8px;">Great for tiny state. No columnar scan, no vectors, no remote files.</p></div>
+      <div class="card"><h3 class="green">Pandas</h3><p style="margin-top:8px;">Great in memory. Dies past RAM. Can't query files you never loaded.</p></div>
+      <div class="card"><h3 class="orange">DuckDB</h3><p style="margin-top:8px;">Closest match &mdash; but fewer formats and no mature cloud path.</p></div>
+      <div class="card"><h3 class="red">Vector DB</h3><p style="margin-top:8px;">Similarity only. Can't filter + join + aggregate + audit in one query.</p></div>
+    </div>
+    <div class="card yellow" style="margin-top:24px;font-size:28px;font-weight:900;line-height:1.22;">
+      Vector search is just an index. Agent memory is the whole <span class="orange">database</span> around it.
+    </div>
+  </div>
+</section>
+
+<!-- 08 — chDB: rocket engine on a bicycle -->
+<section>
+  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:36.4%"></span></span>08 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.54fr 0.46fr;">
+      <div>
+        <h2 style="font-size:44px;">chDB: a rocket engine<br>on a bicycle</h2>
+        <p style="margin-top:14px;color:var(--ink);font-size:23px;">The ClickHouse engine, embedded in your Python process &mdash; SQLite-simple, built to scan millions of rows.</p>
+        <pre class="small" style="margin-top:18px !important;"><code class="language-python"># pip install chdb
+from chdb import session as chs
+sess = chs.Session("./agent")
+sess.query("SELECT count() FROM file('log.pq')")</code></pre>
+        <div class="need-list" style="margin-top:16px;gap:10px;">
+          <div><span class="dot"></span><span><strong>Same engine:</strong> ClickHouse SQL, JOINs, vectors.</span></div>
+          <div><span class="dot"></span><span><strong>Persistent:</strong> local tables on disk for memory.</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <img src="logos/rocket-bike.png" alt="A rocket engine on a bicycle" style="width:100%;max-width:440px;border-radius:14px;box-shadow:0 20px 48px rgba(0,0,0,0.26);">
+        <div style="margin-top:16px;text-align:center;font-size:23px;font-weight:900;color:var(--ink);">Local like SQLite. Analytical like ClickHouse.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 — chDB drops into your Python stack -->
+<section>
+  <div class="topbar"><span>chDB API</span><span class="right"><span class="meter"><span style="width:40.9%"></span></span>09 / 22</span></div>
+  <div class="frame">
+    <h2>It drops into your Python data stack</h2>
+    <div class="grid3" style="margin-top:44px;">
+      <div class="card green" style="height:240px;"><h3 class="green">70+ formats</h3><p style="margin-top:12px;color:var(--green);">Parquet, CSV, JSON, Arrow, ORC &mdash; read &amp; write, no converters.</p></div>
+      <div class="card blue" style="height:240px;"><h3 class="blue">Zero-copy Pandas / Arrow</h3><p style="margin-top:12px;color:var(--blue);">Query a DataFrame or Arrow table in place &mdash; no copy, no load.</p></div>
+      <div class="card yellow" style="height:240px;"><h3>Pandas-style API</h3><p style="margin-top:12px;color:var(--ink);">Prefer DataFrames to raw SQL? chDB v4 speaks that too.</p></div>
+    </div>
+    <div class="card dark" style="margin-top:30px;font-size:27px;font-weight:900;line-height:1.22;">
+      It fits your existing Python code &mdash; and LLMs already write SQL &amp; pandas extremely well.
+    </div>
+  </div>
+</section>
+
+<!-- 10 — What good memory needs -->
+<section>
+  <div class="topbar"><span>Agent memory</span><span class="right"><span class="meter"><span style="width:45.5%"></span></span>10 / 22</span></div>
+  <div class="frame">
+    <h2>What good agent memory needs</h2>
+    <p style="margin-top:14px;font-size:25px;">Memory the agent can filter, rank, and grow &mdash; not a prompt blob.</p>
+    <div class="grid3" style="margin-top:40px;">
+      <div class="card green" style="height:240px;"><h3 class="green">Memories are rows</h3><p style="margin-top:12px;color:var(--green);">Filter, rank, and audit them with plain SQL.</p></div>
+      <div class="card blue" style="height:240px;"><h3 class="blue">Recall = similarity + filter</h3><p style="margin-top:12px;color:var(--blue);">Meaning and business rules in one query.</p></div>
+      <div class="card yellow" style="height:240px;"><h3>Local now, cloud later</h3><p style="margin-top:12px;color:var(--ink);">Same SQL from laptop to ClickHouse Cloud.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 — Recall is one SQL query -->
+<section>
+  <div class="topbar"><span>Recall</span><span class="right"><span class="meter"><span style="width:50%"></span></span>11 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.44fr 0.56fr;">
+      <div>
+        <h2 style="font-size:50px;">Recall is one SQL query</h2>
+        <p style="margin-top:18px;color:var(--ink);font-size:23px;">Rank by meaning, keep the active ones, pinned first.</p>
+        <div class="card" style="border-color:var(--green);margin-top:22px;"><h3 class="green">cosineDistance</h3><p style="margin-top:6px;">how close two meanings are (0 = identical)</p></div>
+        <p style="margin-top:20px;font-size:21px;color:var(--muted);">Need project / tags / task history? Add a <span class="mono">WHERE</span> or <span class="mono">JOIN</span> &mdash; same query.</p>
+      </div>
+      <div>
+        <pre><code class="language-sql">SELECT content,
+       1 - cosineDistance(embedding, :q) AS meaning
+FROM memory
+WHERE is_deleted = 0            -- rules
+ORDER BY pinned DESC, meaning DESC
+LIMIT 8</code></pre>
+        <div class="card dark" style="margin-top:18px;font-size:22px;font-weight:900;line-height:1.25;">
+          Try doing <span class="orange">that</span> to a markdown file.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 — Memory has a lifecycle -->
+<section>
+  <div class="topbar"><span>Lifecycle</span><span class="right"><span class="meter"><span style="width:54.5%"></span></span>12 / 22</span></div>
+  <div class="frame">
+    <h2>Memory has a lifecycle</h2>
+    <p style="margin-top:12px;font-size:24px;">Beliefs change. <span class="mono">"Use Poetry"</span> &rarr; <span class="mono">"this repo standardizes on uv."</span></p>
+    <img class="diagram-img" src="logos/fig-memory-lifecycle.png" alt="remember to recall to conflict to revise; append-only history" style="height:380px;margin-top:14px !important;">
+  </div>
+</section>
+
+<!-- 13 — Don't update, append -->
+<section>
+  <div class="topbar"><span>Append-only</span><span class="right"><span class="meter"><span style="width:59.1%"></span></span>13 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.5fr 0.5fr;">
+      <div>
+        <h2 style="font-size:46px;">Don't update it.<br>Append to it.</h2>
+        <p style="margin-top:16px;color:var(--ink);font-size:23px;">Every revision is a new immutable row with a <span class="mono">version</span>. Deletes are a soft flag, never a real delete.</p>
+        <div class="need-list" style="margin-top:18px;gap:12px;">
+          <div><span class="dot" style="background:var(--green)"></span><span>Full revision history &mdash; <strong>time travel</strong> for beliefs.</span></div>
+          <div><span class="dot" style="background:var(--green)"></span><span>append-only = ClickHouse's <strong>fastest, zero-write-amplification</strong> path.</span></div>
+        </div>
+        <p style="margin-top:16px;font-size:20px;color:var(--muted);">(For history, skip ReplacingMergeTree &mdash; it converges to one state and folds the past away.)</p>
+      </div>
+      <div>
+        <pre class="small"><code class="language-sql">CREATE TABLE memory
+(
+    memory_id   UUID,
+    content     String,
+    embedding   Array(Float32),
+    version     UInt64,
+    is_deleted  UInt8 DEFAULT 0,
+    created_at  DateTime64(3) DEFAULT now64()
+)
+ENGINE = MergeTree
+ORDER BY (memory_id, version);</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 — Three queries from one table -->
+<section>
+  <div class="topbar"><span>One table, three answers</span><span class="right"><span class="meter"><span style="width:63.6%"></span></span>14 / 22</span></div>
+  <div class="frame">
+    <h2>One append-only table answers all three</h2>
+    <pre class="small" style="margin-top:24px !important;"><code class="language-sql">-- NOW: latest version per memory, minus soft-deletes
+SELECT * FROM (
+  SELECT * FROM memory ORDER BY memory_id, version DESC LIMIT 1 BY memory_id
+) WHERE is_deleted = 0;
+
+-- HISTORY: how this belief evolved
+SELECT * FROM memory WHERE memory_id = :id ORDER BY version;
+
+-- POINT-IN-TIME: what did the agent believe as of version t?
+SELECT * FROM (
+  SELECT * FROM memory WHERE version <= :t
+  ORDER BY memory_id, version DESC LIMIT 1 BY memory_id
+) WHERE is_deleted = 0;</code></pre>
+  </div>
+</section>
+
+<!-- 15 — Callback: the markdown file can't do this -->
+<section>
+  <div class="topbar"><span>The scoreboard</span><span class="right"><span class="meter"><span style="width:68.2%"></span></span>15 / 22</span></div>
+  <div class="frame">
+    <h2>So&hellip; should it be a markdown file?</h2>
+    <div class="table-grid" style="margin-top:28px;">
+      <div class="head">Capability</div><div class="head c">memory.md</div><div class="head c">chDB</div>
+      <div>Filter + rank by relevance</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
+      <div>Semantic recall (vectors)</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
+      <div>Dedup / conflict resolution</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
+      <div>Revision history + point-in-time</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
+      <div>Scales to GBs, archives cheaply</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
+    </div>
+    <div class="card dark" style="margin-top:24px;font-size:28px;font-weight:900;line-height:1.2;">
+      A file is where memory goes to <span class="orange">rot</span>. Give it a database.
+    </div>
+  </div>
+</section>
+
+<!-- 16 — Memory ≈ Observability ≈ History -->
+<section>
+  <div class="topbar"><span>One surface</span><span class="right"><span class="meter"><span style="width:72.7%"></span></span>16 / 22</span></div>
+  <div class="frame">
+    <h2>Memory &asymp; Observability &asymp; History</h2>
+    <p style="margin-top:16px;font-size:25px;">All three are <strong>append-only</strong> by nature &mdash; the same shape as the memory model. One local engine serves them as a single query surface.</p>
+    <div class="grid3" style="margin-top:34px;">
+      <div class="card"><h3>Agent memory</h3><p style="margin-top:10px;">decisions, facts, prior solutions.</p></div>
+      <div class="card"><h3>Observability</h3><p style="margin-top:10px;">traces of what the agent did.</p></div>
+      <div class="card"><h3>History</h3><p style="margin-top:10px;">the full conversation log.</p></div>
+    </div>
+    <div class="card green" style="margin-top:28px;font-size:25px;font-weight:900;line-height:1.22;">
+      Langfuse (LLM observability, now ClickHouse) builds on exactly this &mdash; columnar + append-only.
+    </div>
+  </div>
+</section>
+
+<!-- 17 — Recall lives in the hot loop -->
+<section>
+  <div class="topbar"><span>Local hot path</span><span class="right"><span class="meter"><span style="width:77.3%"></span></span>17 / 22</span></div>
+  <div class="frame">
+    <h2>Recall sits inside the agent loop</h2>
+    <p style="margin-top:12px;font-size:24px;">5&ndash;20 tool calls / turn. Put recall over the wire and jitter becomes <em>think-time</em> jitter &mdash; and tokens.</p>
+    <img class="diagram-img" src="logos/fig-problem-agent-loop.png" alt="agent loop with data calls crossing the network" style="height:330px;margin-top:10px !important;">
+    <div class="card dark" style="margin-top:14px;font-size:25px;font-weight:900;line-height:1.2;">
+      In-process recall: no RTT, no retries, no detours. <span class="orange">Stability is a token problem.</span>
+    </div>
+  </div>
+</section>
+
+<!-- 18 — Start local, scale to ClickHouse -->
+<section>
+  <div class="topbar"><span>Scale path</span><span class="right"><span class="meter"><span style="width:81.8%"></span></span>18 / 22</span></div>
+  <div class="frame">
+    <h2>Start local, graduate to ClickHouse</h2>
+    <div class="flow" style="margin-top:36px;">
+      <div class="card yellow" style="width:330px;height:180px;"><div style="font-size:60px;font-weight:900;">Day 1</div><p style="margin-top:12px;color:var(--ink);">chDB session on a laptop or agent runtime</p></div>
+      <div class="arrow" style="font-size:50px;">&rarr;</div>
+      <div class="card blue" style="width:330px;height:180px;"><div style="font-size:60px;font-weight:900;">Day 100</div><p style="margin-top:12px;color:var(--blue);">ClickHouse Cloud when memory is shared or large</p></div>
+    </div>
+    <pre class="small" style="margin-top:26px !important;"><code class="language-python"># Day 1 — query local memory
+sess.query("SELECT content FROM memory WHERE project = 'checkout'")
+
+# Day 100 — repoint the same name at the cluster (SELECT unchanged)
+sess.query("""CREATE OR REPLACE VIEW memory AS
+              SELECT * FROM remote('cloud:9440', db, memory)""")</code></pre>
+  </div>
+</section>
+
+<!-- 19 — Meet ClickMem -->
+<section>
+  <div class="topbar"><span>ClickMem</span><span class="right"><span class="meter"><span style="width:86.4%"></span></span>19 / 22</span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.52fr 0.48fr;">
+      <div>
+        <div class="logo-row" style="margin-bottom:14px;"><img class="logo" src="logos/clickmem.svg" alt="ClickMem" style="height:54px;"></div>
+        <h2 style="font-size:46px;">Meet ClickMem</h2>
+        <p style="margin-top:14px;color:var(--ink);font-size:23px;">The whole pattern &mdash; lifecycle, recall, local-first &mdash; packaged open-source on chDB.</p>
+        <div class="flow" style="margin-top:20px;gap:10px;">
+          <span class="pill green">create</span><span class="arrow">&rarr;</span>
+          <span class="pill orange">insert</span><span class="arrow">&rarr;</span>
+          <span class="pill">recall</span><span class="arrow">&rarr;</span>
+          <span class="pill dark">evaluate</span>
+        </div>
+        <p style="margin-top:20px;font-size:21px;color:var(--muted);">Embeddings: <strong style="color:var(--ink);">Qwen/Qwen3-Embedding-0.6B</strong> &mdash; runs locally, nothing leaves the box.</p>
+        <p style="margin-top:12px;font-size:22px;" class="mono">github.com/auxten/clickmem</p>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;">
+        <img src="logos/clickmem-architecture.png" alt="ClickMem architecture" style="width:100%;max-width:520px;border-radius:12px;box-shadow:0 18px 44px rgba(20,20,20,0.14);">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 20 — Where the brain runs: Lambda MicroVMs -->
+<section>
+  <div class="topbar"><span>Where it runs</span><span class="right"><span class="meter"><span style="width:90.9%"></span></span>20 / 22</span></div>
+  <div class="frame">
+    <h2>Where the brain runs: AWS Lambda MicroVMs</h2>
+    <p style="margin-top:10px;font-size:23px;">chDB is the <strong>only data-infrastructure launch partner</strong> for Lambda MicroVMs. Every isolated session carries its own <em>private</em> chDB &mdash; Firecracker isolation, suspend / resume, zero network round-trips.</p>
+    <img class="diagram-img" src="logos/fig-03-lambda-microvms.png" alt="Each isolated Lambda MicroVM carries its own private chDB and federates out" style="height:360px;margin-top:8px !important;">
+  </div>
+</section>
+
+<!-- 21 — Three takeaways -->
+<section>
+  <div class="topbar"><span>Close</span><span class="right"><span class="meter"><span style="width:95.5%"></span></span>21 / 22</span></div>
+  <div class="frame">
+    <h2>Three takeaways</h2>
+    <div style="margin-top:30px;">
+      <div class="card takeaway"><div class="num">01</div><div><h3>Context is data.</h3><p>Filter it, rank it, join it, version it, evaluate it.</p></div></div>
+      <div class="card takeaway"><div class="num">02</div><div><h3>Recall is a query.</h3><p>Semantic meaning + business rules, in one SQL.</p></div></div>
+      <div class="card takeaway"><div class="num">03</div><div><h3>Don't store memory in a markdown file.</h3><p>chDB now; ClickHouse when it's shared or large.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 — Close / Q&A -->
+<section>
+  <div class="topbar"><span>Thank you</span><span class="right"><span class="meter"><span style="width:100%"></span></span>22 / 22</span></div>
+  <div class="frame">
+    <h2>Give your agent a database brain</h2>
+    <pre style="margin-top:24px !important;"><code class="language-bash">pip install chdb</code></pre>
+    <div class="grid2" style="margin-top:26px;height:auto;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card"><h3>Build it</h3><p style="margin-top:10px;" class="mono" style="font-size:20px;">github.com/chdb-io/chdb<br>github.com/auxten/clickmem</p></div>
+      <div class="card"><h3>Read it</h3><p style="margin-top:10px;">Docs: clickhouse.com/docs/chdb<br>Blog &amp; slides: auxten.com</p></div>
+    </div>
+    <div class="card dark" style="margin-top:26px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-weight:900;color:#fff;font-size:23px;line-height:1.35;">
+        ClickHouse Cloud is where your data lives.<br>
+        chDB is what your agent <span class="orange">thinks with</span>.<br>
+        Lambda MicroVMs is where it thinks, in private.
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <img class="logo" src="logos/chdb-light.png" alt="chDB logo" style="width:60px;height:60px;filter:brightness(0) invert(1);">
+        <div style="font-size:30px;font-weight:900;color:#fff;">Q&amp;A</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    controls: true,
+    progress: true,
+    slideNumber: "c/t",
+    transition: "fade",
+    transitionSpeed: "fast",
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 4,
+    controlsTutorial: false,
+    plugins: [RevealHighlight]
+  });
+</script>
+</body>
+</html>
