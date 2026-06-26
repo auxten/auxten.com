@@ -158,6 +158,8 @@
   .table-grid div:nth-child(3n) { border-right: 0; }
   .table-grid div:nth-last-child(-n+3) { border-bottom: 0; }
   .table-grid .c { text-align: center; }
+  .table-grid.compact div { padding: 9px 14px; font-size: 18px; }
+  .table-grid.compact .head { font-size: 15px; }
 
   .reveal .controls, .reveal .progress { color: var(--orange); }
 </style>
@@ -460,16 +462,19 @@ SELECT * FROM (
   <div class="topbar"><span>The scoreboard</span><span class="right"><span class="meter"><span style="width:68.2%"></span></span>15 / 22</span></div>
   <div class="frame">
     <h2>So&hellip; should it be a markdown file?</h2>
-    <div class="table-grid" style="margin-top:28px;">
+    <div class="table-grid compact" style="margin-top:22px;">
       <div class="head">Capability</div><div class="head c">memory.md</div><div class="head c">chDB</div>
+      <div>Human-readable</div><div class="c"><span class="ok">&#10003;</span></div><div class="c">query / export</div>
+      <div>Git-reviewable</div><div class="c"><span class="ok">&#10003;</span></div><div class="c">snapshot</div>
+      <div>Zero setup</div><div class="c"><span class="ok">&#10003;</span></div><div class="c">embedded</div>
       <div>Filter + rank by relevance</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
       <div>Semantic recall (vectors)</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
       <div>Dedup / conflict resolution</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
-      <div>Revision history + point-in-time</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
+      <div>Queryable history + point-in-time</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
       <div>Scales to GBs, archives cheaply</div><div class="c"><span class="x">&#10007;</span></div><div class="c"><span class="ok">&#10003;</span></div>
     </div>
-    <div class="card dark" style="margin-top:24px;font-size:28px;font-weight:900;line-height:1.2;">
-      A file is where memory goes to <span class="orange">rot</span>. Give it a database.
+    <div class="card dark" style="margin-top:16px;padding:18px 20px;font-size:25px;font-weight:900;line-height:1.2;">
+      Markdown is a great human interface. It is a weak <span class="orange">memory engine</span>.
     </div>
   </div>
 </section>
