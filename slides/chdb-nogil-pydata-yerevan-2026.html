@@ -980,19 +980,20 @@ for (size_t row = 0; row &lt; rows; ++row)
         </div>
       </div>
       <div class="card blue">
-        <h3 class="blue">3.14 vs 3.14t &middot; same code, same toolchain</h3>
+        <h3 class="blue">chDB on 3.14t &middot; real engine, rc wheel</h3>
         <div class="need-list" style="margin-top:12px;gap:10px;">
-          <div><span class="ok">&#10003;</span><span>UDF-style workload, 24M calls, 8 thr: <strong>1.0&times; &rarr; 5.2&times;</strong></span></div>
-          <div><span class="ok">&#10003;</span><span>Shared str-object scan, 6M rows, 10 thr: <strong>1.0&times; &rarr; 3.5&times;</strong></span></div>
-          <div><span class="ok">&#10003;</span><span>Single-thread tax: <strong>&plusmn;11% per bench, &asymp;+2% mean</strong></span></div>
+          <div><span class="ok">&#10003;</span><span>object-dtype scan, 5M rows, 16 thr: <strong>0.26s &rarr; 0.09s (3.0&times;)</strong></span></div>
+          <div><span class="ok">&#10003;</span><span>&hellip;and threads <em>hurt</em> stock (0.16&rarr;0.28s) but <em>help</em> 3.14t</span></div>
+          <div><span class="ok">&#10003;</span><span>Pure-engine query (no Python objects): <strong>+3%</strong> &mdash; nothing lost</span></div>
+          <div><span class="ok">&#10003;</span><span>Python-side UDF mechanism (M4 Pro &micro;bench): <strong>1.0&times; &rarr; 5.2&times;</strong></span></div>
         </div>
       </div>
     </div>
     <div class="bars" style="margin-top:24px;">
-      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">Python UDF workload &middot; stock 3.14 &middot; 8 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.72 s</span></div>
-      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">Python UDF workload &middot; 3.14t &middot; 8 thr</span><div class="bar-track"><div class="bar-fill green" style="width:20%"></div></div><span class="val">0.14 s</span></div>
+      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; stock 3.14 &middot; 16 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.26 s</span></div>
+      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; 3.14t &middot; 16 thr</span><div class="bar-track"><div class="bar-fill green" style="width:33%"></div></div><span class="val">0.09 s</span></div>
     </div>
-    <p style="margin-top:12px;font-size:18px;">Adding threads on stock 3.14 changes <em>nothing</em> (0.73s at 1 thread, 0.70s at 10). Right card: CPython 3.14.6 vs 3.14.6t, Apple M4 Pro (10P+4E) &mdash; microbenchmarks isolating the GIL boundary. chDB's <span class="mono">cp314t</span> wheels are in the 26.5.1 release candidates; full engine-level numbers land with the stable release.</p>
+    <p style="margin-top:12px;font-size:18px;">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4. Measuring also caught an rc-only scaling bug in the free-threaded in-process UDF path &mdash; fix lands before the stable release. That's what benchmarks are for.</p>
   </div>
 </section>
 
