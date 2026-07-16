@@ -347,8 +347,10 @@
           <p style="margin-top:8px;font-size:20px;color:var(--red);font-weight:900;">18.9&times; slower on 7 cores. Abandoned.</p>
         </div>
       </div>
-      <div style="display:flex;align-items:center;">
-        <svg viewBox="0 0 560 380" style="width:100%;" font-family="Inter, sans-serif">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+        <img src="logos/larry-hastings-pycon2016.jpg" alt="Larry Hastings on stage at PyCon 2016" style="height:225px;border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,0.22);">
+        <p style="font-size:16px;color:var(--muted);">Larry Hastings &middot; PyCon 2016, Portland</p>
+        <svg viewBox="0 0 560 380" style="width:88%;" font-family="Inter, sans-serif">
           <g font-weight="800">
             <rect x="20" y="40" width="180" height="120" rx="10" fill="#eef6ff" stroke="#86bdf2" stroke-width="3"/>
             <text x="110" y="90" text-anchor="middle" font-size="24" fill="#1565c0">Core 0</text>
@@ -384,8 +386,10 @@
         <p style="margin-top:16px;font-size:24px;color:var(--ink);">Don't make refcounts atomic &mdash; <strong>redesign them so the common case never leaves the thread</strong>.</p>
         <div class="card green" style="margin-top:22px;font-size:23px;font-weight:900;color:var(--green);">&#10003; Single-thread cost finally small &rarr; became PEP 703.</div>
       </div>
-      <div style="display:flex;align-items:center;">
-        <svg viewBox="0 0 560 380" style="width:100%;" font-family="Inter, sans-serif">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+        <img src="logos/sam-gross.jpg" alt="Sam Gross" style="width:170px;height:170px;border-radius:50%;object-fit:cover;box-shadow:0 14px 34px rgba(0,0,0,0.22);">
+        <p style="font-size:16px;color:var(--muted);">Sam Gross &middot; author of the nogil fork &amp; PEP 703</p>
+        <svg viewBox="0 0 560 380" style="width:82%;" font-family="Inter, sans-serif">
           <g font-weight="800">
             <rect x="60" y="20" width="440" height="150" rx="10" fill="#ffffff" stroke="#e2e6eb" stroke-width="3"/>
             <text x="280" y="55" text-anchor="middle" font-size="20" font-family="monospace" fill="#161616">PyObject &mdash; biased refcounting</text>
