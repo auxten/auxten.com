@@ -982,18 +982,18 @@ for (size_t row = 0; row &lt; rows; ++row)
       <div class="card blue">
         <h3 class="blue">chDB on 3.14t &middot; real engine, rc wheel</h3>
         <div class="need-list" style="margin-top:12px;gap:10px;">
-          <div><span class="ok">&#10003;</span><span>object-dtype scan, 5M rows, 16 thr: <strong>0.26s &rarr; 0.09s (3.0&times;)</strong></span></div>
-          <div><span class="ok">&#10003;</span><span>&hellip;and threads <em>hurt</em> stock (0.16&rarr;0.28s) but <em>help</em> 3.14t</span></div>
-          <div><span class="ok">&#10003;</span><span>Pure-engine query (no Python objects): <strong>+3%</strong> &mdash; nothing lost</span></div>
-          <div><span class="ok">&#10003;</span><span>Python-side UDF mechanism (M4 Pro &micro;bench): <strong>1.0&times; &rarr; 5.2&times;</strong></span></div>
+          <div><span class="ok">&#10003;</span><span>object-dtype scan, 5M rows, 16 thr: <strong>0.22s &rarr; 0.08s (2.6&times;)</strong></span></div>
+          <div><span class="ok">&#10003;</span><span>&hellip;and threads <em>hurt</em> stock (0.13&rarr;0.22s) but <em>help</em> 3.14t</span></div>
+          <div><span class="ok">&#10003;</span><span>Pure-engine query (no Python objects): <strong>0.161s vs 0.161s</strong> &mdash; parity</span></div>
+          <div><span class="ok">&#10003;</span><span>In-process UDF: scales to 8 thr (3.8&rarr;1.8s) &mdash; and found a real bug past that</span></div>
         </div>
       </div>
     </div>
     <div class="bars" style="margin-top:24px;">
-      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; stock 3.14 &middot; 16 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.26 s</span></div>
-      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; 3.14t &middot; 16 thr</span><div class="bar-track"><div class="bar-fill green" style="width:33%"></div></div><span class="val">0.09 s</span></div>
+      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; stock 3.14 &middot; 16 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.22 s</span></div>
+      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; 3.14t &middot; 16 thr</span><div class="bar-track"><div class="bar-fill green" style="width:36%"></div></div><span class="val">0.08 s</span></div>
     </div>
-    <p style="margin-top:12px;font-size:18px;">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4. Measuring also caught an rc-only scaling bug in the free-threaded in-process UDF path &mdash; fix lands before the stable release. That's what benchmarks are for.</p>
+    <p style="margin-top:12px;font-size:18px;">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4, min of 6 runs. Measuring caught a real rc regression: the FT UDF path collapses past 8 threads &mdash; filed as <span class="mono">chdb-core#128</span>, fix before stable. That's what benchmarks are for.</p>
   </div>
 </section>
 
