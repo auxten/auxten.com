@@ -233,45 +233,175 @@
   </div>
 </section>
 
-<!-- 03 — History: 30 years of attempts -->
+<!-- 03 — History: timeline opener -->
 <section>
-  <div class="topbar"><span>A little history</span><span class="right"><span class="meter"><span style="width:11.5%"></span></span>03 / 26</span></div>
+  <div class="topbar"><span>A little history</span><span class="right"></span></div>
   <div class="frame">
     <h2>Killing the GIL: 30 years of attempts</h2>
-    <div class="grid4" style="margin-top:22px;">
-      <div class="card hist">
-        <div class="year">1996</div>
-        <h3>Free-threading patch</h3>
-        <p>Greg Stein removed the GIL from Python 1.4 with fine-grained locks.</p>
-        <p class="fate red">&#10007; ~2&times; slower single-threaded &mdash; shelved. (<span class="mono">PyThreadState</span> survived!)</p>
+    <svg viewBox="0 0 1170 260" style="width:100%;margin-top:34px;" font-family="Inter, sans-serif">
+      <line x1="40" y1="150" x2="1130" y2="150" stroke="#e2e6eb" stroke-width="6"/>
+      <line x1="40" y1="150" x2="900" y2="150" stroke="#c62828" stroke-width="6" stroke-dasharray="2 10"/>
+      <line x1="900" y1="150" x2="1130" y2="150" stroke="#2e7d32" stroke-width="6"/>
+      <g text-anchor="middle" font-weight="800">
+        <circle cx="130" cy="150" r="16" fill="#c62828"/>
+        <text x="130" y="105" font-size="40" font-weight="900" fill="#161616">1996</text>
+        <text x="130" y="200" font-size="21" fill="#4b525b">free-threading patch</text>
+        <text x="130" y="228" font-size="19" fill="#c62828">&#10007; too slow</text>
+        <circle cx="400" cy="150" r="16" fill="#c62828"/>
+        <text x="400" y="105" font-size="40" font-weight="900" fill="#161616">2007</text>
+        <text x="400" y="200" font-size="21" fill="#4b525b">python-safethread</text>
+        <text x="400" y="228" font-size="19" fill="#c62828">&#10007; too restrictive</text>
+        <circle cx="660" cy="150" r="16" fill="#c62828"/>
+        <text x="660" y="105" font-size="40" font-weight="900" fill="#161616">2016</text>
+        <text x="660" y="200" font-size="21" fill="#4b525b">Gilectomy</text>
+        <text x="660" y="228" font-size="19" fill="#c62828">&#10007; 19&times; slower</text>
+        <circle cx="900" cy="150" r="16" fill="#2e7d32"/>
+        <text x="900" y="105" font-size="40" font-weight="900" fill="#161616">2021</text>
+        <text x="900" y="200" font-size="21" fill="#4b525b">nogil fork</text>
+        <text x="900" y="228" font-size="19" fill="#2e7d32">&#10003; PEP 703</text>
+        <circle cx="1090" cy="150" r="16" fill="#e65100"/>
+        <text x="1090" y="105" font-size="40" font-weight="900" fill="#e65100">2025</text>
+        <text x="1090" y="200" font-size="21" fill="#4b525b">3.14t supported</text>
+        <text x="1090" y="228" font-size="19" fill="#e65100">you are here</text>
+      </g>
+    </svg>
+    <div class="card dark" style="margin-top:36px;padding:20px 24px;font-size:26px;font-weight:900;line-height:1.3;">
+      Guido's bar (2007): remove the GIL <span class="orange">only if single-threaded performance does not decrease</span>.<br>
+      <span style="color:#9aa2ad;">Every attempt died on that bar &mdash; until one didn't. Here's each autopsy.</span>
+    </div>
+  </div>
+</section>
+
+<!-- 03a — 1996: Greg Stein's free-threading patch -->
+<section>
+  <div class="topbar"><span>1996 &middot; Attempt #1</span><span class="right"></span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.46fr 0.54fr;">
+      <div>
+        <div style="font-size:120px;font-weight:900;color:var(--orange);line-height:1;">1996</div>
+        <h2 style="font-size:40px;margin-top:10px;">Greg Stein's free-threading patch</h2>
+        <p style="margin-top:16px;font-size:24px;color:var(--ink);">One big lock &rarr; a small lock on <em>every</em> mutable structure. Python 1.4.</p>
+        <div class="card red" style="margin-top:22px;font-size:23px;font-weight:900;">&#10007; ~2&times; slower single-threaded &mdash; shelved.</div>
+        <p style="margin-top:16px;font-size:20px;color:var(--green);font-weight:900;">One survivor: <span class="mono">PyThreadState</span> &mdash; still in CPython today.</p>
       </div>
-      <div class="card hist">
-        <div class="year">2007</div>
-        <h3>python-safethread</h3>
-        <p>Adam Olsen: objects owned per-thread, restricted sharing between threads.</p>
-        <p class="fate red">&#10007; Too restrictive &mdash; faded away.</p>
-      </div>
-      <div class="card hist">
-        <div class="year">2016</div>
-        <h3>Gilectomy</h3>
-        <p>Larry Hastings, fine-grained locking again. Refcounts thrashed CPU caches.</p>
-        <p class="fate red">&#10007; Single-thread perf collapsed &mdash; abandoned.</p>
-      </div>
-      <div class="card hist" style="border-color:#9ad59c;background:#f4fbf4;">
-        <div class="year" style="color:var(--green);">2021</div>
-        <h3>nogil fork</h3>
-        <p>Sam Gross: biased refcounting, immortal objects, mimalloc.</p>
-        <p class="fate green">&#10003; Single-thread cost finally small &rarr; became PEP 703.</p>
+      <div class="card" style="background:#101418;border-color:#101418;padding:28px 30px;">
+        <p class="mono" style="font-size:17px;color:#5f6b76;line-height:1.5;">=== comp.lang.python &middot; 1996 ===</p>
+        <p class="mono" style="font-size:19px;color:#7ee787;line-height:1.7;margin-top:12px;">From:&nbsp;&nbsp;&nbsp;&nbsp;Greg Stein<br>Subject:&nbsp;free threading patches<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for Python 1.4</p>
+        <p class="mono" style="font-size:18px;color:#c8ced6;line-height:1.7;margin-top:16px;">A patch set that removes the<br>global interpreter lock and<br>guards dicts, lists, modules&hellip;<br>with fine-grained locks.</p>
+        <p class="mono" style="font-size:18px;color:#5f6b76;margin-top:16px;">&gt; benchmark: ~2x slowdown_</p>
       </div>
     </div>
-    <div class="flow" style="margin-top:20px;gap:10px;">
-      <span style="font-size:19px;font-weight:900;color:var(--muted);">Meanwhile we coped with:</span>
-      <span class="pill dark" style="min-height:36px;font-size:18px;">multiprocessing (pickle tax)</span>
-      <span class="pill dark" style="min-height:36px;font-size:18px;">asyncio (no parallelism)</span>
-      <span class="pill dark" style="min-height:36px;font-size:18px;">subinterpreters</span>
+  </div>
+</section>
+
+<!-- 03b — 2007: python-safethread -->
+<section>
+  <div class="topbar"><span>2007 &middot; Attempt #2</span><span class="right"></span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.46fr 0.54fr;">
+      <div>
+        <div style="font-size:120px;font-weight:900;color:var(--orange);line-height:1;">2007</div>
+        <h2 style="font-size:40px;margin-top:10px;">Adam Olsen's python-safethread</h2>
+        <p style="margin-top:16px;font-size:24px;color:var(--ink);">Sidestep the locks: every object is <em>owned</em> by one thread. Sharing only through monitors.</p>
+        <div class="card red" style="margin-top:22px;font-size:23px;font-weight:900;">&#10007; Safe &mdash; but you couldn't share anything freely. Faded away.</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <svg viewBox="0 0 560 380" style="width:100%;" font-family="Inter, sans-serif">
+          <g font-weight="800">
+            <rect x="10" y="30" width="150" height="300" rx="10" fill="#eef6ff" stroke="#86bdf2" stroke-width="3"/>
+            <text x="85" y="66" text-anchor="middle" font-size="20" fill="#1565c0">Thread 1</text>
+            <circle cx="55" cy="120" r="22" fill="#1565c0"/><circle cx="115" cy="120" r="22" fill="#1565c0"/>
+            <circle cx="85" cy="185" r="22" fill="#1565c0"/>
+            <text x="85" y="300" text-anchor="middle" font-size="17" fill="#4b525b">owns its objects</text>
+            <rect x="400" y="30" width="150" height="300" rx="10" fill="#eff9ef" stroke="#9ad59c" stroke-width="3"/>
+            <text x="475" y="66" text-anchor="middle" font-size="20" fill="#2e7d32">Thread 2</text>
+            <circle cx="445" cy="120" r="22" fill="#2e7d32"/><circle cx="505" cy="120" r="22" fill="#2e7d32"/>
+            <circle cx="475" cy="185" r="22" fill="#2e7d32"/>
+            <text x="475" y="300" text-anchor="middle" font-size="17" fill="#4b525b">owns its objects</text>
+            <rect x="235" y="120" width="90" height="130" rx="10" fill="#1f2328"/>
+            <text x="280" y="175" text-anchor="middle" font-size="18" fill="#ffffff">monitor</text>
+            <text x="280" y="200" text-anchor="middle" font-size="15" fill="#9aa2ad">(the only door)</text>
+            <path d="M 160 180 L 235 180" stroke="#4b525b" stroke-width="4" marker-end="url(#ah)"/>
+            <path d="M 325 180 L 400 180" stroke="#4b525b" stroke-width="4" marker-end="url(#ah)"/>
+            <path d="M 160 90 C 240 40 320 40 400 90" stroke="#c62828" stroke-width="4" fill="none" stroke-dasharray="8 6"/>
+            <text x="280" y="45" text-anchor="middle" font-size="26" font-weight="900" fill="#c62828">&#10007; no direct sharing</text>
+          </g>
+          <defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#4b525b"/></marker></defs>
+        </svg>
+      </div>
     </div>
-    <div class="card dark" style="margin-top:18px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;">
-      Guido's bar (2007): a GIL removal is welcome <span class="orange">only if single-threaded performance does not decrease</span>. Every attempt died on that bar &mdash; until one didn't.
+  </div>
+</section>
+
+<!-- 03c — 2016: Gilectomy -->
+<section>
+  <div class="topbar"><span>2016 &middot; Attempt #3</span><span class="right"></span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.46fr 0.54fr;">
+      <div>
+        <div style="font-size:120px;font-weight:900;color:var(--orange);line-height:1;">2016</div>
+        <h2 style="font-size:40px;margin-top:10px;">Larry Hastings' Gilectomy</h2>
+        <p style="margin-top:16px;font-size:24px;color:var(--ink);">Make every refcount <strong>atomic</strong>. Now each <span class="mono">Py_INCREF</span> is a fight between CPU cores.</p>
+        <div class="card red" style="margin-top:22px;padding:20px 22px;">
+          <div style="font-size:44px;font-weight:900;color:var(--red);line-height:1.05;">4.4 s &rarr; 83 s</div>
+          <p style="margin-top:8px;font-size:20px;color:var(--red);font-weight:900;">18.9&times; slower on 7 cores. Abandoned.</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <svg viewBox="0 0 560 380" style="width:100%;" font-family="Inter, sans-serif">
+          <g font-weight="800">
+            <rect x="20" y="40" width="180" height="120" rx="10" fill="#eef6ff" stroke="#86bdf2" stroke-width="3"/>
+            <text x="110" y="90" text-anchor="middle" font-size="24" fill="#1565c0">Core 0</text>
+            <text x="110" y="125" text-anchor="middle" font-size="17" fill="#4b525b" font-family="monospace">Py_INCREF(obj)</text>
+            <rect x="360" y="40" width="180" height="120" rx="10" fill="#eff9ef" stroke="#9ad59c" stroke-width="3"/>
+            <text x="450" y="90" text-anchor="middle" font-size="24" fill="#2e7d32">Core 1</text>
+            <text x="450" y="125" text-anchor="middle" font-size="17" fill="#4b525b" font-family="monospace">Py_DECREF(obj)</text>
+            <rect x="195" y="230" width="170" height="70" rx="8" fill="#fff8d7" stroke="#f0d74a" stroke-width="3"/>
+            <text x="280" y="262" text-anchor="middle" font-size="18" font-family="monospace" fill="#161616">ob_refcnt</text>
+            <text x="280" y="287" text-anchor="middle" font-size="15" fill="#8a6d00">one cache line</text>
+            <path d="M 130 165 C 170 210 200 225 225 232" stroke="#c62828" stroke-width="5" fill="none" marker-end="url(#ar)"/>
+            <path d="M 335 240 C 380 220 410 195 430 168" stroke="#c62828" stroke-width="5" fill="none" marker-end="url(#ar)"/>
+            <path d="M 425 175 C 400 205 370 225 345 235" stroke="#c62828" stroke-width="5" fill="none" marker-end="url(#ar)" opacity="0.45"/>
+            <path d="M 230 238 C 200 228 165 205 138 172" stroke="#c62828" stroke-width="5" fill="none" marker-end="url(#ar)" opacity="0.45"/>
+            <text x="280" y="205" text-anchor="middle" font-size="22" font-weight="900" fill="#c62828">ping&hellip; pong&hellip; ping&hellip;</text>
+            <text x="280" y="350" text-anchor="middle" font-size="19" fill="#4b525b">every incref/decref = intercore bus traffic</text>
+          </g>
+          <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#c62828"/></marker></defs>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03d — 2021: nogil fork -->
+<section>
+  <div class="topbar"><span>2021 &middot; Attempt #4</span><span class="right"></span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.46fr 0.54fr;">
+      <div>
+        <div style="font-size:120px;font-weight:900;color:var(--green);line-height:1;">2021</div>
+        <h2 style="font-size:40px;margin-top:10px;">Sam Gross' nogil fork</h2>
+        <p style="margin-top:16px;font-size:24px;color:var(--ink);">Don't make refcounts atomic &mdash; <strong>redesign them so the common case never leaves the thread</strong>.</p>
+        <div class="card green" style="margin-top:22px;font-size:23px;font-weight:900;color:var(--green);">&#10003; Single-thread cost finally small &rarr; became PEP 703.</div>
+      </div>
+      <div style="display:flex;align-items:center;">
+        <svg viewBox="0 0 560 380" style="width:100%;" font-family="Inter, sans-serif">
+          <g font-weight="800">
+            <rect x="60" y="20" width="440" height="150" rx="10" fill="#ffffff" stroke="#e2e6eb" stroke-width="3"/>
+            <text x="280" y="55" text-anchor="middle" font-size="20" font-family="monospace" fill="#161616">PyObject &mdash; biased refcounting</text>
+            <rect x="90" y="75" width="185" height="70" rx="8" fill="#eef6ff" stroke="#86bdf2" stroke-width="3"/>
+            <text x="182" y="105" text-anchor="middle" font-size="17" fill="#1565c0">owner thread</text>
+            <text x="182" y="130" text-anchor="middle" font-size="16" font-family="monospace" fill="#1565c0">count++ (plain)</text>
+            <rect x="290" y="75" width="185" height="70" rx="8" fill="#fff0f0" stroke="#f1a2a2" stroke-width="3"/>
+            <text x="382" y="105" text-anchor="middle" font-size="17" fill="#c62828">everyone else</text>
+            <text x="382" y="130" text-anchor="middle" font-size="16" font-family="monospace" fill="#c62828">atomic (rare)</text>
+            <text x="280" y="215" text-anchor="middle" font-size="19" fill="#4b525b">fast path stays on one core &mdash; no ping-pong</text>
+            <rect x="60" y="245" width="440" height="105" rx="10" fill="#f4fbf4" stroke="#9ad59c" stroke-width="3"/>
+            <text x="280" y="280" text-anchor="middle" font-size="19" fill="#2e7d32">immortal objects: never counted at all</text>
+            <text x="280" y="322" text-anchor="middle" font-size="20" font-family="monospace" fill="#2e7d32">None&nbsp;&nbsp;True&nbsp;&nbsp;42&nbsp;&nbsp;''&nbsp;&nbsp;&rarr;&nbsp;&nbsp;refcnt = &#8734;</text>
+          </g>
+        </svg>
+      </div>
     </div>
   </div>
 </section>
@@ -301,9 +431,9 @@ False        # threads now run Python bytecode in parallel</code></pre>
     <h2>Why it matters: Python finally spans the cores</h2>
     <p style="margin-top:10px;font-size:23px;">Single-core speed plateaued years ago &mdash; machines got <em>wider</em> instead. Free-threading lets one Python process use the width.</p>
     <div class="grid3" style="margin-top:24px;">
-      <div class="card blue" style="min-height:250px;"><h3 class="blue">Agent builders</h3><p style="margin-top:10px;color:var(--blue);">Parallel tool calls &amp; subagents in one process &mdash; threads share models, caches, vector indexes. No pickle, no IPC.</p></div>
-      <div class="card green" style="min-height:250px;"><h3 class="green">Desktop apps</h3><p style="margin-top:10px;color:var(--green);">Responsive UI thread + truly parallel background work. No <span class="mono">multiprocessing</span> spawn/pickle/packaging pain.</p></div>
-      <div class="card yellow" style="min-height:250px;"><h3>Servers &amp; data tools</h3><p style="margin-top:10px;color:var(--ink);">Thread-per-request finally uses all cores. One copy of the model &mdash; not 16 workers &times; 16 copies.</p></div>
+      <div class="card blue" style="min-height:220px;"><h3 class="blue">Agent builders</h3><p style="margin-top:10px;color:var(--blue);">Parallel subagents, one process &mdash; shared models &amp; caches. No pickle, no IPC.</p></div>
+      <div class="card green" style="min-height:220px;"><h3 class="green">Desktop apps</h3><p style="margin-top:10px;color:var(--green);">Responsive UI + truly parallel background work.</p></div>
+      <div class="card yellow" style="min-height:220px;"><h3>Servers &amp; data tools</h3><p style="margin-top:10px;color:var(--ink);">One copy of the model &mdash; not 16 workers &times; 16 copies.</p></div>
     </div>
     <div class="card dark" style="margin-top:24px;font-size:27px;font-weight:900;line-height:1.22;">
       Same language, same process, <span class="orange">16&times; the compute</span>. The rest of this talk: what that costs extension authors.
@@ -326,6 +456,115 @@ RuntimeWarning: The global interpreter lock (GIL) has been enabled to load
 module '_chdb', which has not declared that it can run safely without the GIL.</code></pre>
     <div class="card yellow" style="margin-top:20px;font-size:26px;font-weight:900;line-height:1.22;">
       Free-threading is <span class="orange">opt-in, per extension module</span>. This talk: what opting in actually took.
+    </div>
+  </div>
+</section>
+
+<!-- 06a — Why it's hard: borrowed references -->
+<section>
+  <div class="topbar"><span>Why it's hard &middot; 1/2</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>Touching an object used to be free. Not anymore.</h2>
+    <svg viewBox="0 0 1170 330" style="width:100%;margin-top:22px;" font-family="Inter, sans-serif">
+      <g font-weight="800">
+        <text x="20" y="70" font-size="21" fill="#1565c0">Thread A</text>
+        <line x1="150" y1="62" x2="1150" y2="62" stroke="#86bdf2" stroke-width="4"/>
+        <text x="20" y="185" font-size="21" fill="#c62828">Thread B</text>
+        <line x1="150" y1="177" x2="1150" y2="177" stroke="#f1a2a2" stroke-width="4"/>
+        <rect x="170" y="30" width="330" height="62" rx="8" fill="#eef6ff" stroke="#86bdf2" stroke-width="3"/>
+        <text x="335" y="57" text-anchor="middle" font-size="18" font-family="monospace" fill="#1565c0">item = PyList_GetItem(L, 0)</text>
+        <text x="335" y="82" text-anchor="middle" font-size="15" fill="#4b525b">borrowed ref &mdash; refcount NOT taken</text>
+        <rect x="530" y="145" width="250" height="62" rx="8" fill="#fff0f0" stroke="#f1a2a2" stroke-width="3"/>
+        <text x="655" y="172" text-anchor="middle" font-size="18" font-family="monospace" fill="#c62828">L.clear()</text>
+        <text x="655" y="197" text-anchor="middle" font-size="15" fill="#c62828">refcnt &rarr; 0 &mdash; object freed</text>
+        <rect x="820" y="30" width="330" height="62" rx="8" fill="#fff0f0" stroke="#c62828" stroke-width="4"/>
+        <text x="985" y="57" text-anchor="middle" font-size="18" font-family="monospace" fill="#c62828">use(item)&nbsp;&nbsp;&rarr;&nbsp;&nbsp;&#128165; freed memory</text>
+        <text x="985" y="82" text-anchor="middle" font-size="15" fill="#c62828">use-after-free, random crash</text>
+        <path d="M 505 61 L 815 61" stroke="#9aa2ad" stroke-width="3" stroke-dasharray="7 6"/>
+        <rect x="170" y="245" width="980" height="70" rx="10" fill="#1f2328"/>
+        <text x="660" y="275" text-anchor="middle" font-size="21" fill="#ffffff">With the GIL, this interleaving was <tspan fill="#7ee787">impossible</tspan> &mdash; B couldn't run while A held the lock.</text>
+        <text x="660" y="302" text-anchor="middle" font-size="21" fill="#ffffff">On 3.14t it's <tspan fill="#ff7b72">Tuesday</tspan>.</text>
+      </g>
+    </svg>
+    <div class="flow" style="margin-top:20px;gap:14px;justify-content:center;">
+      <span class="pill red mono" style="font-size:19px;">PyList_GetItem &middot; borrowed</span>
+      <span class="arrow">&rarr;</span>
+      <span class="pill green mono" style="font-size:19px;">PyList_GetItemRef &middot; strong</span>
+      <span style="font-size:20px;font-weight:800;color:var(--muted);">&mdash; whole C-API families had to change</span>
+    </div>
+  </div>
+</section>
+
+<!-- 06b — Why it's hard: the black magic -->
+<section>
+  <div class="topbar"><span>Why it's hard &middot; 2/2</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>The black magic that keeps 3.14t fast</h2>
+    <div class="grid4" style="margin-top:26px;">
+      <div class="card" style="min-height:270px;">
+        <h3 class="blue" style="font-size:23px;">Biased refcounting</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <rect x="5" y="10" width="100" height="90" rx="8" fill="#eef6ff" stroke="#86bdf2" stroke-width="2.5"/>
+          <text x="55" y="48" text-anchor="middle" font-size="15" font-weight="800" fill="#1565c0">owner</text>
+          <text x="55" y="78" text-anchor="middle" font-size="20" font-weight="900" fill="#1565c0">++</text>
+          <rect x="115" y="10" width="100" height="90" rx="8" fill="#fff0f0" stroke="#f1a2a2" stroke-width="2.5"/>
+          <text x="165" y="48" text-anchor="middle" font-size="15" font-weight="800" fill="#c62828">others</text>
+          <text x="165" y="78" text-anchor="middle" font-size="15" font-weight="900" fill="#c62828">atomic</text>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;">Two counters. The hot one never leaves its core.</p>
+      </div>
+      <div class="card" style="min-height:270px;">
+        <h3 class="green" style="font-size:23px;">Immortal objects</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <text x="110" y="55" text-anchor="middle" font-size="30" font-weight="900" font-family="monospace" fill="#2e7d32">None True 42</text>
+          <text x="110" y="95" text-anchor="middle" font-size="26" font-weight="900" fill="#2e7d32">refcnt = &#8734;</text>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;">The hottest objects opt out of counting entirely.</p>
+      </div>
+      <div class="card" style="min-height:270px;">
+        <h3 class="orange" style="font-size:23px;color:var(--orange);">Per-object locks</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <rect x="45" y="30" width="130" height="70" rx="8" fill="#fff8d7" stroke="#f0d74a" stroke-width="2.5"/>
+          <text x="110" y="73" text-anchor="middle" font-size="17" font-weight="800" font-family="monospace" fill="#161616">dict / list</text>
+          <rect x="88" y="8" width="44" height="34" rx="6" fill="#e65100"/>
+          <rect x="98" y="0" width="24" height="16" rx="8" fill="none" stroke="#e65100" stroke-width="5"/>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;">Mutations lock <em>one object</em>, not the world &mdash; deadlock-proof critical sections.</p>
+      </div>
+      <div class="card" style="min-height:270px;">
+        <h3 style="font-size:23px;color:var(--dark);">Lock-free reads</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <g font-weight="900" font-family="monospace" text-anchor="middle">
+            <text x="110" y="35" font-size="19" fill="#2e7d32">d[k]&nbsp; d[k]&nbsp; d[k]</text>
+            <text x="110" y="68" font-size="17" fill="#2e7d32">no lock taken</text>
+          </g>
+          <text x="110" y="92" text-anchor="middle" font-size="13" font-weight="800" fill="#4b525b">memory reclaimed only when</text>
+          <text x="110" y="108" text-anchor="middle" font-size="13" font-weight="800" fill="#4b525b">readers are done (QSBR)</text>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;"><span class="mono">dict</span>/<span class="mono">list</span> reads stay wait-free on the hot path.</p>
+      </div>
+    </div>
+    <div class="card dark" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
+      This cocktail is why 3.14t costs <span class="orange">~5&ndash;10%</span> where Gilectomy cost <span class="red">19&times;</span>.
+    </div>
+  </div>
+</section>
+
+<!-- 06c — What the big libraries did -->
+<section>
+  <div class="topbar"><span>Why it's hard &middot; the fallout</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>Every big library re-did its object plumbing</h2>
+    <div class="table-grid compact" style="margin-top:24px;grid-template-columns:0.7fr 1.9fr;">
+      <div class="head">Who</div><div class="head">What they actually did</div>
+      <div>CPython C&nbsp;API</div><div>New primitives for everyone: <span class="mono">PyMutex</span>, critical sections, borrowed&rarr;strong <span class="mono">*_GetItemRef</span></div>
+      <div>NumPy</div><div>Audited every C global &amp; cache; all locks ported to <span class="mono">PyMutex</span></div>
+      <div>Cython</div><div>One directive &mdash; <span class="mono">freethreading_compatible=True</span> &mdash; plus <span class="mono">cython.pymutex</span> for your hot spots</div>
+      <div>PyO3 (Rust)</div><div>Data races won't compile &mdash; <span class="mono">Send</span>/<span class="mono">Sync</span> checked by the compiler</div>
+      <div>chDB</div><div>&hellip;that's the rest of this talk</div>
+    </div>
+    <div class="card yellow" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.25;color:var(--ink);">
+      None of this is app code. It's <span class="orange">plumbing, done once per library</span> &mdash; so the other 99% of Python users never see it.
     </div>
   </div>
 </section>
@@ -756,6 +995,19 @@ python3.14t your_tests.py # try the future</code></pre>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
 <script>
+  // Auto page numbers + progress meters — slides can be added/removed freely.
+  function renumber() {
+    const secs = document.querySelectorAll('.reveal .slides section');
+    const total = secs.length;
+    secs.forEach((sec, i) => {
+      const right = sec.querySelector('.topbar .right');
+      if (right) right.innerHTML = '<span class="meter"><span style="width:' +
+        (100 * (i + 1) / total).toFixed(1) + '%"></span></span>' +
+        String(i + 1).padStart(2, '0') + ' / ' + total;
+    });
+  }
+  renumber();
+
   Reveal.initialize({
     hash: true,
     controls: true,
