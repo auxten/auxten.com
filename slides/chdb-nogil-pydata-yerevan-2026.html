@@ -330,9 +330,54 @@ module '_chdb', which has not declared that it can run safely without the GIL.</
   </div>
 </section>
 
-<!-- 07 — chDB intro: rocket engine on a bicycle -->
+<!-- 07 — Ecosystem: who has opted in -->
 <section>
-  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:26.9%"></span></span>07 / 26</span></div>
+  <div class="topbar"><span>Ecosystem check</span><span class="right"><span class="meter"><span style="width:26.9%"></span></span>07 / 26</span></div>
+  <div class="frame">
+    <h2>So who has opted in? (July 2026)</h2>
+    <div class="grid2" style="margin-top:22px;height:auto;grid-template-columns:0.36fr 0.64fr;gap:28px;align-items:center;">
+      <div class="card dark" style="text-align:center;padding:30px 22px;">
+        <div style="font-size:100px;font-weight:900;color:var(--yellow);line-height:1;">61%</div>
+        <p style="margin-top:14px;color:#c8ced6;font-size:20px;font-weight:800;">of the top 360 compiled packages on PyPI now ship free-threaded wheels</p>
+        <p style="margin-top:10px;color:#9aa2ad;font-size:15px;">219 / 360 &middot; hugovk.dev/free-threaded-wheels &middot; 15 Jul 2026</p>
+      </div>
+      <div>
+        <p style="font-size:22px;color:var(--ink);">The scientific stack led the way. Chances are your daily imports already run free-threaded:</p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;">
+          <span class="pill green">NumPy</span><span class="pill green">SciPy</span><span class="pill green">pandas</span><span class="pill green">scikit-learn</span><span class="pill green">PyArrow</span><span class="pill green">Matplotlib</span><span class="pill green">Pillow</span><span class="pill green">PyTorch</span><span class="pill green">numba</span><span class="pill green">SQLAlchemy</span><span class="pill green">lxml</span><span class="pill green">aiohttp</span><span class="pill green">uvloop</span><span class="pill green">pydantic-core</span><span class="pill green">cryptography</span><span class="pill green">tiktoken</span><span class="pill green">psutil</span><span class="pill green">regex</span>
+        </div>
+      </div>
+    </div>
+    <div class="card dark" style="margin-top:22px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;">
+      The tooling has converged too: manylinux dropped 3.13t in May 2026 &mdash; <span class="orange">3.14t is <em>the</em> free-threaded target now</span>.
+    </div>
+  </div>
+</section>
+
+<!-- 08 — Ecosystem: who hasn't (yet) -->
+<section>
+  <div class="topbar"><span>Ecosystem check</span><span class="right"><span class="meter"><span style="width:30.8%"></span></span>08 / 26</span></div>
+  <div class="frame">
+    <h2>&hellip;and who hasn't (yet)</h2>
+    <div class="table-grid compact" style="margin-top:20px;grid-template-columns:1fr 0.5fr 1.6fr;">
+      <div class="head">Package</div><div class="head c">FT wheels</div><div class="head">Status</div>
+      <div>NumPy</div><div class="c"><span class="ok">&#10003;</span></div><div>First mover &mdash; wheels since 2.1 (Aug 2024)</div>
+      <div>pandas</div><div class="c"><span class="ok">&#10003;</span></div><div><span class="mono">cp314t</span> since 2.3.3 &mdash; Windows FT wheels still missing</div>
+      <div>PyTorch</div><div class="c"><span class="ok">&#10003;</span></div><div>Preview in 2.9 &rarr; real <span class="mono">cp314t</span> wheels in 2.10 (Jan 2026)</div>
+      <div>chDB</div><div class="c"><span class="ok">&#10003;</span></div><div>That's this talk</div>
+      <div>Polars</div><div class="c"><span class="x">&#10007;</span></div><div>Importing it re-enables the GIL for your whole process</div>
+      <div>grpcio &middot; protobuf</div><div class="c"><span class="x">&#10007;</span></div><div>Blocks every gRPC-dependent tree (much of the AI SDK stack)</div>
+      <div>TensorFlow &middot; DuckDB &middot; tokenizers &middot; orjson</div><div class="c"><span class="x">&#10007;</span></div><div>Not yet &mdash; watch the tracker</div>
+    </div>
+    <div class="card yellow" style="margin-top:20px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;color:var(--ink);">
+      One <span class="x">&#10007;</span> anywhere in your dependency tree and the whole process quietly runs with the GIL back on. Trust nothing &mdash; check <span class="mono">sys._is_gil_enabled()</span> at runtime.
+    </div>
+  </div>
+</section>
+
+<!-- 09 — chDB intro: rocket engine on a bicycle -->
+<section>
+  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:34.6%"></span></span>09 / 26</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.54fr 0.46fr;">
       <div>
@@ -355,9 +400,9 @@ chdb.query("SELECT count() FROM file('hits.parquet')")</code></pre>
   </div>
 </section>
 
-<!-- 08 — chDB drops into your Python stack -->
+<!-- 10 — chDB drops into your Python stack -->
 <section>
-  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:30.8%"></span></span>08 / 26</span></div>
+  <div class="topbar"><span>chDB</span><span class="right"><span class="meter"><span style="width:38.5%"></span></span>10 / 26</span></div>
   <div class="frame">
     <h2>It drops into your Python data stack</h2>
     <div class="grid3" style="margin-top:40px;">
@@ -371,9 +416,9 @@ chdb.query("SELECT count() FROM file('hits.parquet')")</code></pre>
   </div>
 </section>
 
-<!-- 09 — The paradox -->
+<!-- 11 — The paradox -->
 <section>
-  <div class="topbar"><span>The paradox</span><span class="right"><span class="meter"><span style="width:34.6%"></span></span>09 / 26</span></div>
+  <div class="topbar"><span>The paradox</span><span class="right"><span class="meter"><span style="width:42.3%"></span></span>11 / 26</span></div>
   <div class="frame">
     <h2>Parallel engine &times; serial glue = serial query</h2>
     <p style="margin-top:10px;font-size:23px;">The C++ engine releases the GIL and scales fine &mdash; but every stream queues on it to touch anything Python.</p>
@@ -384,9 +429,9 @@ chdb.query("SELECT count() FROM file('hits.parquet')")</code></pre>
   </div>
 </section>
 
-<!-- 10 — The plan -->
+<!-- 12 — The plan -->
 <section>
-  <div class="topbar"><span>The plan</span><span class="right"><span class="meter"><span style="width:38.5%"></span></span>10 / 26</span></div>
+  <div class="topbar"><span>The plan</span><span class="right"><span class="meter"><span style="width:46.2%"></span></span>12 / 26</span></div>
   <div class="frame">
     <h2>Three changes that made no-GIL pay off</h2>
     <div class="grid2" style="margin-top:6px;height:auto;grid-template-columns:0.6fr 0.4fr;gap:26px;align-items:center;">
@@ -403,9 +448,9 @@ chdb.query("SELECT count() FROM file('hits.parquet')")</code></pre>
   </div>
 </section>
 
-<!-- 11 — Change 1: the old UDF path -->
+<!-- 13 — Change 1: the old UDF path -->
 <section>
-  <div class="topbar"><span>Change #1 &middot; UDFs</span><span class="right"><span class="meter"><span style="width:42.3%"></span></span>11 / 26</span></div>
+  <div class="topbar"><span>Change #1 &middot; UDFs</span><span class="right"><span class="meter"><span style="width:50%"></span></span>13 / 26</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.52fr 0.48fr;">
       <div>
@@ -428,9 +473,9 @@ chdb.query("SELECT count() FROM file('hits.parquet')")</code></pre>
   </div>
 </section>
 
-<!-- 12 — Change 1: in-process UDFs -->
+<!-- 14 — Change 1: in-process UDFs -->
 <section>
-  <div class="topbar"><span>Change #1 &middot; UDFs</span><span class="right"><span class="meter"><span style="width:46.2%"></span></span>12 / 26</span></div>
+  <div class="topbar"><span>Change #1 &middot; UDFs</span><span class="right"><span class="meter"><span style="width:53.8%"></span></span>14 / 26</span></div>
   <div class="frame">
     <div class="grid2" style="grid-template-columns:0.5fr 0.5fr;">
       <div>
@@ -464,9 +509,9 @@ for (size_t row = 0; row &lt; rows; ++row)
   </div>
 </section>
 
-<!-- 13 — Change 1: why free-threading pays here -->
+<!-- 15 — Change 1: why free-threading pays here -->
 <section>
-  <div class="topbar"><span>Change #1 &middot; UDFs</span><span class="right"><span class="meter"><span style="width:50%"></span></span>13 / 26</span></div>
+  <div class="topbar"><span>Change #1 &middot; UDFs</span><span class="right"><span class="meter"><span style="width:57.7%"></span></span>15 / 26</span></div>
   <div class="frame">
     <h2>This is what no-GIL was made for</h2>
     <div class="grid2" style="margin-top:6px;height:auto;grid-template-columns:0.56fr 0.44fr;gap:26px;align-items:center;">
@@ -484,129 +529,57 @@ for (size_t row = 0; row &lt; rows; ++row)
   </div>
 </section>
 
-<!-- 14 — Change 2: declare it -->
+<!-- 16 — Change 2: one line, and an audit -->
 <section>
-  <div class="topbar"><span>Change #2 &middot; Opt in</span><span class="right"><span class="meter"><span style="width:53.8%"></span></span>14 / 26</span></div>
+  <div class="topbar"><span>Change #2 &middot; Opt in</span><span class="right"><span class="meter"><span style="width:61.5%"></span></span>16 / 26</span></div>
   <div class="frame">
-    <div class="grid2" style="grid-template-columns:0.48fr 0.52fr;">
-      <div>
-        <h2 style="font-size:44px;">Declare the module GIL-independent</h2>
-        <p style="margin-top:16px;font-size:23px;color:var(--ink);">One line &mdash; and a promise you now have to keep. Without it, importing your module quietly re-enables the GIL for everyone.</p>
-        <div class="need-list" style="margin-top:18px;gap:12px;">
-          <div><span class="dot"></span><span>pybind11 &ge; 2.13: <span class="mono">py::mod_gil_not_used()</span></span></div>
-          <div><span class="dot"></span><span>Raw C API: <span class="mono">Py_mod_gil</span> slot (multi-phase init)</span></div>
-          <div><span class="dot"></span><span>Legacy single-phase: <span class="mono">PyUnstable_Module_SetGIL()</span></span></div>
-        </div>
-      </div>
-      <div>
-        <pre class="small"><code class="language-cpp">// chDB: gate it behind the build flag
-#ifdef CHDB_FREE_THREADING
-PYBIND11_MODULE(_chdb, m, py::mod_gil_not_used())
-#else
-PYBIND11_MODULE(_chdb, m)
-#endif
-
-// raw C API equivalent (multi-phase init):
-static PyModuleDef_Slot slots[] = {
-    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
-    {0, NULL},
-};</code></pre>
-        <div class="card yellow" style="margin-top:18px;font-size:22px;font-weight:900;line-height:1.25;color:var(--ink);">
-          This line is the <em>easy</em> part. It's a claim about <span class="orange">every global in your codebase</span>.
-        </div>
-      </div>
+    <h2>Opting in: one line &mdash; and an audit</h2>
+    <pre class="small" style="margin-top:20px !important;"><code class="language-cpp">PYBIND11_MODULE(_chdb, m, py::mod_gil_not_used())   // that's the whole declaration</code></pre>
+    <p style="margin-top:16px;font-size:23px;color:var(--ink);">The line is easy. It's a <strong>claim about every global in your codebase</strong> &mdash; so the real work was a state audit:</p>
+    <div class="need-list" style="margin-top:16px;gap:13px;">
+      <div><span class="dot"></span><span><strong>Import cache, UDF registry, engine singleton</strong> &mdash; every "thread-safe because GIL" spot got a real lock (<span class="mono">call_once</span>, <span class="mono">shared_mutex</span>).</span></div>
+      <div><span class="dot"></span><span>Textbook C++ concurrency &mdash; the hard part is <strong>finding it</strong>, not fixing it.</span></div>
+      <div><span class="dot"></span><span>Our import cache's "safe" lock-free fast path had been a data race <strong>for years</strong>. The GIL was its alibi.</span></div>
+    </div>
+    <div class="card dark" style="margin-top:20px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
+      None of the fixes were exotic. The GIL was just <span class="orange">hiding the to-do list</span>.
     </div>
   </div>
 </section>
 
-<!-- 15 — Change 2: global state audit -->
+<!-- 17 — Change 2: the nastiest bug -->
 <section>
-  <div class="topbar"><span>Change #2 &middot; Audit</span><span class="right"><span class="meter"><span style="width:57.7%"></span></span>15 / 26</span></div>
-  <div class="frame">
-    <h2>The global-state audit: what we actually found</h2>
-    <div class="table-grid compact" style="margin-top:24px;grid-template-columns:1.2fr 1.4fr 1fr;">
-      <div class="head">Shared state</div><div class="head">Race under free-threading</div><div class="head">Fix</div>
-      <div>Python import cache</div><div>lazy <span class="mono">import</span> / <span class="mono">getattr</span> from many threads</div><div><span class="mono">std::call_once</span> + mutex</div>
-      <div>UDF registry</div><div>register vs. lookup during queries</div><div><span class="mono">std::shared_mutex</span></div>
-      <div>Engine singleton</div><div>two threads boot the engine at once</div><div>mutex-guarded init</div>
-      <div>Connection state</div><div>concurrent connect / close / query</div><div>per-client mutex</div>
-      <div>Per-row cache lookups</div><div>hot-path contention once GIL is gone</div><div>hoist out of the row loop</div>
-    </div>
-    <div class="card dark" style="margin-top:22px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;">
-      Textbook C++ concurrency &mdash; the work is <span class="orange">finding it</span>. Our import cache's "safe" lock-free fast path had been a data race for years. The GIL was its alibi.
-    </div>
-  </div>
-</section>
-
-<!-- 16 — Change 2: the nastiest bug -->
-<section>
-  <div class="topbar"><span>Change #2 &middot; War story</span><span class="right"><span class="meter"><span style="width:61.5%"></span></span>16 / 26</span></div>
+  <div class="topbar"><span>Change #2 &middot; War story</span><span class="right"><span class="meter"><span style="width:65.4%"></span></span>17 / 26</span></div>
   <div class="frame">
     <h2>The nastiest bug: lazy init on a GIL-free thread</h2>
-    <div class="grid3" style="margin-top:26px;">
-      <div class="card yellow" style="height:215px;"><h3 style="margin-top:2px;">Trigger</h3><p style="margin-top:10px;color:var(--ink);">First <span class="mono">NULL</span> in a string column &rarr; scan thread lazily resolves <span class="mono">pandas.NaT</span>&hellip; with no Python thread state.</p></div>
-      <div class="card red" style="height:215px;"><h3 style="margin-top:2px;">Crash</h3><p style="margin-top:10px;color:var(--red);">Segfault inside <span class="mono">_PyObject_Malloc</span> on CPython 3.12+ &mdash; deep in the allocator, nowhere near the actual bug.</p></div>
-      <div class="card dark" style="height:215px;"><h3 style="margin-top:2px;color:#fff;">Hang</h3><p style="margin-top:10px;color:#c8ced6;">The fatal-signal handler then deadlocks. No traceback, no exit. The query just hangs, forever.</p></div>
+    <div class="grid3" style="margin-top:30px;">
+      <div class="card yellow" style="height:230px;"><h3 style="margin-top:2px;">Trigger</h3><p style="margin-top:12px;color:var(--ink);">First <span class="mono">NULL</span> in a string column &rarr; a scan thread lazily imports <span class="mono">pandas.NaT</span>&hellip; with no Python thread state.</p></div>
+      <div class="card red" style="height:230px;"><h3 style="margin-top:2px;">Crash</h3><p style="margin-top:12px;color:var(--red);">Segfault deep inside the allocator &mdash; nowhere near the actual bug.</p></div>
+      <div class="card dark" style="height:230px;"><h3 style="margin-top:2px;color:#fff;">Hang</h3><p style="margin-top:12px;color:#c8ced6;">Then the fatal-signal handler deadlocks. No traceback, no exit. The query just hangs, forever.</p></div>
     </div>
-    <pre class="small" style="margin-top:20px !important;"><code class="language-cpp">/// The fix — in prepareColumnCache(), while still holding the GIL:
-/// pre-resolve everything GIL-free scan threads will compare against.
-import_cache.pandas.NaT();
-import_cache.pandas.NA();</code></pre>
-    <div class="card yellow" style="margin-top:16px;font-size:24px;font-weight:900;line-height:1.22;color:var(--ink);">
-      Audit every <span class="orange">lazy</span> initialization reachable from a non-Python thread. Resolve it eagerly, under the GIL.
+    <div class="card yellow" style="margin-top:30px;font-size:26px;font-weight:900;line-height:1.25;color:var(--ink);">
+      The fix was two lines: resolve everything <span class="orange">eagerly, while you still hold the GIL</span>. Finding it took days &mdash; debugging <em>silence</em> is the expensive part.
     </div>
   </div>
 </section>
 
-<!-- 17 — Change 3: strings & the stable ABI tax -->
-<section>
-  <div class="topbar"><span>Change #3 &middot; Strings</span><span class="right"><span class="meter"><span style="width:65.4%"></span></span>17 / 26</span></div>
-  <div class="frame">
-    <div class="grid2" style="grid-template-columns:0.52fr 0.48fr;">
-      <div>
-        <h2 style="font-size:44px;">Strings are the hot path</h2>
-        <p style="margin-top:14px;font-size:23px;color:var(--ink);">Analytics = millions of strings crossing the C++/Python border per query. Our regular wheel compiles with <span class="mono">Py_LIMITED_API</span> (one abi3 wheel, cp39+) &mdash; which <strong>hides</strong> the fast Unicode internals.</p>
-        <div class="need-list" style="margin-top:16px;gap:12px;">
-          <div><span class="x">&#10007;</span><span>Limited API: no <span class="mono">PyUnicode_DATA</span>, no <span class="mono">KIND</span>, macros become out-of-line calls</span></div>
-          <div><span class="x">&#10007;</span><span>Our workaround: a per-version <em>shim library</em> &mdash; every hot string access pays a cross-<span class="mono">.so</span> function call</span></div>
-        </div>
-      </div>
-      <div>
-        <pre class="small"><code class="language-cpp">// Stable-ABI build: hot loop calls into a shim .so
-// (libpybind11nonlimitedapi_chdb_3.X.so)
-pybind11::non_limited_api::getPyUnicodeUtf8(
-    obj, data, length, kind, ...);
-// one non-inlinable call per string value</code></pre>
-        <div class="card red" style="margin-top:18px;font-size:22px;font-weight:900;line-height:1.25;">
-          Fine for control flow. <span class="mono">O(rows)</span> on the scan path? That's a tax on every value.
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- 18 — Change 3: direct CPython access -->
+<!-- 18 — Change 3: strings, straight to the bytes -->
 <section>
   <div class="topbar"><span>Change #3 &middot; Strings</span><span class="right"><span class="meter"><span style="width:69.2%"></span></span>18 / 26</span></div>
   <div class="frame">
-    <h2>3.14t: go straight to the bytes</h2>
-    <p style="margin-top:10px;font-size:23px;">The free-threaded build can't use the Limited API anyway &mdash; so it drops to direct CPython Unicode access:</p>
-    <pre class="small" style="margin-top:16px !important;"><code class="language-cpp">#ifdef CHDB_FREE_THREADING                      // full C API available
-if (PyUnicode_IS_COMPACT_ASCII(obj)) {
-    data = (const char *) PyUnicode_1BYTE_DATA(obj);  // direct pointer, no copy
+    <h2>Strings are the hot path &mdash; go straight to the bytes</h2>
+    <p style="margin-top:12px;font-size:23px;">Analytics = millions of strings crossing the C++/Python border per query. The friendly Unicode APIs cost a function call <em>per value</em> &mdash; so on 3.14t we read CPython's memory directly:</p>
+    <pre class="small" style="margin-top:18px !important;"><code class="language-cpp">if (PyUnicode_IS_COMPACT_ASCII(obj)) {                    // most analytical data
+    data = (const char *) PyUnicode_1BYTE_DATA(obj);      // direct pointer, no copy
     len  = PyUnicode_GET_LENGTH(obj);
 }
-else if (unicode-&gt;utf8)                          // CPython's cached UTF-8
-    { data = unicode-&gt;utf8;  len = unicode-&gt;utf8_length; }
-else if (PyUnicode_IS_COMPACT(obj))
-    kind = PyUnicode_KIND(obj);                  // 1/2/4-byte units -&gt; utf8proc
-else {
-    py::gil_scoped_acquire acquire;              // rare legacy strings only
-    data = PyUnicode_AsUTF8AndSize(obj, &amp;len);
-}
-#endif</code></pre>
+// ...cached-UTF8 / compact / legacy fallbacks omitted</code></pre>
+    <div class="need-list" style="margin-top:18px;gap:12px;">
+      <div><span class="dot"></span><span>ASCII string &rarr; <strong>a pointer read</strong>. No shim, no allocation, safe from any thread.</span></div>
+      <div><span class="dot"></span><span>Free-threaded builds can't use the stable ABI anyway &mdash; nothing left to lose by going low-level.</span></div>
+    </div>
     <div class="card dark" style="margin-top:18px;font-size:25px;font-weight:900;line-height:1.22;">
-      ASCII (most analytical data) = <span class="orange">a pointer read</span>. No shim, no allocation, safe from any thread on 3.14t.
+      Rule of thumb on hot paths: the friendlier the API, <span class="orange">the more it costs per row</span>.
     </div>
   </div>
 </section>
@@ -638,14 +611,13 @@ else {
   <div class="topbar"><span>Scar tissue</span><span class="right"><span class="meter"><span style="width:76.9%"></span></span>20 / 26</span></div>
   <div class="frame">
     <h2>What broke, what surprised us</h2>
-    <div class="need-list" style="margin-top:22px;gap:13px;">
-      <div><span class="x">&#10007;</span><span><strong>The silent GIL re-enable.</strong> One undeclared dependency &rarr; your "no-GIL benchmark" measures the GIL. Check <span class="mono">sys._is_gil_enabled()</span> <em>inside</em>.</span></div>
-      <div><span class="x">&#10007;</span><span><strong>Our first GIL-free object scan was wrong.</strong> Borrowed refs + lazy imports &mdash; we re-acquired the GIL. Durable wins: Arrow buffers, true FT builds.</span></div>
+    <div class="need-list" style="margin-top:26px;gap:16px;">
+      <div><span class="x">&#10007;</span><span><strong>The silent GIL re-enable got us too.</strong> One undeclared dependency and our "no-GIL benchmark" was measuring the GIL.</span></div>
       <div><span class="x">&#10007;</span><span><strong>Crashes hide as hangs.</strong> Allocator segfault &rarr; signal-handler deadlock. Budget time for debugging <em>silence</em>.</span></div>
-      <div><span class="x">&#10007;</span><span><strong>The stable ABI stopped being an option.</strong> No abi3 on 3.14t &rarr; <span class="mono">cp313t</span>/<span class="mono">cp314t</span> wheels, vendored pybind11, doubled CI.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>New wheels, new CI.</strong> No stable ABI on 3.14t &rarr; separate <span class="mono">cp314t</span> build lanes, doubled CI matrix.</span></div>
       <div><span class="x">&#10007;</span><span><strong>No-GIL didn't speed up what was already parallel.</strong> Only the Python touchpoints improved &mdash; and single-threaded got ~5&ndash;10% slower.</span></div>
     </div>
-    <div class="card dark" style="margin-top:20px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
+    <div class="card dark" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
       Free-threading didn't <em>create</em> these bugs. It <span class="orange">revoked the amnesty</span> they'd been living under.
     </div>
   </div>
@@ -715,16 +687,17 @@ else {
 <section>
   <div class="topbar"><span>Checklist</span><span class="right"><span class="meter"><span style="width:88.5%"></span></span>23 / 26</span></div>
   <div class="frame">
-    <h2>The porting checklist</h2>
-    <div class="need-list" style="margin-top:22px;gap:11px;">
-      <div><span class="num" style="font-size:24px;">1</span><span>Run tests on <span class="mono">3.14t</span> as-is &mdash; watch for the GIL re-enable <span class="mono">RuntimeWarning</span> (yours <em>and your deps'</em>).</span></div>
-      <div><span class="num" style="font-size:24px;">2</span><span>Kill architectural serialization first (subprocesses, single workers) &mdash; give threads something to win.</span></div>
-      <div><span class="num" style="font-size:24px;">3</span><span>Inventory global state: caches, registries, singletons &rarr; <span class="mono">call_once</span> / mutex / <span class="mono">shared_mutex</span>.</span></div>
-      <div><span class="num" style="font-size:24px;">4</span><span>Hunt races the GIL was masking: unsynchronized fast-path reads, borrowed refs shared across threads.</span></div>
-      <div><span class="num" style="font-size:24px;">5</span><span>Pre-resolve lazy imports/attributes reachable from non-Python threads &mdash; eagerly, under the GIL.</span></div>
-      <div><span class="num" style="font-size:24px;">6</span><span>Plan wheels: no Limited API on FT builds &rarr; version-specific <span class="mono">cp313t</span>/<span class="mono">cp314t</span> lanes in CI.</span></div>
-      <div><span class="num" style="font-size:24px;">7</span><span>Re-do hot paths with the full C API behind <span class="mono">#ifdef Py_GIL_DISABLED</span> (strings first).</span></div>
-      <div><span class="num" style="font-size:24px;">8</span><span>Only then declare <span class="mono">Py_mod_gil_not_used</span> &mdash; and benchmark scaling <em>and</em> the single-thread regression.</span></div>
+    <h2>Own an extension? The 60-second version</h2>
+    <p style="margin-top:10px;font-size:22px;">For the few of you maintaining a C/C++/Rust extension &mdash; photograph this slide:</p>
+    <div class="need-list" style="margin-top:18px;gap:15px;">
+      <div><span class="num" style="font-size:26px;">1</span><span>Run your tests on <span class="mono">3.14t</span> as-is. Watch for the GIL re-enable warning.</span></div>
+      <div><span class="num" style="font-size:26px;">2</span><span>Kill subprocesses and single workers first &mdash; give threads something to win.</span></div>
+      <div><span class="num" style="font-size:26px;">3</span><span>Globals, caches, singletons &rarr; real locks. The GIL was their alibi.</span></div>
+      <div><span class="num" style="font-size:26px;">4</span><span>Pre-resolve lazy imports reachable from non-Python threads.</span></div>
+      <div><span class="num" style="font-size:26px;">5</span><span>Declare <span class="mono">Py_mod_gil_not_used</span> <em>last</em> &mdash; then benchmark scaling <strong>and</strong> the single-thread regression.</span></div>
+    </div>
+    <div class="card dark" style="margin-top:22px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;">
+      Everyone else: you get all of this <span class="orange">for free</span> the moment your dependencies opt in. That's what the 61% wall is buying you.
     </div>
   </div>
 </section>
