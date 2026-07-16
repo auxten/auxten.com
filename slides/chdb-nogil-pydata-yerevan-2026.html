@@ -969,30 +969,30 @@ for (size_t row = 0; row &lt; rows; ++row)
 <section>
   <div class="topbar"><span>Benchmarks</span><span class="right"><span class="meter"><span style="width:80.8%"></span></span>21 / 26</span></div>
   <div class="frame">
-    <h2>Numbers from a 16-core machine <span class="tag" style="font-size:18px;">DRAFT</span></h2>
+    <h2>Measured, not vibes</h2>
     <div class="grid2" style="margin-top:22px;height:auto;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
       <div class="card green">
-        <h3 class="green">Shipped &amp; measured</h3>
+        <h3 class="green">chDB, shipped</h3>
         <div class="need-list" style="margin-top:12px;gap:10px;">
           <div><span class="ok">&#10003;</span><span>ClickBench, 50M rows: <strong>219.2s &rarr; 20.1s</strong> (10.9&times;)</span></div>
           <div><span class="ok">&#10003;</span><span>String-heavy queries: <strong>up to 64&times;</strong></span></div>
           <div><span class="ok">&#10003;</span><span>CI guard: 5M-string ingestion microbench on 3.14</span></div>
         </div>
       </div>
-      <div class="card draft">
-        <h3 style="color:#8a6d00;">To re-run for this talk <span class="tag">TODO</span></h3>
+      <div class="card blue">
+        <h3 class="blue">3.14 vs 3.14t &middot; same code, same toolchain</h3>
         <div class="need-list" style="margin-top:12px;gap:10px;">
-          <div><span class="dot" style="background:#c9a227;"></span><span>UDF-heavy query: threads 1&rarr;16, stock vs 3.14t</span></div>
-          <div><span class="dot" style="background:#c9a227;"></span><span>Object-dtype string scan: stock vs 3.14t</span></div>
-          <div><span class="dot" style="background:#c9a227;"></span><span>Single-thread regression: 3.14 vs 3.14t</span></div>
+          <div><span class="ok">&#10003;</span><span>UDF-style workload, 24M calls, 8 thr: <strong>1.0&times; &rarr; 5.2&times;</strong></span></div>
+          <div><span class="ok">&#10003;</span><span>Shared str-object scan, 6M rows, 10 thr: <strong>1.0&times; &rarr; 3.5&times;</strong></span></div>
+          <div><span class="ok">&#10003;</span><span>Single-thread tax: <strong>&plusmn;11% per bench, &asymp;+2% mean</strong></span></div>
         </div>
       </div>
     </div>
     <div class="bars" style="margin-top:24px;">
-      <div class="bar-row"><span class="label">UDF query &middot; stock 3.14</span><div class="bar-track"><div class="bar-fill red" style="width:14%"></div></div><span class="val">~1&times; (16 thr)</span></div>
-      <div class="bar-row"><span class="label">UDF query &middot; 3.14t</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:repeating-linear-gradient(45deg,var(--green),var(--green) 12px,#9ad59c 12px,#9ad59c 24px);"></div></div><span class="val">N&times; ?</span></div>
+      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">Python UDF workload &middot; stock 3.14 &middot; 8 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.72 s</span></div>
+      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">Python UDF workload &middot; 3.14t &middot; 8 thr</span><div class="bar-track"><div class="bar-fill green" style="width:20%"></div></div><span class="val">0.14 s</span></div>
     </div>
-    <p style="margin-top:12px;font-size:19px;">Striped bar = placeholder &mdash; final scaling curve to be measured on the 16-core box before the talk.</p>
+    <p style="margin-top:12px;font-size:18px;">Adding threads on stock 3.14 changes <em>nothing</em> (0.73s at 1 thread, 0.70s at 10). Right card: CPython 3.14.6 vs 3.14.6t, Apple M4 Pro (10P+4E) &mdash; microbenchmarks isolating the GIL boundary; full chDB-on-3.14t numbers ship with the <span class="mono">cp314t</span> wheel.</p>
   </div>
 </section>
 
@@ -1027,19 +1027,35 @@ for (size_t row = 0; row &lt; rows; ++row)
 
 <!-- 23 — The porting checklist -->
 <section>
-  <div class="topbar"><span>Checklist</span><span class="right"><span class="meter"><span style="width:88.5%"></span></span>23 / 26</span></div>
+  <div class="topbar"><span>Your move</span><span class="right"><span class="meter"><span style="width:88.5%"></span></span>23 / 26</span></div>
   <div class="frame">
-    <h2>Own an extension? The 60-second version</h2>
-    <p style="margin-top:10px;font-size:22px;">For the few of you maintaining a C/C++/Rust extension &mdash; photograph this slide:</p>
-    <div class="need-list" style="margin-top:18px;gap:15px;">
-      <div><span class="num" style="font-size:26px;">1</span><span>Run your tests on <span class="mono">3.14t</span> as-is. Watch for the GIL re-enable warning.</span></div>
-      <div><span class="num" style="font-size:26px;">2</span><span>Kill subprocesses and single workers first &mdash; give threads something to win.</span></div>
-      <div><span class="num" style="font-size:26px;">3</span><span>Globals, caches, singletons &rarr; real locks. The GIL was their alibi.</span></div>
-      <div><span class="num" style="font-size:26px;">4</span><span>Pre-resolve lazy imports reachable from non-Python threads.</span></div>
-      <div><span class="num" style="font-size:26px;">5</span><span>Declare <span class="mono">Py_mod_gil_not_used</span> <em>last</em> &mdash; then benchmark scaling <strong>and</strong> the single-thread regression.</span></div>
+    <h2>You don't need to port anything. Try it this week:</h2>
+    <div class="grid2" style="margin-top:20px;height:auto;grid-template-columns:0.56fr 0.44fr;gap:22px;align-items:start;">
+      <div>
+        <pre class="small" style="margin-top:0 !important;"><code class="language-bash"># 1 &middot; install (one minute)
+uv python install 3.14t
+uv venv --python 3.14t &amp;&amp; uv pip install -r requirements.txt
+
+# 2 &middot; run YOUR tests / app, unchanged
+python -m pytest        # watch for the GIL re-enable warning
+
+# 3 &middot; trust, but verify
+python -c "import sys, yourapp; print(sys._is_gil_enabled())"</code></pre>
+        <div class="card yellow" style="margin-top:16px;padding:14px 18px;font-size:21px;font-weight:900;color:var(--ink);line-height:1.25;">
+          Your existing <span class="mono">ThreadPoolExecutor</span> code doesn't change &mdash; <span class="orange">it just starts scaling</span>.
+        </div>
+      </div>
+      <div class="card" style="border-color:#9ad59c;">
+        <h3 class="green">How to help the community</h3>
+        <div class="need-list" style="margin-top:14px;gap:13px;">
+          <div><span class="ok">&#10003;</span><span><strong>Run your suite on 3.14t and report breakage.</strong> Real-world bug reports are maintainers' #1 ask.</span></div>
+          <div><span class="ok">&#10003;</span><span><strong>Upvote / file the wheel issue</strong> on deps that block you (remember the &#10007; column).</span></div>
+          <div><span class="ok">&#10003;</span><span><strong>Publish your numbers.</strong> "My workload got N&times; faster" moves roadmaps.</span></div>
+        </div>
+      </div>
     </div>
-    <div class="card dark" style="margin-top:22px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;">
-      Everyone else: you get all of this <span class="orange">for free</span> the moment your dependencies opt in. That's what the 61% wall is buying you.
+    <div class="card dark" style="margin-top:20px;padding:16px 22px;font-size:23px;font-weight:900;line-height:1.25;">
+      Maintain a C/C++/Rust extension? The porting checklist lives at <span class="mono orange">py-free-threading.github.io</span> &mdash; everything this talk did, generalized.
     </div>
   </div>
 </section>
@@ -1050,7 +1066,7 @@ for (size_t row = 0; row &lt; rows; ++row)
   <div class="frame">
     <h2>Three takeaways</h2>
     <div style="margin-top:30px;">
-      <div class="card takeaway"><div class="num">01</div><div><h3>No-GIL is opt-in, and the opt-in is an audit.</h3><p>The declaration is one line; the promise covers every global you own.</p></div></div>
+      <div class="card takeaway"><div class="num">01</div><div><h3>Free-threading reaches you through your dependencies.</h3><p>Your job isn't porting &mdash; it's testing on <span class="mono">3.14t</span>, verifying with <span class="mono">sys._is_gil_enabled()</span>, and reporting what breaks.</p></div></div>
       <div class="card takeaway"><div class="num">02</div><div><h3>Restructure before you parallelize.</h3><p>In-process beats out-of-process; zero-copy beats lock-free; then free-threading multiplies what's left.</p></div></div>
       <div class="card takeaway"><div class="num">03</div><div><h3>The GIL was an amnesty, not a feature.</h3><p>3.14t revokes it. The bugs it exposes were already yours.</p></div></div>
     </div>
@@ -1061,7 +1077,7 @@ for (size_t row = 0; row &lt; rows; ++row)
 <section>
   <div class="topbar"><span>Thank you</span><span class="right"><span class="meter"><span style="width:96.2%"></span></span>25 / 26</span></div>
   <div class="frame">
-    <h2>Try it on your own extension</h2>
+    <h2>Take 3.14t for a spin</h2>
     <pre style="margin-top:24px !important;"><code class="language-bash">pip install chdb          # try the engine
 python3.14t your_tests.py # try the future</code></pre>
     <div class="grid2" style="margin-top:26px;height:auto;grid-template-columns:1fr 1fr;gap:20px;">
