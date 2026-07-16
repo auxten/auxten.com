@@ -992,7 +992,7 @@ for (size_t row = 0; row &lt; rows; ++row)
       <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">Python UDF workload &middot; stock 3.14 &middot; 8 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.72 s</span></div>
       <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">Python UDF workload &middot; 3.14t &middot; 8 thr</span><div class="bar-track"><div class="bar-fill green" style="width:20%"></div></div><span class="val">0.14 s</span></div>
     </div>
-    <p style="margin-top:12px;font-size:18px;">Adding threads on stock 3.14 changes <em>nothing</em> (0.73s at 1 thread, 0.70s at 10). Right card: CPython 3.14.6 vs 3.14.6t, Apple M4 Pro (10P+4E) &mdash; microbenchmarks isolating the GIL boundary; full chDB-on-3.14t numbers ship with the <span class="mono">cp314t</span> wheel.</p>
+    <p style="margin-top:12px;font-size:18px;">Adding threads on stock 3.14 changes <em>nothing</em> (0.73s at 1 thread, 0.70s at 10). Right card: CPython 3.14.6 vs 3.14.6t, Apple M4 Pro (10P+4E) &mdash; microbenchmarks isolating the GIL boundary. chDB's <span class="mono">cp314t</span> wheels are in the 26.5.1 release candidates; full engine-level numbers land with the stable release.</p>
   </div>
 </section>
 
