@@ -348,9 +348,9 @@
         </div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-        <img src="logos/larry-hastings-pycon2016.jpg" alt="Larry Hastings on stage at PyCon 2016" style="height:225px;border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,0.22);">
+        <img src="logos/larry-hastings-pycon2016.jpg" alt="Larry Hastings on stage at PyCon 2016" style="height:168px;border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,0.22);">
         <p style="font-size:16px;color:var(--muted);">Larry Hastings &middot; PyCon 2016, Portland</p>
-        <svg viewBox="0 0 560 380" style="width:88%;" font-family="Inter, sans-serif">
+        <svg viewBox="0 0 560 380" style="width:70%;" font-family="Inter, sans-serif">
           <g font-weight="800">
             <rect x="20" y="40" width="180" height="120" rx="10" fill="#eef6ff" stroke="#86bdf2" stroke-width="3"/>
             <text x="110" y="90" text-anchor="middle" font-size="24" fill="#1565c0">Core 0</text>
@@ -415,14 +415,14 @@
   <div class="topbar"><span>Python 3.14t</span><span class="right"><span class="meter"><span style="width:15.4%"></span></span>04 / 26</span></div>
   <div class="frame">
     <h2>The one that landed: free-threaded Python</h2>
-    <div class="grid3" style="margin-top:30px;">
-      <div class="card"><h3 class="blue">PEP 703 &middot; 3.13</h3><p style="margin-top:10px;">The GIL becomes optional. Experimental build, ~40% single-thread penalty.</p></div>
-      <div class="card yellow"><h3>PEP 779 &middot; 3.14</h3><p style="margin-top:10px;color:var(--ink);"><strong>Officially supported.</strong> Specializing interpreter enabled; penalty down to ~5&ndash;10%.</p></div>
-      <div class="card"><h3 class="green">Opt-in build</h3><p style="margin-top:10px;">A separate binary: <span class="mono">python3.14t</span>. Wheels get a <span class="mono">t</span> suffix: <span class="mono">cp314t</span>.</p></div>
+    <div class="grid3" style="margin-top:24px;">
+      <div class="card"><h3 class="blue">PEP 703 &middot; 3.13</h3><p style="margin-top:10px;">GIL becomes optional. Experimental, ~40% single-thread penalty.</p></div>
+      <div class="card yellow"><h3>PEP 779 &middot; 3.14</h3><p style="margin-top:10px;color:var(--ink);"><strong>Officially supported.</strong> Specializing interpreter on; penalty ~5&ndash;10%.</p></div>
+      <div class="card"><h3 class="green">Opt-in build</h3><p style="margin-top:10px;">Separate binary <span class="mono">python3.14t</span>; wheels get a <span class="mono">cp314t</span> suffix.</p></div>
     </div>
-    <pre class="small" style="margin-top:28px !important;"><code class="language-bash">$ python3.14t -c "import sys; print(sys._is_gil_enabled())"
+    <pre class="small" style="margin-top:22px !important;"><code class="language-bash">$ python3.14t -c "import sys; print(sys._is_gil_enabled())"
 False        # threads now run Python bytecode in parallel</code></pre>
-    <div class="card dark" style="margin-top:24px;font-size:28px;font-weight:900;line-height:1.22;">
+    <div class="card dark" style="margin-top:20px;font-size:28px;font-weight:900;line-height:1.22;">
       Phase III &mdash; making it <em>the default</em> Python &mdash; is on the roadmap. This train is leaving.
     </div>
   </div>
@@ -433,14 +433,14 @@ False        # threads now run Python bytecode in parallel</code></pre>
   <div class="topbar"><span>Why it matters</span><span class="right"><span class="meter"><span style="width:19.2%"></span></span>05 / 26</span></div>
   <div class="frame">
     <h2>Why it matters: Python finally spans the cores</h2>
-    <p style="margin-top:10px;font-size:23px;">Single-core speed plateaued years ago &mdash; machines got <em>wider</em> instead. Free-threading lets one Python process use the width.</p>
+    <p style="margin-top:10px;font-size:23px;">Single-core speed plateaued; machines got <em>wider</em>. Free-threading lets one process use the width.</p>
     <div class="grid3" style="margin-top:24px;">
-      <div class="card blue" style="min-height:220px;"><h3 class="blue">Agent builders</h3><p style="margin-top:10px;color:var(--blue);">Parallel subagents, one process &mdash; shared models &amp; caches. No pickle, no IPC.</p></div>
-      <div class="card green" style="min-height:220px;"><h3 class="green">Desktop apps</h3><p style="margin-top:10px;color:var(--green);">Responsive UI + truly parallel background work.</p></div>
-      <div class="card yellow" style="min-height:220px;"><h3>Servers &amp; data tools</h3><p style="margin-top:10px;color:var(--ink);">One copy of the model &mdash; not 16 workers &times; 16 copies.</p></div>
+      <div class="card blue" style="min-height:200px;"><h3 class="blue">Agent builders</h3><p style="margin-top:10px;color:var(--blue);">Parallel subagents in one process &mdash; shared models. No pickle, no IPC.</p></div>
+      <div class="card green" style="min-height:200px;"><h3 class="green">Desktop apps</h3><p style="margin-top:10px;color:var(--green);">Responsive UI + truly parallel background work.</p></div>
+      <div class="card yellow" style="min-height:200px;"><h3>Servers &amp; data tools</h3><p style="margin-top:10px;color:var(--ink);">One copy of the model &mdash; not 16 workers &times; 16 copies.</p></div>
     </div>
-    <div class="card dark" style="margin-top:24px;font-size:27px;font-weight:900;line-height:1.22;">
-      Same language, same process, <span class="orange">16&times; the compute</span>. The rest of this talk: what that costs extension authors.
+    <div class="card dark" style="margin-top:22px;font-size:27px;font-weight:900;line-height:1.22;">
+      Same language, same process, <span class="orange">16&times; the compute</span> &mdash; at a cost to extension authors.
     </div>
   </div>
 </section>
@@ -451,7 +451,7 @@ False        # threads now run Python bytecode in parallel</code></pre>
   <div class="frame">
     <h2>20 years of dodging the GIL: the four escape hatches</h2>
     <div class="grid4" style="margin-top:26px;">
-      <div class="card" style="min-height:300px;">
+      <div class="card" style="min-height:276px;">
         <h3 class="blue" style="font-size:22px;">Drop to C</h3>
         <svg viewBox="0 0 220 132" style="width:100%;margin-top:12px;" font-family="Inter, sans-serif">
           <rect x="10" y="8" width="52" height="20" rx="4" fill="#1565c0"/>
@@ -462,7 +462,7 @@ False        # threads now run Python bytecode in parallel</code></pre>
         </svg>
         <p style="margin-top:12px;font-size:17.5px;">NumPy &amp; SciPy: <span class="mono">Py_BEGIN_ALLOW_THREADS</span> around every kernel.</p>
       </div>
-      <div class="card" style="min-height:300px;">
+      <div class="card" style="min-height:276px;">
         <h3 class="green" style="font-size:22px;">Thread pool below Python</h3>
         <svg viewBox="0 0 220 120" style="width:100%;margin-top:12px;" font-family="Inter, sans-serif">
           <rect x="10" y="8" width="200" height="20" rx="4" fill="#1565c0"/>
@@ -471,7 +471,7 @@ False        # threads now run Python bytecode in parallel</code></pre>
         </svg>
         <p style="margin-top:12px;font-size:17.5px;">TensorFlow &amp; PyTorch: C++ thread pools, CUDA streams &mdash; the graph runs <em>outside</em> Python.</p>
       </div>
-      <div class="card" style="min-height:300px;">
+      <div class="card" style="min-height:276px;">
         <h3 style="font-size:22px;color:var(--orange);">Fork &amp; pickle</h3>
         <svg viewBox="0 0 220 132" style="width:100%;margin-top:12px;" font-family="Inter, sans-serif">
           <g font-weight="800">
@@ -487,7 +487,7 @@ False        # threads now run Python bytecode in parallel</code></pre>
         </svg>
         <p style="margin-top:12px;font-size:17.5px;"><span class="mono">multiprocessing</span>, joblib, DataLoader workers &mdash; every value crosses by <strong>copy</strong>.</p>
       </div>
-      <div class="card" style="min-height:300px;">
+      <div class="card" style="min-height:276px;">
         <h3 style="font-size:22px;color:var(--dark);">Compile it away</h3>
         <pre class="tiny" style="margin-top:12px !important;box-shadow:none;"><code class="language-python">with nogil:      # Cython
     crunch(buf)
@@ -497,7 +497,7 @@ def crunch(buf): ...</code></pre>
         <p style="margin-top:12px;font-size:17.5px;">Leave the interpreter entirely &mdash; then threads are free.</p>
       </div>
     </div>
-    <div class="card dark" style="margin-top:22px;padding:16px 22px;font-size:24px;font-weight:900;line-height:1.22;">
+    <div class="card dark" style="margin-top:18px;padding:14px 22px;font-size:24px;font-weight:900;line-height:1.22;">
       Four hatches, one rule: <span class="orange">never touch Python objects from a thread.</span>
     </div>
   </div>
@@ -548,7 +548,7 @@ def crunch(buf): ...</code></pre>
   <div class="frame">
     <h2>Extensions get nothing for free</h2>
     <div class="need-list" style="margin-top:26px;gap:16px;">
-      <div><span class="x">&#10007;</span><span><strong>One bad import poisons the well.</strong> Any extension without the opt-in flag &rarr; CPython silently <em>turns the GIL back on</em> for everyone.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>One bad import poisons the well.</strong> Any un-opted-in extension &rarr; CPython silently <em>turns the GIL back on</em> for everyone.</span></div>
       <div><span class="x">&#10007;</span><span><strong>"Thread-safe because GIL" is now a data race.</strong> Every global, cache and lazy init loses its silent protection.</span></div>
       <div><span class="x">&#10007;</span><span><strong>Your abi3 wheel won't load.</strong> No stable ABI on 3.14t &mdash; new wheels, new CI.</span></div>
     </div>
@@ -658,16 +658,16 @@ module '_chdb', which has not declared that it can run safely without the GIL.</
     <h2>Every big library re-did its object plumbing</h2>
     <div class="table-grid compact" style="margin-top:24px;grid-template-columns:0.7fr 1.9fr;">
       <div class="head">Who</div><div class="head">What they actually did</div>
-      <div>CPython C&nbsp;API</div><div>New primitives for everyone: <span class="mono">PyMutex</span>, critical sections, borrowed&rarr;strong <span class="mono">*_GetItemRef</span></div>
-      <div>NumPy</div><div>Audited every C global &amp; cache; all locks ported to <span class="mono">PyMutex</span></div>
-      <div>PyTorch</div><div>Thread-safety audit of ATen &amp; autograd &rarr; <span class="mono">cp314t</span> wheels since 2.10</div>
-      <div>TensorFlow</div><div>Hasn't &mdash; its parallelism lives below Python anyway, so the least pressure to move</div>
-      <div>Cython</div><div>One directive &mdash; <span class="mono">freethreading_compatible=True</span> &mdash; plus <span class="mono">cython.pymutex</span> for your hot spots</div>
+      <div>CPython C&nbsp;API</div><div>New primitives: <span class="mono">PyMutex</span>, critical sections, borrowed&rarr;strong <span class="mono">*_GetItemRef</span></div>
+      <div>NumPy</div><div>Audited C globals &amp; caches; locks ported to <span class="mono">PyMutex</span></div>
+      <div>PyTorch</div><div>ATen &amp; autograd audit &rarr; <span class="mono">cp314t</span> wheels since 2.10</div>
+      <div>TensorFlow</div><div>Hasn't &mdash; its parallelism lives below Python anyway</div>
+      <div>Cython</div><div>One directive: <span class="mono">freethreading_compatible=True</span>; <span class="mono">cython.pymutex</span> for hot spots</div>
       <div>PyO3 (Rust)</div><div>Data races won't compile &mdash; <span class="mono">Send</span>/<span class="mono">Sync</span> checked by the compiler</div>
       <div>chDB</div><div>&hellip;that's the rest of this talk</div>
     </div>
-    <div class="card yellow" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.25;color:var(--ink);">
-      None of this is app code. It's <span class="orange">plumbing, done once per library</span> &mdash; so the other 99% of Python users never see it.
+    <div class="card yellow" style="margin-top:22px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.25;color:var(--ink);">
+      Not app code &mdash; <span class="orange">plumbing, done once per library</span>. 99% of Python users never see it.
     </div>
   </div>
 </section>
@@ -704,15 +704,15 @@ module '_chdb', which has not declared that it can run safely without the GIL.</
     <div class="table-grid compact" style="margin-top:20px;grid-template-columns:1fr 0.5fr 1.6fr;">
       <div class="head">Package</div><div class="head c">FT wheels</div><div class="head">Status</div>
       <div>NumPy</div><div class="c"><span class="ok">&#10003;</span></div><div>First mover &mdash; wheels since 2.1 (Aug 2024)</div>
-      <div>pandas</div><div class="c"><span class="ok">&#10003;</span></div><div><span class="mono">cp314t</span> since 2.3.3 &mdash; Windows FT wheels still missing</div>
-      <div>PyTorch</div><div class="c"><span class="ok">&#10003;</span></div><div>Preview in 2.9 &rarr; real <span class="mono">cp314t</span> wheels in 2.10 (Jan 2026)</div>
+      <div>pandas</div><div class="c"><span class="ok">&#10003;</span></div><div><span class="mono">cp314t</span> since 2.3.3 &mdash; Windows wheels still missing</div>
+      <div>PyTorch</div><div class="c"><span class="ok">&#10003;</span></div><div>Preview 2.9 &rarr; real <span class="mono">cp314t</span> wheels in 2.10 (Jan 2026)</div>
       <div>chDB</div><div class="c"><span class="ok">&#10003;</span></div><div>That's this talk</div>
-      <div>Polars</div><div class="c"><span class="x">&#10007;</span></div><div>Importing it re-enables the GIL for your whole process</div>
-      <div>grpcio &middot; protobuf</div><div class="c"><span class="x">&#10007;</span></div><div>Blocks every gRPC-dependent tree (much of the AI SDK stack)</div>
+      <div>Polars</div><div class="c"><span class="x">&#10007;</span></div><div>Importing it re-enables the GIL for the whole process</div>
+      <div>grpcio &middot; protobuf</div><div class="c"><span class="x">&#10007;</span></div><div>Blocks every gRPC-dependent tree (much of the AI stack)</div>
       <div>TensorFlow &middot; DuckDB &middot; tokenizers &middot; orjson</div><div class="c"><span class="x">&#10007;</span></div><div>Not yet &mdash; watch the tracker</div>
     </div>
     <div class="card yellow" style="margin-top:20px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.25;color:var(--ink);">
-      One <span class="x">&#10007;</span> anywhere in your dependency tree and the whole process quietly runs with the GIL back on. Trust nothing &mdash; check <span class="mono">sys._is_gil_enabled()</span> at runtime.
+      One <span class="x">&#10007;</span> in your dependency tree &rarr; the whole process quietly runs GIL-on. Trust nothing &mdash; check <span class="mono">sys._is_gil_enabled()</span> at runtime.
     </div>
   </div>
 </section>
@@ -763,8 +763,8 @@ chdb.query("SELECT count() FROM file('hits.parquet')")</code></pre>
   <div class="topbar"><span>The paradox</span><span class="right"><span class="meter"><span style="width:42.3%"></span></span>11 / 26</span></div>
   <div class="frame">
     <h2>Parallel engine &times; serial glue = serial query</h2>
-    <p style="margin-top:10px;font-size:23px;">The C++ engine releases the GIL and scales fine &mdash; but every stream queues on it to touch anything Python.</p>
-    <img class="diagram-img" src="logos/fig-nogil-boundary.png" alt="16 parallel engine threads queue single-file at the GIL to reach Python UDFs, DataFrame columns and strings" style="height:360px;margin-top:12px !important;">
+    <p style="margin-top:10px;font-size:23px;">The engine scales fine &mdash; every stream just queues on the GIL to touch Python.</p>
+    <img class="diagram-img" src="logos/fig-nogil-boundary.png" alt="16 parallel engine threads queue single-file at the GIL to reach Python UDFs, DataFrame columns and strings" style="height:322px;margin-top:12px !important;">
     <div class="card dark" style="margin-top:16px;font-size:27px;font-weight:900;line-height:1.22;">
       The GIL didn't slow our engine down. It <span class="orange">serialized every conversation with Python</span>.
     </div>
@@ -857,7 +857,7 @@ for (size_t row = 0; row &lt; rows; ++row)
   <div class="frame">
     <h2>This is what no-GIL was made for</h2>
     <div class="grid2" style="margin-top:6px;height:auto;grid-template-columns:0.56fr 0.44fr;gap:26px;align-items:center;">
-      <img class="diagram-img" src="logos/fig-nogil-timeline.png" alt="Stock 3.14: threads take turns running Python. Free-threaded 3.14t: all threads run Python in parallel." style="height:390px;">
+      <img class="diagram-img" src="logos/fig-nogil-timeline.png" alt="Stock 3.14: threads take turns running Python. Free-threaded 3.14t: all threads run Python in parallel." style="height:360px;">
       <div class="need-list" style="gap:15px;">
         <div><span class="dot" style="background:var(--red)"></span><span><strong>Stock 3.14:</strong> 16 streams hit the UDF &rarr; 16 threads take turns on one GIL. Effectively <strong>single-core</strong>.</span></div>
         <div><span class="dot" style="background:var(--green)"></span><span><strong>3.14t:</strong> the same <span class="mono">acquire</span> becomes per-thread bookkeeping &mdash; streams run your function <strong>in parallel</strong>.</span></div>
@@ -910,7 +910,7 @@ for (size_t row = 0; row &lt; rows; ++row)
   <div class="topbar"><span>Change #3 &middot; Strings</span><span class="right"><span class="meter"><span style="width:69.2%"></span></span>18 / 26</span></div>
   <div class="frame">
     <h2>Strings are the hot path &mdash; go straight to the bytes</h2>
-    <p style="margin-top:12px;font-size:23px;">Analytics = millions of strings crossing the C++/Python border per query. The friendly Unicode APIs cost a function call <em>per value</em> &mdash; so on 3.14t we read CPython's memory directly:</p>
+    <p style="margin-top:12px;font-size:23px;">Millions of strings cross the C++/Python border per query. Friendly Unicode APIs cost a call <em>per value</em> &mdash; so on 3.14t we read CPython's memory directly:</p>
     <pre class="small" style="margin-top:18px !important;"><code class="language-cpp">if (PyUnicode_IS_COMPACT_ASCII(obj)) {                    // most analytical data
     data = (const char *) PyUnicode_1BYTE_DATA(obj);      // direct pointer, no copy
     len  = PyUnicode_GET_LENGTH(obj);
@@ -933,7 +933,7 @@ for (size_t row = 0; row &lt; rows; ++row)
     <h2>The biggest win: skip PyObject entirely</h2>
     <p style="margin-top:8px;font-size:23px;">pandas 3.x <span class="mono">str</span> columns are <strong>Arrow-backed</strong>: plain C buffers, scanned directly on all streams &mdash; <em>no GIL at all</em>.</p>
     <div class="grid2" style="margin-top:4px;height:auto;grid-template-columns:0.58fr 0.42fr;gap:24px;align-items:center;">
-      <img class="diagram-img" src="logos/fig-nogil-arrow.png" alt="Slow path: one PyObject per row behind the GIL. Fast path: zero-copy from Arrow validity/offsets/data buffers straight into ColumnString, GIL-free on all threads." style="height:355px;">
+      <img class="diagram-img" src="logos/fig-nogil-arrow.png" alt="Slow path: one PyObject per row behind the GIL. Fast path: zero-copy from Arrow validity/offsets/data buffers straight into ColumnString, GIL-free on all threads." style="height:332px;">
       <div>
         <div class="bars">
           <div class="bar-row" style="grid-template-columns:1fr;gap:4px;"><span class="label">object dtype (before) &mdash; <span class="red">219.2 s</span></span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div></div>
@@ -954,10 +954,11 @@ for (size_t row = 0; row &lt; rows; ++row)
   <div class="frame">
     <h2>What broke, what surprised us</h2>
     <div class="need-list" style="margin-top:26px;gap:16px;">
-      <div><span class="x">&#10007;</span><span><strong>The silent GIL re-enable got us too.</strong> One undeclared dependency and our "no-GIL benchmark" was measuring the GIL.</span></div>
-      <div><span class="x">&#10007;</span><span><strong>Crashes hide as hangs.</strong> Allocator segfault &rarr; signal-handler deadlock. Budget time for debugging <em>silence</em>.</span></div>
-      <div><span class="x">&#10007;</span><span><strong>New wheels, new CI.</strong> No stable ABI on 3.14t &rarr; separate <span class="mono">cp314t</span> build lanes, doubled CI matrix.</span></div>
-      <div><span class="x">&#10007;</span><span><strong>No-GIL didn't speed up what was already parallel.</strong> Only the Python touchpoints improved &mdash; and single-threaded got ~5&ndash;10% slower.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>The silent GIL re-enable got us too.</strong> One undeclared dep &rarr; our "no-GIL benchmark" measured the GIL.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>Crashes hide as hangs.</strong> Allocator segfault &rarr; signal-handler deadlock. Budget time to debug <em>silence</em>.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>New wheels, new CI.</strong> No stable ABI on 3.14t &rarr; separate <span class="mono">cp314t</span> lanes, doubled matrix.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>Already-parallel code got no faster.</strong> Only Python touchpoints improved; single-threaded ~5&ndash;10% slower.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>Cold start + high threads can hang.</strong> Fresh 3.14t process, first UDF at <span class="mono">max_threads=32</span> &mdash; infinite wait (<span class="mono">chdb-core#131</span>). Any small warmup query unblocks it.</span></div>
     </div>
     <div class="card dark" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
       Free-threading didn't <em>create</em> these bugs. It <span class="orange">revoked the amnesty</span> they'd been living under.
@@ -970,30 +971,15 @@ for (size_t row = 0; row &lt; rows; ++row)
   <div class="topbar"><span>Benchmarks</span><span class="right"><span class="meter"><span style="width:80.8%"></span></span>21 / 26</span></div>
   <div class="frame">
     <h2>Measured, not vibes</h2>
-    <div class="grid2" style="margin-top:22px;height:auto;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-      <div class="card green">
-        <h3 class="green">chDB, shipped</h3>
-        <div class="need-list" style="margin-top:12px;gap:10px;">
-          <div><span class="ok">&#10003;</span><span>ClickBench, 50M rows: <strong>219.2s &rarr; 20.1s</strong> (10.9&times;)</span></div>
-          <div><span class="ok">&#10003;</span><span>String-heavy queries: <strong>up to 64&times;</strong></span></div>
-          <div><span class="ok">&#10003;</span><span>CI guard: 5M-string ingestion microbench on 3.14</span></div>
-        </div>
-      </div>
-      <div class="card blue">
-        <h3 class="blue">chDB on 3.14t &middot; real engine, rc wheel</h3>
-        <div class="need-list" style="margin-top:12px;gap:10px;">
-          <div><span class="ok">&#10003;</span><span>object-dtype scan, 5M rows, 16 thr: <strong>0.22s &rarr; 0.08s (2.6&times;)</strong></span></div>
-          <div><span class="ok">&#10003;</span><span>&hellip;and threads <em>hurt</em> stock (0.13&rarr;0.22s) but <em>help</em> 3.14t</span></div>
-          <div><span class="ok">&#10003;</span><span>Pure-engine query (no Python objects): <strong>0.161s vs 0.161s</strong> &mdash; parity</span></div>
-          <div><span class="ok">&#10003;</span><span>In-process UDF: scales to 8 thr (3.8&rarr;1.8s) &mdash; and found a real bug past that</span></div>
-        </div>
-      </div>
+    <p style="margin-top:12px;font-size:23px;">The free-threading win, isolated: an object-dtype scan (5M rows) that must read <em>one PyObject per value</em> &mdash; exactly where the GIL used to serialize every stream.</p>
+    <div class="bars" style="margin-top:30px;">
+      <div class="bar-row" style="grid-template-columns:360px 1fr 120px;"><span class="label">stock 3.14 &middot; 16 threads</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.22 s</span></div>
+      <div class="bar-row" style="grid-template-columns:360px 1fr 120px;margin-top:14px;"><span class="label">3.14t &middot; 16 threads</span><div class="bar-track"><div class="bar-fill green" style="width:36%"></div></div><span class="val">0.08 s</span></div>
     </div>
-    <div class="bars" style="margin-top:24px;">
-      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; stock 3.14 &middot; 16 thr</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.22 s</span></div>
-      <div class="bar-row" style="grid-template-columns:340px 1fr 110px;"><span class="label">object-dtype scan &middot; 3.14t &middot; 16 thr</span><div class="bar-track"><div class="bar-fill green" style="width:36%"></div></div><span class="val">0.08 s</span></div>
+    <div class="card dark" style="margin-top:30px;padding:20px 24px;font-size:26px;font-weight:900;line-height:1.25;">
+      On stock 3.14, adding threads <span class="red">hurt</span> (0.13 &rarr; 0.22 s as they pile onto the GIL). On 3.14t the same threads <span class="orange">help</span> &mdash; <strong>2.6&times; faster</strong>, and the pure-engine query stays at parity (0.161 s).
     </div>
-    <p style="margin-top:12px;font-size:18px;">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4, min of 6 runs. Measuring caught a real rc regression: the FT UDF path collapses past 8 threads &mdash; filed as <span class="mono">chdb-core#128</span>, fix before stable. That's what benchmarks are for.</p>
+    <p style="margin-top:20px;font-size:17px;color:var(--muted);">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4, min of 6 runs. Known sharp edges: FT UDF @32 regression (<span class="mono">chdb-core#128</span>), cold-start hang (<span class="mono">chdb-core#131</span>).</p>
   </div>
 </section>
 
@@ -1033,14 +1019,12 @@ for (size_t row = 0; row &lt; rows; ++row)
     <h2>You don't need to port anything. Try it this week:</h2>
     <div class="grid2" style="margin-top:20px;height:auto;grid-template-columns:0.56fr 0.44fr;gap:22px;align-items:start;">
       <div>
-        <pre class="small" style="margin-top:0 !important;"><code class="language-bash"># 1 &middot; install (one minute)
+        <pre class="small" style="margin-top:0 !important;"><code class="language-bash"># 1 · install
 uv python install 3.14t
 uv venv --python 3.14t &amp;&amp; uv pip install -r requirements.txt
-
-# 2 &middot; run YOUR tests / app, unchanged
-python -m pytest        # watch for the GIL re-enable warning
-
-# 3 &middot; trust, but verify
+# 2 · run YOUR tests, unchanged — watch for the GIL warning
+python -m pytest
+# 3 · trust, but verify
 python -c "import sys, yourapp; print(sys._is_gil_enabled())"</code></pre>
         <div class="card yellow" style="margin-top:16px;padding:14px 18px;font-size:21px;font-weight:900;color:var(--ink);line-height:1.25;">
           Your existing <span class="mono">ThreadPoolExecutor</span> code doesn't change &mdash; <span class="orange">it just starts scaling</span>.
@@ -1049,14 +1033,14 @@ python -c "import sys, yourapp; print(sys._is_gil_enabled())"</code></pre>
       <div class="card" style="border-color:#9ad59c;">
         <h3 class="green">How to help the community</h3>
         <div class="need-list" style="margin-top:14px;gap:13px;">
-          <div><span class="ok">&#10003;</span><span><strong>Run your suite on 3.14t and report breakage.</strong> Real-world bug reports are maintainers' #1 ask.</span></div>
-          <div><span class="ok">&#10003;</span><span><strong>Upvote / file the wheel issue</strong> on deps that block you (remember the &#10007; column).</span></div>
-          <div><span class="ok">&#10003;</span><span><strong>Publish your numbers.</strong> "My workload got N&times; faster" moves roadmaps.</span></div>
+          <div><span class="ok">&#10003;</span><span><strong>Report breakage on 3.14t</strong> &mdash; maintainers' #1 ask.</span></div>
+          <div><span class="ok">&#10003;</span><span><strong>Upvote / file wheel issues</strong> on deps that block you.</span></div>
+          <div><span class="ok">&#10003;</span><span><strong>Publish your numbers</strong> &mdash; "N&times; faster" moves roadmaps.</span></div>
         </div>
       </div>
     </div>
     <div class="card dark" style="margin-top:20px;padding:16px 22px;font-size:23px;font-weight:900;line-height:1.25;">
-      Maintain a C/C++/Rust extension? The porting checklist lives at <span class="mono orange">py-free-threading.github.io</span> &mdash; everything this talk did, generalized.
+      Maintain a C/C++/Rust extension? Full checklist: <span class="mono orange">py-free-threading.github.io</span>
     </div>
   </div>
 </section>
