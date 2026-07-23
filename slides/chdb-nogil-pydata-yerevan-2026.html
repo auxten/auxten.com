@@ -859,10 +859,11 @@ for (size_t row = 0; row &lt; rows; ++row)
     <div class="grid2" style="margin-top:6px;height:auto;grid-template-columns:0.56fr 0.44fr;gap:26px;align-items:center;">
       <img class="diagram-img" src="logos/fig-nogil-timeline.png" alt="Stock 3.14: threads take turns running Python. Free-threaded 3.14t: all threads run Python in parallel." style="height:360px;">
       <div class="need-list" style="gap:15px;">
-        <div><span class="dot" style="background:var(--red)"></span><span><strong>Stock 3.14:</strong> 16 streams hit the UDF &rarr; 16 threads take turns on one GIL. Effectively <strong>single-core</strong>.</span></div>
-        <div><span class="dot" style="background:var(--green)"></span><span><strong>3.14t:</strong> the same <span class="mono">acquire</span> becomes per-thread bookkeeping &mdash; streams run your function <strong>in parallel</strong>.</span></div>
+        <div><span class="dot" style="background:var(--red)"></span><span><strong>Stock 3.14:</strong> 16 streams hit the UDF &rarr; threads take turns on one GIL &mdash; flat <strong>~0.85 s</strong> no matter how many threads.</span></div>
+        <div><span class="dot" style="background:var(--green)"></span><span><strong>3.14t:</strong> the same <span class="mono">acquire</span> becomes per-thread bookkeeping &mdash; <strong>0.72 &rarr; 0.15 s</strong> from 1&rarr;8 threads, <strong>holds at 32</strong>.</span></div>
         <div><span class="dot"></span><span>Your UDF must be thread-safe too &mdash; it now runs concurrently.</span></div>
-        <div><span class="dot"></span><span>Per-row boxing still costs: <strong>no-GIL removes the contention, not the call overhead.</strong></span></div>
+        <div><span class="dot"></span><span>Per-row boxing still costs &mdash; <span class="mono">PyObject_Vectorcall</span> + a reused arg frame cut it <strong>4.7&times;</strong> (<span class="mono">chdb-core#142</span>).</span></div>
+        <p style="font-size:16px;color:var(--muted);margin-top:2px;">4M-row scalar UDF, 16-core x86_64, best of 3 &mdash; post-fix numbers, landing in 26.5.1.</p>
       </div>
     </div>
     <div class="card dark" style="margin-top:12px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
@@ -958,7 +959,7 @@ for (size_t row = 0; row &lt; rows; ++row)
       <div><span class="x">&#10007;</span><span><strong>Crashes hide as hangs.</strong> Allocator segfault &rarr; signal-handler deadlock. Budget time to debug <em>silence</em>.</span></div>
       <div><span class="x">&#10007;</span><span><strong>New wheels, new CI.</strong> No stable ABI on 3.14t &rarr; separate <span class="mono">cp314t</span> lanes, doubled matrix.</span></div>
       <div><span class="x">&#10007;</span><span><strong>Already-parallel code got no faster.</strong> Only Python touchpoints improved; single-threaded ~5&ndash;10% slower.</span></div>
-      <div><span class="x">&#10007;</span><span><strong>Cold start + high threads can hang.</strong> Fresh 3.14t process, first UDF at <span class="mono">max_threads=32</span> &mdash; infinite wait (<span class="mono">chdb-core#131</span>). Any small warmup query unblocks it.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>Cold start + high threads hung.</strong> Fresh 3.14t process, first UDF at <span class="mono">max_threads=32</span> &mdash; GC's stop-the-world deadlocked against an import-cache <span class="mono">call_once</span> (<span class="mono">chdb-core#131</span>, fixed: <em>detach before you block</em>).</span></div>
     </div>
     <div class="card dark" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
       Free-threading didn't <em>create</em> these bugs. It <span class="orange">revoked the amnesty</span> they'd been living under.
@@ -979,7 +980,7 @@ for (size_t row = 0; row &lt; rows; ++row)
     <div class="card dark" style="margin-top:30px;padding:20px 24px;font-size:26px;font-weight:900;line-height:1.25;">
       On stock 3.14, adding threads <span class="red">hurt</span> (0.13 &rarr; 0.22 s as they pile onto the GIL). On 3.14t the same threads <span class="orange">help</span> &mdash; <strong>2.6&times; faster</strong>, and the pure-engine query stays at parity (0.161 s).
     </div>
-    <p style="margin-top:20px;font-size:17px;color:var(--muted);">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4, min of 6 runs. Known sharp edges: FT UDF @32 regression (<span class="mono">chdb-core#128</span>), cold-start hang (<span class="mono">chdb-core#131</span>).</p>
+    <p style="margin-top:20px;font-size:17px;color:var(--muted);">chdb-core 26.5.1-rc.2 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4, min of 6 runs. Both rc sharp edges are fixed for 26.5.1: the FT UDF collapse past 8 threads (<span class="mono">chdb-core#128</span> &mdash; per-row tuples were feeding stop-the-world GC storms) and the cold-start hang (<span class="mono">#131</span>). That's what benchmarks are for.</p>
   </div>
 </section>
 
