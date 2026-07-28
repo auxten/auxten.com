@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙 — auxten</title>
+  <meta name="description" content="在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙 — A blog post by Auxten Wang">
+  <meta name="author" content="Auxten Wang">
+  <link rel="canonical" href="https://auxten.com/blog/running-glm-5-2-at-home.html">
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙 — auxten">
+  <meta property="og:description" content="在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙 — A blog post by Auxten Wang">
+  <meta property="og:url" content="https://auxten.com/blog/running-glm-5-2-at-home.html">
+  <meta property="og:image" content="https://auxten.com/head.jpg">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@auxten">
+  <meta name="twitter:title" content="在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙 — auxten">
+  <meta name="twitter:description" content="在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙 — A blog post by Auxten Wang">
+  <meta name="twitter:image" content="https://auxten.com/head.jpg">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-23V4MNKDZJ"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-23V4MNKDZJ');</script>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">auxten<span class="dot">.</span></a>
+      <div class="nav-links">
+        <a href="/#projects">Projects</a>
+        <a href="/#press">Talks</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/#about">About</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="post-header">
+    <h1>在家跑 GLM-5.2：30 token/s 是一道 4.5 万美元的墙</h1>
+    <p class="post-meta">2026-07-28</p>
+  </div>
+
+  <div class="post-wrapper">
+    <nav class="post-toc" id="postToc"></nav>
+    <article class="post-content" id="postContent">
+      <p>我想在家跑 GLM-5.2。就是智谱 6 月开源的那个 744B 参数 MoE。</p>
+<p>目标很具体：<strong>单流解码 30 token/s</strong>。这大概是 coding agent 用起来不难受的下限。低于这个速度，你会盯着终端里的字一个个往外蹦，忍不住切出去刷 X，然后思路就断了。</p>
+<p>互联网对此有无数热情推荐：买 Mac Studio、攒 DGX Spark 集群、上四张 3090。我把能找到的社区实测数据全翻了一遍——r/LocalLLaMA、NVIDIA 开发者论坛、Hugging Face 讨论区、X。</p>
+<p>结论先放这：<strong>几乎所有方案都到不了 30 token/s。</strong> 唯一稳定达标的组合要 4.5 万美元。我把结果做成一张表发到 X 上，57K 阅读，然后评论区开始集体反驳我。</p>
+<p>这篇文章讲三件事：完整数据、评论区的反驳案例、以及为什么双方可能都没错。</p>
+<p>先坦白调研方法，免得显得比实际更严谨：所有数字都来自社区公开实测，不是我自己买了 23 套硬件回来跑分——我没有 5 万美元的业余爱好预算。数据汇总用 Manus 跑的，我人工核对了关键数字和出处。价格是 2026 年 7 月的行情，正值内存危机，波动剧烈。完整调研报告的链接在文末。</p>
+<hr />
+<h2 id="_1">先算物理账</h2>
+<p>GLM-5.2 是 744B 总参数的 MoE，每个 token 激活约 40B。想跑它，只有两条硬标准。</p>
+<p><strong>第一，装得下。</strong> 各量化级别的内存需求（Unsloth Dynamic GGUF 实测）：</p>
+<table>
+<thead>
+<tr>
+<th>量化级别</th>
+<th>内存占用</th>
+<th>质量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1-bit（UD-IQ1_S）</td>
+<td>~223 GB</td>
+<td>top-1 准确率 ~76%，明显降智</td>
+</tr>
+<tr>
+<td>2-bit（UD-IQ2_M）</td>
+<td>~245 GB</td>
+<td>~82%，可用但有损</td>
+</tr>
+<tr>
+<td>3-bit（UD-Q3_K_XL）</td>
+<td>290–360 GB</td>
+<td>较好</td>
+</tr>
+<tr>
+<td>4-bit（UD-Q4_K_XL）</td>
+<td>372–475 GB</td>
+<td>接近无损</td>
+</tr>
+<tr>
+<td>NVFP4（官方）</td>
+<td>~465 GB</td>
+<td>接近无损，仅限 Blackwell</td>
+</tr>
+<tr>
+<td>FP8（官方）</td>
+<td>~750 GB</td>
+<td>原生精度</td>
+</tr>
+</tbody>
+</table>
+<p>也就是说，<strong>245 GB 是入场券，370 GB 起步才谈得上"不降智"</strong>。你的 128 GB「AI 小钢炮」，连量化最狠的版本都装不进去。</p>
+<p><strong>第二，读得快。</strong> 解码是带宽游戏：每生成一个 token，都要把约 40B 激活参数的权重完整读一遍，4-bit 下约 20–22 GB。想要 30 tok/s，需要 <strong>600 GB/s 以上的有效带宽</strong>。作为参照：DGX Spark 是 273 GB/s，M3 Ultra 是 819 GB/s，RTX PRO 6000 是 1.79 TB/s。</p>
+<p>还有两个变量在搅局。</p>
+<p><strong>MTP 投机解码。</strong> GLM-5.2 内置多 token 预测，每步草拟 5 个 token，能把有效速度拉高 1.5–2.5 倍。但 llama.cpp 至今没实现 GLM 的 MTP，只有 vLLM/SGLang（以及它们的社区补丁版）能用上。同一台机器换个软件栈，速度差一倍，就是这个原因。</p>
+<p><strong>REAP 剪枝版。</strong> 社区用 Cerebras 的 REAP 方法把 256 个专家砍到 168 个，内存需求降 34%。代价是 Terminal-Bench 从 81 分掉到 70.5。省钱，但降智是实打实的。</p>
+<hr />
+<h2 id="_2">一张表看全部</h2>
+<p>这是我发到 X 上的那张汇总表：</p>
+<p><img alt="GLM-5.2 各硬件方案成本与实测解码速度对照表" src="/blog/running-glm-5-2-at-home/glm52-table.jpg" /></p>
+<p>更完整的版本（23 行，含量化配方和出处）在文末的调研报告里。核心数据：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>内存</th>
+<th>实测解码 tok/s</th>
+<th>整机成本</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4× RTX PRO 6000 Blackwell</td>
+<td>384 GB GDDR7</td>
+<td>29–60</td>
+<td>$45k–55k</td>
+<td><strong>达标</strong></td>
+</tr>
+<tr>
+<td>8× GB10 集群（ASUS GX10）</td>
+<td>1 TB 统一</td>
+<td>26–27，代码场景 33–54</td>
+<td>~$28k–30k</td>
+<td>擦线</td>
+</tr>
+<tr>
+<td>2× Mac Studio M3 Ultra</td>
+<td>1 TB 统一</td>
+<td>23.4</td>
+<td>~$28k+（二手）</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>4× DGX Spark</td>
+<td>512 GB 统一</td>
+<td>15–22</td>
+<td>$14k–20k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>1× Mac Studio M3 Ultra 512GB</td>
+<td>512 GB 统一</td>
+<td>16–18.8</td>
+<td>~$14.2k（二手）</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>2× RTX PRO 6000 + 1TB DDR5</td>
+<td>192 GB VRAM + offload</td>
+<td>13–15</td>
+<td>~$30k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>2× RTX 5090 + 512GB RAM</td>
+<td>64 GB VRAM + offload</td>
+<td>~12</td>
+<td>~$10k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>2× DGX Spark（互联）</td>
+<td>256 GB 统一</td>
+<td>8.1（1-bit）</td>
+<td>~$9.4k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>4× RTX 3090 + 192GB RAM</td>
+<td>96 GB VRAM + offload</td>
+<td>7.3</td>
+<td>~$4.5k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>2× AMD Strix Halo（互联）</td>
+<td>256 GB 统一</td>
+<td>7.2</td>
+<td>~$5.2k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>EPYC/Xeon 纯 CPU</td>
+<td>512–768 GB DDR</td>
+<td>1.7–5.5</td>
+<td>$2.5k–4k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>1× DGX Spark</td>
+<td>128 GB 统一</td>
+<td>1–4</td>
+<td>$4.7k</td>
+<td>未达标</td>
+</tr>
+<tr>
+<td>AMD MI300X / Intel Gaudi</td>
+<td>—</td>
+<td>无软件或渠道路径</td>
+<td>B2B only</td>
+<td>无路径</td>
+</tr>
+</tbody>
+</table>
+<p>规律一句话就能说完：<strong>只有把全部权重放进高带宽显存、并用上 MTP 的方案，才摸得到 30。</strong> 所有依赖 CPU 内存 offload 的方案——无论显卡多强——都被系统内存带宽和 llama.cpp 缺失的 MTP 锁死在 15 以下。</p>
+<p><img alt="成本与解码速度散点图：只有右上角的深绿色点过线" src="/blog/running-glm-5-2-at-home/cost-vs-speed.jpg" /></p>
+<hr />
+<h2 id="_3">逐条拆开看</h2>
+<h3 id="dgx-spark">DGX Spark：单台是玩具，八台是方案</h3>
+<p>单台 Spark 128 GB，装不下任何可用量化，实测 1–4 tok/s。273 GB/s 的内存带宽是它先天的天花板。顺带一提，GB10 芯片有一整个 OEM 克隆家族，ASUS Ascent GX10 只要 $3,499，是同规格最便宜的入口。</p>
+<p>真正的玩法是用 ConnectX-7 组集群。4 台跑 AWQ-INT4 加 15% 剪枝加 MTP 是 20–22 tok/s；128K 上下文的 DCP4 配方掉到 14.5–15.2；NF3 混合配方在短上下文能冲到 20–33。</p>
+<p>8 台 GB10（~$28k）是这条线的顶配：全量模型加 MTP 稳定 26–27，另一个 INT4/INT8 配方在代码类输出上报告 33–54——<strong>全场唯一有实测数字越过 30 的 3 万美元以内方案</strong>。代价是部署门槛全场最高：100G 交换机、手工打补丁的 vLLM、Triton 内核 hack，社区论坛里全是踩坑记录。</p>
+<p>它还有一张隐藏王牌：prefill 有 500–1,200 tok/s。跑 agent 工作流时，这比解码速度更救命。后面讲 Mac 的时候你会明白。</p>
+<h3 id="mac-studio-prefill">Mac Studio：曾经的王，输给了 prefill 和内存危机</h3>
+<p>M3 Ultra 有 819 GB/s 统一内存带宽，曾是大 MoE 的性价比之王。2026 年它挨了两刀。</p>
+<p>第一刀：内存危机。Apple 直接下架了 256/512GB 配置，512GB 机器只剩二手，约 $14,200 起，一度被炒到 $25,000。</p>
+<p>第二刀：实测不够快。单机 MLX 4-bit 跑全量是 16–18.8 tok/s；两台用 Thunderbolt 5 互联（Ivan Fioravanti 的实测）也只有 23.4。MLX 还没有 GLM 的 MTP 支持，未来若实现可能再提 30–50%，但那是未来。</p>
+<p>真正的硬伤是 prefill。llama.cpp 下 33K token 的 prompt 要处理近 10 分钟。你想用它跑 coding agent？动辄 50–100K 上下文，首 token 等 10 分钟起，实际不可用。</p>
+<h3 id="4-rtx-pro-6000nvidia">4× RTX PRO 6000：唯一稳定过线，NVIDIA 也知道</h3>
+<p>四张卡 384 GB GDDR7，1.79 TB/s 每张。全部权重驻留高带宽显存，vLLM 原生 MTP——这是唯一物理上凑齐所有条件的个人可购组合。</p>
+<p>实测：REAP 剪枝版 NVFP4 短上下文约 60 tok/s，64k–100k 上下文仍有 ~45，prefill 5,100；全量不剪枝 IQ4_XS 从 38 起步，40k 上下文降到 29，擦线。</p>
+<p>代价明码标价。NVIDIA 今年 6 月把这张卡官方涨价 55% 至 $13,250，早期 $8,500 的街价一去不返。四卡整机 $45,000–55,000，满载 2.2 kW，需要专用电路。<strong>这就是那道墙的价格。</strong></p>
+<p>顺带避坑：两张卡（192 GB）装不下任何全量量化，只能 offload 到内存，13–15 tok/s。$30k 买个高不成低不就。</p>
+<h3 id="_4">消费级多卡：最热闹，也最令人失望</h3>
+<p>这是社区尝试最多的路线，结论最残酷。4× 3090 加 192GB DDR5：7.3 tok/s。换成 1-bit 量化，速度居然不变——瓶颈根本不在带宽，在 CPU。</p>
+<p>更反直觉的：6× 3090 是 7.8，而 1× 5090 加 Xeon 大内存是 11。<strong>在 offload 路线上，多买显卡几乎无用。</strong> $4,000 到 $10,000 的投入换来 7–12 tok/s，且没有任何升级路径。</p>
+<h3 id="amd-intel">AMD 与 Intel：一个买不到，一个跑不了</h3>
+<p>双 Strix Halo 互联跑 2-bit：7.2 tok/s，机主自己的结论是「不值得」。Instinct MI300X 系列软件上其实可行，vLLM/SGLang 有官方 ROCm recipe，但只走 B2B 渠道，单卡 $25,000 起，个人基本买不到原厂保修货。</p>
+<p>Intel 这边，GLM-5.2 的 GlmMoeDsa 新架构在 IPEX/SYCL 栈上没有任何支持记录，Gaudi 3 个人渠道买不到。最现实的是 Xeon AMX 加 ktransformers（官方有 GLM-5.2 教程），个人配置推算 10–16 tok/s，未达标。</p>
+<h3 id="cpu3000">服务器 CPU：3,000 美元的门票，进场看个热闹</h3>
+<p>二手 EPYC 加 512 GB DDR4 约 $2,500–3,500，是「能跑起来」的最低门槛：纯 CPU 1.7–5.5 tok/s，加两张 3090 做 offload 后 6–11。这条路线的意义是花 $3k 体验 744B 模型本身，而不是达到 30 tok/s。</p>
+<hr />
+<h2 id="_5">然后，评论区不同意</h2>
+<p>表发出去之后，57K 阅读，280 多个赞。但最热的几条回复不是赞同，是反驳。而且口径惊人一致：<strong>4 台 DGX Spark 就能到 30+</strong>。</p>
+<p>我把案例原样列在这里，并按 X 的认证等级标注了每个人的身份核验状态（结论有点好笑：清一色蓝 V，一个金 V 和灰 V 都没有）：</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:24px 0;">
+<div style="border:2px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow);padding:16px;">
+<p style="margin:0 0 6px;font-weight:700;">KING JEW <svg viewBox="0 0 22 22" width="16" height="16" style="vertical-align:-2px;"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg> <span style="color:var(--text-tertiary);font-weight:400;">@0xSero · 蓝 V</span></p>
+<p style="margin:0 0 8px;">"GLM-5.2 runs in 4 sparks at 30 tok/s"</p>
+<p style="margin:0;font-size:0.85em;color:var(--text-tertiary);">3.2K 阅读 · 55 赞 · <a href="https://x.com/0xSero/status/2081473238173925508" target="_blank" rel="noopener">原回复</a></p>
+</div>
+<div style="border:2px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow);padding:16px;">
+<p style="margin:0 0 6px;font-weight:700;">Jim McPherson <svg viewBox="0 0 22 22" width="16" height="16" style="vertical-align:-2px;"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg> <span style="color:var(--text-tertiary);font-weight:400;">@JamesMcPherson · 蓝 V</span></p>
+<p style="margin:0 0 8px;">称自己的 4 台 Spark 跑到 40–41 tok/s，并认为我表里 8 台那么慢「肯定没配置对」。后又补充：现在超过 40 了。</p>
+<p style="margin:0;font-size:0.85em;color:var(--text-tertiary);">650 阅读 · 9 赞 · <a href="https://x.com/JamesMcPherson/status/2081476483797889461" target="_blank" rel="noopener">原回复</a></p>
+</div>
+<div style="border:2px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow);padding:16px;">
+<p style="margin:0 0 6px;font-weight:700;">Dave Charland <svg viewBox="0 0 22 22" width="16" height="16" style="vertical-align:-2px;"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg> <span style="color:var(--text-tertiary);font-weight:400;">@Dave_Charland · 蓝 V</span></p>
+<p style="margin:0 0 8px;">自述正在用 4 台 Spark 跑，8 台用户的反馈是「fantastic」。同时也承认：RTX 6000 方案体验肯定很好，前提是你不介意噪音、发热和大得多的初始投入。</p>
+<p style="margin:0;font-size:0.85em;color:var(--text-tertiary);">1.3K 阅读 · 13 赞 · <a href="https://x.com/Dave_Charland/status/2081469046218686749" target="_blank" rel="noopener">原回复</a></p>
+</div>
+<div style="border:2px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow);padding:16px;">
+<p style="margin:0 0 6px;font-weight:700;">Austin S. Lin <svg viewBox="0 0 22 22" width="16" height="16" style="vertical-align:-2px;"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg> <span style="color:var(--text-tertiary);font-weight:400;">@siraustin · 蓝 V</span></p>
+<p style="margin:0 0 8px;">报了一套成本账：4 台 Spark 加 MikroTik 交换机加线材，约 $20k。</p>
+<p style="margin:0;font-size:0.85em;color:var(--text-tertiary);">191 阅读 · <a href="https://x.com/0xSero/status/2081473238173925508" target="_blank" rel="noopener">原回复</a></p>
+</div>
+<div style="border:2px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow);padding:16px;">
+<p style="margin:0 0 6px;font-weight:700;">Taimur Ayaz <svg viewBox="0 0 22 22" width="16" height="16" style="vertical-align:-2px;"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg> <span style="color:var(--text-tertiary);font-weight:400;">@taimurayaz · 蓝 V</span></p>
+<p style="margin:0 0 8px;">称那些人跑的是 fp16。这条我直接存疑：fp16 的 GLM-5.2 要约 1.5 TB，4 台 Spark 总共只有 512 GB。评论区的信息，需要自带过滤器。</p>
+<p style="margin:0;font-size:0.85em;color:var(--text-tertiary);">285 阅读 · <a href="https://x.com/0xSero/status/2081473238173925508" target="_blank" rel="noopener">原回复</a></p>
+</div>
+<div style="border:2px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow);padding:16px;">
+<p style="margin:0 0 6px;font-weight:700;">Kristoph <svg viewBox="0 0 22 22" width="16" height="16" style="vertical-align:-2px;"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></svg> <span style="color:var(--text-tertiary);font-weight:400;">@kristoph · 蓝 V</span></p>
+<p style="margin:0 0 8px;">替我把话说完了：问题从来不是能不能跑——图里明明写了能跑，只是到不了 30 tok/s。</p>
+<p style="margin:0;font-size:0.85em;color:var(--text-tertiary);">112 阅读 · <a href="https://x.com/Dave_Charland/status/2081469046218686749" target="_blank" rel="noopener">原回复</a></p>
+</div>
+</div>
+
+<p>有一个背景值得单独说：<strong>@0xSero 不是路人。</strong> 我调研里引用的 REAP 剪枝版模型（GLM-5.2-504B）和 4× RTX PRO 6000 的 sm120 vLLM 配方，都出自他手。当一个被你的报告引用了两次的人在评论区反驳你，你最好认真想想他在说什么。</p>
+<p>把双方的数字画在同一根轴上，分歧一目了然：</p>
+<figure>
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:inherit;">
+<line x1="50" y1="270" x2="730" y2="270" stroke="var(--text-tertiary)" stroke-width="1.5"/>
+<g fill="var(--text-tertiary)" font-size="12" text-anchor="middle">
+<text x="50" y="290">0</text><text x="201" y="290">10</text><text x="352" y="290">20</text><text x="503" y="290">30</text><text x="654" y="290">40</text>
+<text x="730" y="290">tok/s</text>
+</g>
+<g stroke="var(--text-tertiary)" stroke-width="1">
+<line x1="50" y1="266" x2="50" y2="274"/><line x1="201" y1="266" x2="201" y2="274"/><line x1="352" y1="266" x2="352" y2="274"/><line x1="503" y1="266" x2="503" y2="274"/><line x1="654" y1="266" x2="654" y2="274"/>
+</g>
+<line x1="503" y1="30" x2="503" y2="270" stroke="var(--accent)" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="510" y="26" fill="var(--accent)" font-size="13" font-weight="700">目标 30 tok/s</text>
+<rect x="269" y="60" width="113" height="26" fill="var(--blue)" opacity="0.75" stroke="var(--border)" stroke-width="1.5"/>
+<text x="260" y="77" fill="var(--text)" font-size="13" text-anchor="end">4× Spark 可溯源实测 14.5–22</text>
+<rect x="352" y="110" width="196" height="26" fill="var(--blue)" opacity="0.35" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="344" y="127" fill="var(--text)" font-size="13" text-anchor="end">NF3 配方短上下文波动 20–33</text>
+<circle cx="503" cy="185" r="8" fill="var(--accent)" stroke="var(--border)" stroke-width="1.5"/>
+<g transform="translate(374,176) scale(0.82)"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></g>
+<text x="368" y="190" fill="var(--text)" font-size="13" text-anchor="end">@0xSero 声称 30</text>
+<rect x="654" y="228" width="15" height="14" fill="var(--accent)" stroke="var(--border)" stroke-width="1.5"/>
+<g transform="translate(524,221) scale(0.82)"><path fill="#1d9bf0" fill-rule="evenodd" d="M20.396 11c-.018-.646-.215-1.275-.57-1.816-.354-.54-.852-.972-1.438-1.246.223-.607.27-1.264.14-1.897-.131-.634-.437-1.218-.882-1.687-.47-.445-1.053-.75-1.687-.882-.633-.13-1.29-.083-1.897.14-.273-.587-.704-1.086-1.245-1.44S11.647 1.62 11 1.604c-.646.017-1.273.213-1.813.568s-.969.854-1.24 1.44c-.608-.223-1.267-.272-1.902-.14-.635.13-1.22.436-1.69.882-.445.47-.749 1.055-.878 1.688-.13.633-.08 1.29.144 1.896-.587.274-1.087.705-1.443 1.245-.356.54-.555 1.17-.574 1.817.02.647.218 1.276.574 1.817.356.54.856.972 1.443 1.245-.224.606-.274 1.263-.144 1.896.13.634.433 1.218.877 1.688.47.443 1.054.747 1.687.878.633.132 1.29.084 1.897-.136.274.586.705 1.084 1.246 1.439.54.354 1.17.551 1.816.569.647-.016 1.276-.213 1.817-.567s.972-.854 1.245-1.44c.604.239 1.266.296 1.903.164.636-.132 1.22-.447 1.68-.907.46-.46.776-1.044.908-1.681s.075-1.299-.165-1.903c.586-.274 1.084-.705 1.439-1.246.354-.54.551-1.17.569-1.816zM9.662 14.85l-3.429-3.428 1.293-1.302 2.072 2.072 4.4-4.794 1.347 1.246z"/></g>
+<text x="518" y="240" fill="var(--text)" font-size="13" text-anchor="end">@JamesMcPherson 声称 40–41</text>
+</svg>
+<figcaption>4× DGX Spark：调研可溯源区间 vs 评论区声称值。蓝色徽章为 X 蓝 V（Premium 个人认证，含付费与手机号核验）；本帖反驳者中无金 V（组织认证）或灰 V（政府认证）。</figcaption>
+</figure>
+
+<p>先说明一下蓝 V 意味着什么：X Premium 订阅，8 美元一个月，外加手机号核验。<strong>它核验的是「这是个真人」，不是「这个人的 benchmark 方法论正确」。</strong> 我自己也是蓝 V，这话对我同样成立。</p>
+<p>那怎么调和矛盾？我反复对过数据之后的判断是：<strong>他们可能没撒谎，我的表也没算错——我们在测不同的东西。</strong> 有四个变量足以造成这种分歧：</p>
+<p><strong>上下文长度。</strong> NF3 配方在短上下文能冲到 33，128K 上下文的 DCP4 配方只有 14.5。同一套硬件，速度差一倍多。</p>
+<p><strong>MTP 接受率。</strong> 投机解码在代码类输出上接受率高，速度是自由文本的 1.5–2 倍。你跑 coding agent 测出来的数，和我按通用口径记录的数，天然不可比。</p>
+<p><strong>全量还是剪枝。</strong> 这可能是最关键的一条。REAP 剪枝版少读约三分之一的权重，20–22 tok/s 的 4× Spark 换上剪枝版，冲到 30 在物理上完全说得通。0xSero 自己就是剪枝版作者——他说的「GLM-5.2」和我表里的「GLM-5.2 全量」，很可能不是同一个模型。</p>
+<p><strong>单流还是聚合。</strong> 有人报的是多请求并发的总吞吐。这个话题值得单独一节，就是下一节。</p>
+<p>至于 40–41：我在公开资料里没找到任何能复现它的 4-Spark 配方，最接近的是 NF3 短上下文的 33。也许存在一个还没公开的更好配方，也许口径不同。没人贴 vLLM 参数和上下文长度，无从验证。<strong>这就是 2026 年本地 LLM benchmark 的现状：没有人在测同一个东西。</strong> 我的表统一取 batch-1、短到中上下文、来源可溯源的口径——你至少知道我在测什么。</p>
+<hr />
+<h2 id="_6">如果把并发算进来，他们是对的吗？</h2>
+<p>有一种为 Spark 集群辩护的方式是换口径：两个请求各 20 tok/s，聚合就是 40，达标了。我专门为这个口径做了补充调研，结论比直觉有意思。</p>
+<p>对稠密模型来说，并发几乎免费：batch=2 时权重读一遍服务两个请求，吞吐接近翻倍。<strong>但 GLM-5.2 的 MoE 结构把这个红利砍掉了大半。</strong> 每层从 256 个专家里激活 8 个，两个并发请求命中的专家几乎不重叠，路由专家的权重读取量随并发线性增长。能复用的只有注意力和共享专家，约占三分之一。算下来 batch=2 的聚合增益只有 1.2–1.4 倍，不是 2 倍。</p>
+<p>实测锚点也支持这个推算：双 GH200 重度 offload 跑 FP8，batch=4 的聚合增益只有 1.16 倍；Apple Silicon 上 MoE 模型 5 路并发是 1.89 倍。而全显存方案完全是另一个世界：8× RTX PRO 6000 从 bs=1 的 106 到 bs=8 的约 420，接近 4 倍。</p>
+<p>所以聚合口径下的格局是：</p>
+<p><strong>$28k 档确实翻身了。</strong> 8× GB10 并发 2–4 时聚合 34–46，从擦线变达标；双 M3 Ultra 摸到 29–40；4× Spark 在 bs=4 下勉强够到聚合 30。如果你的真实负载就是多个 agent 并行，每个流 15–25 tok/s 也能接受，$14k–28k 就够了。评论区那些「达标」的声音，一部分可能就是这个口径。</p>
+<p><strong>低价 offload 阵营依然没救。</strong> 瓶颈在系统内存带宽和 CPU，MoE 的专家不重叠让它们的并发增益全场垫底，batch=4 也就从 7 提到 10 出头。地基太慢，并发救不了。</p>
+<p><strong>最反直觉的：4× RTX PRO 6000 反而更划算了。</strong> 单流口径下它是「最贵的达标方案」；聚合口径下它并发 4 预计 150–200，按每单位聚合吞吐算成本约 $300–350 每 tok/s，比 8× GB10 的 $650–700 便宜一半。它可以同时喂 5–8 个 agent，每个还保持 25+ tok/s。</p>
+<p>两个工程注意点：并发挤占 KV cache，长上下文和高并发在 128GB/节点的 Spark 上不可兼得（4× Spark 的 128K 配方干脆设了 MAX_NUM_SEQS=1）；MTP 和并发存在竞争，GH200 上开 MTP 后并发 4 的聚合反而从 23.6 掉到 15.2——但同机的 AWQ 配方又是正收益。逐配置实测，别想当然。</p>
+<hr />
+<h2 id="_7">算总账</h2>
+<p>按你愿意接受什么，分层推荐：</p>
+<table>
+<thead>
+<tr>
+<th>你的要求</th>
+<th>方案</th>
+<th>预期速度</th>
+<th>预算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>严格单流 ≥30，全量模型质量</td>
+<td>4× RTX PRO 6000（IQ4_XS）</td>
+<td>29–38</td>
+<td>~$50k</td>
+</tr>
+<tr>
+<td>严格单流 ≥30，接受 REAP 剪枝</td>
+<td>4× RTX PRO 6000 + NVFP4</td>
+<td>45–60</td>
+<td>~$45k–55k</td>
+</tr>
+<tr>
+<td>≥30 且主要跑代码，接受折腾</td>
+<td>8× ASUS GX10 + INT4/INT8 + MTP</td>
+<td>26–27 稳定 / 33–54 峰值</td>
+<td>~$28k–30k</td>
+</tr>
+<tr>
+<td>聚合 ≥30，有真实并发负载</td>
+<td>8× GB10 或 2× M3 Ultra</td>
+<td>单流 15–25</td>
+<td>~$28k</td>
+</tr>
+<tr>
+<td>接受 ~20，要长上下文 agent</td>
+<td>4× GB10（ASUS 版）</td>
+<td>20–22，prefill 500+</td>
+<td>~$14k–16k</td>
+</tr>
+<tr>
+<td>接受 ~17–23，要安静省电</td>
+<td>二手 M3 Ultra 512GB ×1 或 ×2</td>
+<td>16–19 / 23.4</td>
+<td>~$14k / $28k</td>
+</tr>
+<tr>
+<td>只想体验 744B 跑起来</td>
+<td>二手 EPYC 512GB + 1–2 张 3090</td>
+<td>6–11</td>
+<td>~$3k–4.5k</td>
+</tr>
+<tr>
+<td>理性经济人</td>
+<td>API 或按小时租卡</td>
+<td>44+</td>
+<td>$3/M token 或 $2–6/时</td>
+</tr>
+</tbody>
+</table>
+<p>三点提醒，都是数据里最容易被忽略的。</p>
+<p><strong>第一，30 tok/s 的成本是非线性的。</strong> 20 tok/s 只要 $14k，23 tok/s 要 $28k，「稳定 30+」直接跳到 $45k。最后那 7 个 tok/s 比前面 23 个加起来还贵。想清楚你是不是真的需要 30。</p>
+<p><strong>第二，现在是买 AI 硬件的最差时点。</strong> 内存危机让 Spark 涨了 18%、RTX PRO 6000 涨了 55%、Mac 大内存直接停售。同时 M5 Ultra 传闻 10 月发布，llama.cpp 的 GLM MTP 支持若落地，所有 offload 方案都会提速 50% 以上。如果不急，观望一个季度。</p>
+<p><strong>第三，别只盯着解码，prefill 会杀人。</strong> 30 tok/s 只描述了往外吐字的速度。跑 coding agent 动辄塞 50–100K 上下文：Mac 系 prefill 只有 60–90 tok/s，首 token 要等 10–20 分钟，实际不可用；GB10 集群是 500–1,200；RTX PRO 6000 是 5,000。这个维度上的差距比解码速度更悬殊。</p>
+<p>最后是那笔让所有硬件都尴尬的账：GLM-5.2 官方 API 定价 $1.40/M 输入、$4.40/M 输出。<strong>4× RTX PRO 6000 的购机款，够在 API 上买大约 100 亿个输出 token。</strong> 本地部署的理由只剩四个：隐私、离线、无限调用、研究癖。我承认我主要是最后一种。</p>
+<hr />
+<h2 id="_8">所以，我买了吗？</h2>
+<p>还没有。</p>
+<p>我在等三件事：M5 Ultra 的大内存版本、llama.cpp 的 GLM MTP、内存价格从危机里回落。三件事里任何一件落地，上面那张表的半壁江山都要重写。这也是本地 LLM 硬件最迷人和最劝退的地方：<strong>结论的保质期以季度计。</strong></p>
+<p>如果你等不了，按推荐表买，别买中间档——两张 RTX PRO 6000 和两张 5090 是全场性价比最差的位置。</p>
+<p>如果你已经用 4 台 Spark 跑到了 40 tok/s：认真的，欢迎来<a href="https://x.com/auxten/status/2081289965892170033">评论区</a>贴你的 vLLM 参数、量化版本和上下文长度。这次我保证只核对，不抬杠。</p>
+<p><strong>Links:</strong></p>
+<ul>
+<li><a href="https://x.com/auxten/status/2081289965892170033">X 原帖与全部回复</a></li>
+<li><a href="https://manus.im/share/9oL67aZfJNMupcL7HG9VW6">完整调研报告（23 行数据表 + 30 条参考文献 + 并发口径重评估）</a></li>
+</ul>
+    </article>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>&copy; 2009&ndash;2026 Auxten Wang &middot; Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+    </div>
+  </footer>
+
+  <script src="/theme.js"></script>
+  <script>
+  (function(){
+    var toc=document.getElementById('postToc');
+    var content=document.getElementById('postContent');
+    if(!toc||!content)return;
+    var headings=content.querySelectorAll('h2,h3');
+    if(headings.length<2){toc.style.display='none';return;}
+    headings.forEach(function(h){
+      var a=document.createElement('a');
+      a.href='#'+h.id;
+      a.textContent=h.textContent;
+      if(h.tagName==='H3')a.classList.add('post-toc-h3');
+      toc.appendChild(a);
+    });
+    var links=toc.querySelectorAll('a');
+    function updateActive(){
+      var scrollPos=window.scrollY+150;
+      var current=null;
+      headings.forEach(function(h){
+        if(h.offsetTop<=scrollPos)current=h;
+      });
+      links.forEach(function(a){
+        a.classList.toggle('active',current&&a.getAttribute('href')==='#'+current.id);
+      });
+    }
+    window.addEventListener('scroll',updateActive);
+    updateActive();
+  })();
+  </script>
+  <div class="lightbox" id="lightbox"><img id="lightboxImg"></div>
+  <script>
+  (function(){
+    var lb=document.getElementById('lightbox');
+    var lbImg=document.getElementById('lightboxImg');
+    var content=document.getElementById('postContent');
+    if(!content)return;
+    content.addEventListener('click',function(e){
+      if(e.target.tagName==='IMG'){
+        lbImg.src=e.target.src;
+        lb.classList.add('active');
+      }
+    });
+    lb.addEventListener('click',function(){
+      lb.classList.remove('active');
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape')lb.classList.remove('active');
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -957,6 +957,13 @@ img { max-width: 100%; height: auto; }
   letter-spacing: .03em;
 }
 
+@media (max-width: 640px) {
+  .post-content table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
 /* ===== Blog Index ===== */
 .page-header {
   padding: 120px 1.5rem 2rem;

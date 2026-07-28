@@ -18,6 +18,7 @@ POSTS = {
     "Potential of MCP in Database Applications is still underestimated": "potential-of-mcp-in-database-applications",
     "The birth of chDB": "the-birth-of-chdb",
     "Vector Database-1": "vector-databases-a-traditional-database-developers-perspective",
+    "Running GLM-5.2 at Home": "running-glm-5-2-at-home",
 }
 
 # Direct markdown posts (not from Hugo): (md_path, title, date, slug)

@@ -7,8 +7,13 @@
   </url>
   <url>
     <loc>https://auxten.com/blog.html</loc>
-    <lastmod>2026-03-11</lastmod>
+    <lastmod>2026-07-28</lastmod>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://auxten.com/blog/running-glm-5-2-at-home.html</loc>
+    <lastmod>2026-07-28</lastmod>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://auxten.com/blog/how-i-manage-my-one-man-company-with-openclaw.html</loc>
