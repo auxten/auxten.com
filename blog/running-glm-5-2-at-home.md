@@ -22,7 +22,7 @@
 
 这篇文章讲三件事：完整数据、评论区补充的实测 case（含各自的口径前提）、以及不同数字背后的口径差异。
 
-先坦白调研方法，免得显得比实际更严谨：所有数字都来自社区公开实测，不是我自己买了 23 套硬件回来跑分——我没有 5 万美元的业余爱好预算。数据汇总用 Manus 跑的，我人工核对了关键数字和出处。价格是 2026 年 7 月的行情，正值内存危机，波动剧烈。逐条出处见文末[参考文献](#references)。
+先坦白调研方法，免得显得比实际更严谨：所有数字都来自社区公开实测，不是我自己买了 23 套硬件回来跑分——我没有 5 万美元的业余爱好预算。数据汇总用 [Manus](https://manus.im/invitation/CHF60YMO7MS3T?utm_source=invitation&utm_medium=social&utm_campaign=copy_link) 跑的，我人工核对了关键数字和出处。价格是 2026 年 7 月的行情，正值内存危机，波动剧烈。逐条出处见文末[参考文献](#references)。
 
 ---
 
@@ -313,7 +313,7 @@ Intel 这边，调研没有找到 GLM-5.2 的 GlmMoeDsa 新架构在 IPEX/SYCL �
 
 ## 参考文献 {#references}
 
-数据底稿：本文全部数字的汇总与核对过程见[完整调研报告（23 行数据表 + 并发口径重评估，Manus 协作）](https://manus.im/share/9oL67aZfJNMupcL7HG9VW6)；社区 case 见 [X 原帖与全部回复](https://x.com/auxten/status/2081289965892170033)。以下为分条来源，未附直链的论坛/Reddit 帖以标题检索可得：
+数据底稿：本文全部数字的汇总与核对过程见[完整调研报告（23 行数据表 + 并发口径重评估）](https://manus.im/share/9oL67aZfJNMupcL7HG9VW6)，由 [Manus](https://manus.im/invitation/CHF60YMO7MS3T?utm_source=invitation&utm_medium=social&utm_campaign=copy_link) 协作完成；社区 case 见 [X 原帖与全部回复](https://x.com/auxten/status/2081289965892170033)。以下为分条来源，未附直链的论坛/Reddit 帖以标题检索可得：
 
 1. Z.ai 官方博客 — *GLM-5.2: Built for Long-Horizon Tasks*（744B 总参/40B 激活、MTP 每步 5 token、1M 上下文、MIT 开源）
 2. Unsloth 文档 — *GLM-5.2: How to Run Locally*（各量化级别内存需求实测）
