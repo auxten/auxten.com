@@ -18,7 +18,11 @@ POSTS = {
     "Potential of MCP in Database Applications is still underestimated": "potential-of-mcp-in-database-applications",
     "The birth of chDB": "the-birth-of-chdb",
     "Vector Database-1": "vector-databases-a-traditional-database-developers-perspective",
-    "Running GLM-5.2 at Home": "running-glm-5-2-at-home",
+}
+
+# Bilingual posts: folder -> (slug, en_md, zh_md). Rendered as ONE page with a language toggle (default: en).
+BILINGUAL_POSTS = {
+    "Running GLM-5.2 at Home": ("running-glm-5-2-at-home", "index-en.md", "index.md"),
 }
 
 # Direct markdown posts (not from Hugo): (md_path, title, date, slug)
@@ -449,10 +453,167 @@ def convert_direct_post(md_path, title, date_short, slug):
     print(f"  OK: {slug}.md")
 
 
+BILINGUAL_TOC_SCRIPT = """<script>
+  (function(){
+    var toc=document.getElementById('postToc');
+    var content=document.getElementById('postContent');
+    if(!toc||!content)return;
+    var links=[];
+    function visibleHeadings(){
+      return Array.prototype.filter.call(content.querySelectorAll('h2,h3'),function(h){return h.offsetParent!==null;});
+    }
+    function buildToc(){
+      toc.innerHTML='';
+      var headings=visibleHeadings();
+      if(headings.length<2){toc.style.display='none';links=[];return;}
+      toc.style.display='';
+      headings.forEach(function(h){
+        var a=document.createElement('a');
+        a.href='#'+h.id;
+        a.textContent=h.textContent;
+        if(h.tagName==='H3')a.classList.add('post-toc-h3');
+        toc.appendChild(a);
+      });
+      links=toc.querySelectorAll('a');
+    }
+    function updateActive(){
+      var headings=visibleHeadings();
+      var scrollPos=window.scrollY+150;
+      var current=null;
+      headings.forEach(function(h){if(h.offsetTop<=scrollPos)current=h;});
+      Array.prototype.forEach.call(links,function(a){
+        a.classList.toggle('active',current&&a.getAttribute('href')==='#'+current.id);
+      });
+    }
+    window.__rebuildToc=buildToc;
+    buildToc();
+    window.addEventListener('scroll',updateActive);
+    updateActive();
+  })();
+  </script>"""
+
+
+def prefix_fragment_ids(html, prefix):
+    """Namespace all element ids and fragment links so two language versions can coexist on one page."""
+    html = re.sub(r'id="([^"]+)"', lambda m: f'id="{prefix}-{m.group(1)}"', html)
+    html = re.sub(r'href="#([^"]+)"', lambda m: f'href="#{prefix}-{m.group(1)}"', html)
+    return html
+
+
+def convert_bilingual_post(folder_name, slug, en_file, zh_file):
+    """Render two language versions into one page with a toggle (default: en)."""
+    import json as _json
+
+    bodies = {}
+    titles = {}
+    date_short = ""
+    for lang, fname in (("en", en_file), ("zh", zh_file)):
+        md_path = os.path.join(SITE_DIR, folder_name, fname)
+        if not os.path.exists(md_path):
+            print(f"  SKIP bilingual: {md_path} not found")
+            return
+        with open(md_path, "r", encoding="utf-8") as f:
+            raw = f.read()
+        meta, body = parse_frontmatter(raw)
+        titles[lang] = meta.get("title", folder_name)
+        date_str = meta.get("date", "")
+        date_short = date_str[:10] if len(date_str) >= 10 else date_str
+        body = fix_hugo_specific(body)
+        md = markdown.Markdown(extensions=[
+            'tables', 'fenced_code', 'codehilite', 'toc', 'attr_list',
+        ], extension_configs={
+            'codehilite': {'css_class': 'highlight', 'guess_lang': False},
+        })
+        html_content = md.convert(body)
+        html_content = fix_image_paths(html_content, slug)
+        bodies[lang] = prefix_fragment_ids(html_content, lang)
+
+    toggle_html = (
+        '<div class="lang-switch" style="display:flex;gap:0;margin:0 0 28px;'
+        'border:2px solid var(--border);width:fit-content;box-shadow:var(--shadow);">'
+        '<button type="button" data-lang="en" style="padding:6px 18px;border:none;cursor:pointer;'
+        'font-weight:800;font-family:inherit;font-size:.9rem;">EN</button>'
+        '<button type="button" data-lang="zh" style="padding:6px 18px;border:none;'
+        'border-left:2px solid var(--border);cursor:pointer;font-weight:800;font-family:inherit;'
+        'font-size:.9rem;">中文</button>'
+        '</div>'
+    )
+    lang_script = """<script>
+(function(){
+  var KEY='postLang';
+  var titles=%s;
+  var current=localStorage.getItem(KEY)||'en';
+  if(current!=='en'&&current!=='zh')current='en';
+  var h1=document.querySelector('.post-header h1');
+  function apply(lang){
+    current=lang;
+    var en=document.getElementById('lang-en'),zh=document.getElementById('lang-zh');
+    en.style.display=(lang==='en')?'':'none';
+    zh.style.display=(lang==='zh')?'':'none';
+    Array.prototype.forEach.call(document.querySelectorAll('.lang-switch button'),function(b){
+      var active=b.getAttribute('data-lang')===lang;
+      b.style.background=active?'var(--yellow)':'var(--card-bg)';
+      b.style.color=active?'#1a1a1a':'var(--text)';
+    });
+    if(h1)h1.textContent=titles[lang];
+    document.title=titles[lang]+' \\u2014 auxten';
+    document.documentElement.lang=(lang==='zh')?'zh':'en';
+    localStorage.setItem(KEY,lang);
+    if(window.__rebuildToc)window.__rebuildToc();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.lang-switch button'),function(b){
+    b.addEventListener('click',function(){apply(this.getAttribute('data-lang'));});
+  });
+  apply(current);
+})();
+</script>""" % _json.dumps(titles, ensure_ascii=False)
+
+    content = (
+        toggle_html
+        + f'<div id="lang-en" class="lang-section">{bodies["en"]}</div>'
+        + f'<div id="lang-zh" class="lang-section" style="display:none">{bodies["zh"]}</div>'
+        + lang_script
+    )
+
+    page = TEMPLATE.format(
+        title=titles["en"],
+        date=date_short,
+        content=content,
+        slug=slug,
+    )
+    # Swap the standard TOC script for the visibility-aware, rebuildable one.
+    page, n = re.subn(
+        r"<script>\s*\(function\(\)\{\s*var toc=document\.getElementById\('postToc'\);.*?\}\)\(\);\s*</script>",
+        lambda m: BILINGUAL_TOC_SCRIPT,
+        page, count=1, flags=re.S,
+    )
+    if n != 1:
+        print(f"  WARN: TOC script swap matched {n} times for {slug}")
+
+    out_path = os.path.join(OUT_DIR, slug + ".html")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(page)
+    print(f"  OK: {slug}.html (bilingual, {len(content)} chars)")
+
+    # Markdown siblings for AI agents: default (en) and -zh.
+    for lang, fname, suffix in (("en", en_file, ""), ("zh", zh_file, "-zh")):
+        md_path = os.path.join(SITE_DIR, folder_name, fname)
+        with open(md_path, "r", encoding="utf-8") as f:
+            _, body = parse_frontmatter(f.read())
+        md_out_path = os.path.join(OUT_DIR, slug + suffix + ".md")
+        with open(md_out_path, "w", encoding="utf-8") as f:
+            f.write(f"# {titles[lang]}\n\n")
+            f.write(f"*{date_short} — by Auxten Wang*\n\n")
+            f.write(body)
+        print(f"  OK: {slug}{suffix}.md")
+
+
 def main():
     print("Building blog posts...")
     for folder_name, slug in POSTS.items():
         convert_post(folder_name, slug)
+    for folder_name, (slug, en_file, zh_file) in BILINGUAL_POSTS.items():
+        convert_bilingual_post(folder_name, slug, en_file, zh_file)
     for md_path, title, date, slug in DIRECT_POSTS:
         convert_direct_post(md_path, title, date, slug)
     print("Done!")
