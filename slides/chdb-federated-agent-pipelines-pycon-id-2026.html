@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Federated by Default: Building Agent Data Pipelines Without ETL - PyCon ID 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --r-background-color: #fafafa;
+    --r-main-color: #2d2d2d;
+    --r-heading-color: #1a1a1a;
+    --r-link-color: #e65100;
+    --c-ch-yellow: #fadb14;
+    --c-ch-orange: #e65100;
+    --c-blue: #1565c0;
+    --c-green: #2e7d32;
+    --c-red: #c62828;
+    --c-muted: #7a7a7a;
+    --c-border: #e5e7eb;
+    --c-card: #ffffff;
+    --c-ink: #1a1a1a;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; }
+  .reveal section { text-align: center; }
+  .reveal h1, .reveal h2, .reveal h3 {
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    line-height: 1.18;
+  }
+  .reveal h1 { font-size: 1.95em; color: var(--c-ink); margin-bottom: 0.3em; }
+  .reveal h2 { font-size: 1.42em; color: var(--c-ch-orange); margin-bottom: 0.55em; }
+  .reveal h3 { font-size: 0.95em; color: #bf360c; margin-bottom: 0.35em; }
+  .reveal p { line-height: 1.55; margin-bottom: 0.35em; }
+  .reveal section > p { font-size: 0.8em; }
+  .reveal ul, .reveal ol { display: inline-block; text-align: left; margin: 0.2em 0 0 0.4em; }
+  .reveal li { margin-bottom: 0.42em; font-size: 0.76em; line-height: 1.48; }
+  .reveal li strong { font-weight: 800; }
+  .reveal a { color: var(--c-blue); }
+
+  .highlight { color: var(--c-ch-orange); font-weight: 800; }
+  .hl-green { color: var(--c-green); font-weight: 800; }
+  .hl-blue { color: var(--c-blue); font-weight: 800; }
+  .muted { color: var(--c-muted); }
+  .dim { color: var(--c-muted); font-size: 0.62em; letter-spacing: 0.01em; line-height: 1.4; }
+  .sub { color: #555; font-size: 0.68em; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  .reveal code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #f2f3f5;
+    color: #c62828;
+    border-radius: 4px;
+    padding: 0.1em 0.28em;
+    font-size: 0.84em;
+  }
+  .reveal pre {
+    width: auto;
+    max-width: 94%;
+    display: inline-block;
+    text-align: left;
+    margin: 0.25em auto;
+    border-radius: 10px;
+    box-shadow: 0 3px 16px rgba(0,0,0,0.12);
+  }
+  .reveal pre code {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+    background: #272822;
+    color: #f8f8f2;
+    font-size: 0.56em;
+    line-height: 1.44;
+    padding: 0.85em 1.1em;
+    border-radius: 10px;
+    max-height: 530px;
+  }
+
+  .title-slide h1 { font-size: 1.7em; line-height: 1.18; margin-bottom: 0.2em; }
+  .title-slide .subtitle { color: #555; font-size: 0.74em; margin-top: 0; }
+  .title-slide .speaker { color: #333; font-size: 0.68em; margin-top: 0.9em; }
+  .title-slide .sub-info { color: #888; font-size: 0.56em; margin-top: 0.15em; }
+  .logo-line { display: flex; gap: 1.2em; align-items: center; justify-content: center; margin: 0.2em 0 0.8em; }
+  .logo-line img { box-shadow: none !important; border-radius: 0 !important; }
+
+  .reveal section img {
+    max-height: 56vh;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+  }
+  .reveal img.no-shadow, .reveal .no-shadow img { box-shadow: none !important; }
+  .hero-img { max-height: 46vh !important; }
+
+  .two-col {
+    display: flex;
+    gap: 1.6em;
+    align-items: center;
+    justify-content: center;
+    width: 96%;
+    margin: 0 auto;
+  }
+  .two-col > div { flex: 1; min-width: 0; }
+  .two-col.top { align-items: flex-start; }
+  .two-col li { font-size: 0.7em; }
+  .two-col pre { max-width: 100%; display: block; }
+  .two-col pre code { font-size: 0.47em; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75em;
+    width: 94%;
+    margin: 0.45em auto;
+  }
+  .cards.two { grid-template-columns: repeat(2, 1fr); }
+  .card {
+    background: var(--c-card);
+    border: 1.5px solid var(--c-border);
+    border-radius: 10px;
+    padding: 0.62em 0.72em;
+    text-align: left;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+  .card h3 { color: var(--c-ink); margin: 0 0 0.28em; font-size: 0.72em; }
+  .card p { color: #565656; margin: 0; font-size: 0.55em; line-height: 1.45; }
+  .card.accent { border-color: #ffcc80; background: #fff8ef; }
+  .card.green { border-color: #a5d6a7; background: #f4fbf4; }
+  .card.blue { border-color: #90caf9; background: #f3f8ff; }
+  .card.red { border-color: #ef9a9a; background: #fff5f5; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.7em;
+    width: 94%;
+    margin: 0.5em auto;
+  }
+  .stat {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.55em 0.35em;
+    text-align: center;
+  }
+  .stat .num { font-size: 1.45em; font-weight: 800; color: var(--c-ch-orange); line-height: 1.05; }
+  .stat .label { color: #666; font-size: 0.45em; line-height: 1.35; margin-top: 0.2em; }
+
+  .flow {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.45em;
+    width: 96%;
+    margin: 0.45em auto;
+    flex-wrap: wrap;
+  }
+  .node {
+    background: #fff;
+    border: 2px solid var(--c-blue);
+    border-radius: 10px;
+    padding: 0.5em 0.7em;
+    font-size: 0.56em;
+    font-weight: 800;
+    line-height: 1.25;
+    min-width: 5.8em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .node small { display: block; font-weight: 500; color: #777; font-size: 0.78em; margin-top: 0.12em; }
+  .node.green { border-color: var(--c-green); background: #f4fbf4; }
+  .node.orange { border-color: var(--c-ch-orange); background: #fff8ef; }
+  .node.dark { border-color: #3a3d44; background: #25272d; color: #f3f4f6; }
+  .node.dark small { color: #aab0ba; }
+  .arrow { display: flex; align-items: center; font-size: 0.86em; color: #9aa3af; font-weight: 800; }
+
+  table.bench {
+    width: 94%;
+    margin: 0.4em auto;
+    border-collapse: collapse;
+    font-size: 0.52em;
+  }
+  table.bench th {
+    background: #25272d;
+    color: #fff;
+    text-align: left;
+    padding: 0.52em 0.65em;
+    font-weight: 800;
+  }
+  table.bench td {
+    padding: 0.48em 0.65em;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+  }
+  table.bench tr:nth-child(even) td { background: #f7f8fa; }
+  .winner { color: var(--c-green); font-weight: 800; }
+  .loser { color: var(--c-red); font-weight: 800; }
+
+  blockquote {
+    background: linear-gradient(135deg, #fff3e0 0%, #fff8f0 100%);
+    border-left: 5px solid var(--c-ch-orange);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75em 1.05em;
+    width: 80%;
+    font-size: 0.78em;
+    color: #333;
+    line-height: 1.55;
+    text-align: left;
+  }
+
+  .callout {
+    display: inline-block;
+    background: #1f2328;
+    color: #fff;
+    border-radius: 12px;
+    padding: 0.7em 1.0em;
+    font-size: 0.72em;
+    line-height: 1.45;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.16);
+  }
+  .pill-row { display: flex; gap: 0.45em; justify-content: center; flex-wrap: wrap; width: 94%; margin: 0.5em auto; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.25em 0.72em;
+    font-size: 0.52em;
+    font-weight: 800;
+    background: #eef3ff;
+    color: var(--c-blue);
+    border: 1.5px solid #c8dcff;
+  }
+  .pill.orange { background: #fff3e0; color: var(--c-ch-orange); border-color: #ffcc80; }
+  .pill.green { background: #e8f5e9; color: var(--c-green); border-color: #a5d6a7; }
+  .pill.dark { background: #25272d; color: #fff; border-color: #25272d; }
+
+  .ops { display: flex; gap: 0.55em; justify-content: center; margin: 0.55em auto 0.25em; width: 96%; }
+  .op {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #e2e6ec;
+    border-top: 3px solid var(--c-blue);
+    border-radius: 10px;
+    padding: 0.5em 0.4em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .op b { display: block; font-size: 0.6em; color: #1a1a1a; font-weight: 800; }
+  .op span { display: block; font-size: 0.45em; color: #888; line-height: 1.3; margin-top: 0.2em; }
+  .op.warm { border-top-color: var(--c-ch-orange); }
+  .op.warm b { color: var(--c-ch-orange); }
+
+  .split-code pre code { font-size: 0.44em; }
+  .reveal section.wide-code pre { display: inline-block; width: auto; max-width: 92%; box-sizing: border-box; }
+  .reveal section.wide-code pre code { display: block; width: auto; box-sizing: border-box; font-size: 0.70em; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section class="title-slide">
+  <div class="logo-line">
+    <img src="logos/chdb-light.png" alt="chDB" style="height: 72px;">
+    <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="height: 44px;">
+  </div>
+  <h1>Federated by Default</h1>
+  <p class="subtitle">Building Agent Data Pipelines <strong>Without ETL</strong></p>
+  <p class="speaker"><strong>Auxten Wang</strong> &middot; Technical Director @ ClickHouse &middot; Creator of chDB</p>
+  <p class="sub-info">PyCon Indonesia 2026 &middot; 15 min</p>
+  <aside class="notes">
+    One idea in 15 minutes: an agent's data pipeline should be a query written at ask-time, not infrastructure built in advance.
+  </aside>
+</section>
+
+<section>
+  <div style="display: flex; align-items: center; gap: 2.0em; max-width: 760px; margin: 0 auto;">
+    <div style="flex: 1; text-align: left;">
+      <div style="display: flex; align-items: center; gap: 0.75em; margin-bottom: 0.7em;">
+        <img src="logos/head.jpg" alt="Auxten Wang" style="width: 74px; height: 74px; border-radius: 50%; object-fit: cover;">
+        <div>
+          <h2 style="margin: 0; color: #1a1a1a; font-size: 1.15em;">Auxten Wang</h2>
+          <p class="dim" style="margin: 0.2em 0 0;"><strong>@auxten</strong> &middot; <a href="https://auxten.com">auxten.com</a></p>
+        </div>
+      </div>
+      <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.68em; line-height: 1.9;">
+        <li><strong>Technical Director</strong> @ ClickHouse</li>
+        <li>Creator of <strong>chDB</strong>, acquired by ClickHouse in 2024</li>
+        <li>Built embedded databases, distributed SQL, and agent tooling</li>
+        <li>Ex-Shopee &middot; CovenantSQL &middot; Baidu &middot; Qihoo 360</li>
+      </ul>
+    </div>
+    <div style="flex: 0 0 auto;">
+      <img src="logos/chdb-light.png" alt="chDB" class="no-shadow" style="height: 190px; border-radius: 0;">
+    </div>
+  </div>
+  <aside class="notes">
+    Twenty seconds. The relevant credential: I created chDB and I spend my time putting database engines inside applications — lately, inside agents.
+  </aside>
+</section>
+
+<section>
+  <h2>A Question Your Agent Can't Answer</h2>
+  <p class="sub" style="margin-bottom: 0.5em;">&ldquo;Which of today's support tickets come from our biggest customers?&rdquo;</p>
+  <div class="cards">
+    <div class="card blue">
+      <h3>Orders</h3>
+      <p>Parquet files in the data lake on S3. Nobody loads them anywhere; they just accumulate.</p>
+    </div>
+    <div class="card accent">
+      <h3>Customers</h3>
+      <p>A CSV somebody exported from the CRM last week. It lives in a shared folder.</p>
+    </div>
+    <div class="card red">
+      <h3>Today's tickets</h3>
+      <p>A JSON response from the support API, currently sitting in a pandas DataFrame.</p>
+    </div>
+  </div>
+  <blockquote class="fragment">
+    The model is not the bottleneck.<br>
+    <strong>The answer lives in three places, and the agent can query none of them.</strong>
+  </blockquote>
+  <aside class="notes">
+    Open with the pain. A completely ordinary business question, and the data layout everyone actually has: a lake, an export, an API. No exotic infrastructure in the story on purpose.
+  </aside>
+</section>
+
+<section>
+  <h2>The ETL Reflex &mdash; and Why Agents Break It</h2>
+  <p class="sub">ETL: <strong>E</strong>xtract data out, <strong>T</strong>ransform its shape, <strong>L</strong>oad it into a warehouse. Then query the warehouse.</p>
+  <div class="cards two">
+    <div class="card green">
+      <h3>ETL was built for dashboards</h3>
+      <p>Questions are known in advance. A nightly refresh is fine. A pipeline per question pays for itself — you will run it for years.</p>
+    </div>
+    <div class="card red">
+      <h3>Agents invert every assumption</h3>
+      <p>Questions are unpredictable. The answer is needed in seconds. Most agent questions are asked once — the pipeline never pays for itself.</p>
+    </div>
+  </div>
+  <blockquote class="fragment">
+    You can't pre-build a pipeline for a question <strong>nobody has asked yet</strong>.
+  </blockquote>
+  <aside class="notes">
+    Define ETL in one line for people who have never run one. Concede that ETL is the right tool for BI — the argument is only that agents violate its assumptions: known questions, batch latency, reuse.
+  </aside>
+</section>
+
+<section>
+  <h2>Federation: Query Data Where It Lives</h2>
+  <p class="sub">A federated query reads the sources directly &mdash; files, object storage, live databases &mdash; inside <strong>one SQL statement</strong>. No copy first.</p>
+  <div class="flow" style="margin-top: 0.7em;">
+    <div class="node dark">one SQL query<br><small>written at ask-time</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node blue" style="border-color: var(--c-blue);">file()<br><small>local files</small></div>
+    <div class="arrow">+</div>
+    <div class="node green">s3()<br><small>data lake</small></div>
+    <div class="arrow">+</div>
+    <div class="node orange">postgresql()<br><small>live DB</small></div>
+    <div class="arrow">+</div>
+    <div class="node">Python()<br><small>DataFrames</small></div>
+  </div>
+  <p class="fragment" style="font-size: 0.78em; margin-top: 0.6em;">
+    <span class="highlight">Federated by default</span> means copying data becomes an <strong>optimization you apply later</strong> &mdash; not a toll you pay up front.
+  </p>
+  <aside class="notes">
+    Define the title word plainly. The inversion is the whole talk: today the copy step is a prerequisite; it should be an optimization.
+  </aside>
+</section>
+
+<section>
+  <h2>chDB: A Full Query Engine, One pip install Away</h2>
+  <div class="cards">
+    <div class="card accent">
+      <h3>The ClickHouse engine</h3>
+      <p>ClickHouse is the open-source columnar SQL engine behind analytics at Anthropic, Cursor, Vercel, and Cloudflare. chDB embeds it in your Python process.</p>
+    </div>
+    <div class="card blue">
+      <h3>No server, no setup</h3>
+      <p>No Docker, no config, no connection string. Import it and query, like SQLite.</p>
+    </div>
+    <div class="card green">
+      <h3>Schema on read</h3>
+      <p>Point it at a file. Column names and types are inferred. No CREATE TABLE, no load step.</p>
+    </div>
+  </div>
+  <pre><code class="language-python" data-trim>
+pip install chdb
+
+import chdb
+chdb.query("SELECT count(), sum(amount) FROM file('orders.parquet')")
+# → 1000 rows, 72927.0 — schema inferred, nothing loaded
+  </code></pre>
+  <p class="dim">SQLite-level deployability, ClickHouse-level analytical power.</p>
+  <aside class="notes">
+    Most of the room does not know ClickHouse — one sentence, anchored by companies they know. For the DuckDB crowd: same embedded-analytics shape; chDB is the ClickHouse flavor — a wider format and federation surface, and a straight path to a shared cluster later.
+  </aside>
+</section>
+
+<section>
+  <h2>One Function per Place Your Data Lives</h2>
+  <div class="ops">
+    <div class="op"><b>file()</b><span>Parquet, CSV, JSON, ORC &mdash; 60+ formats, glob patterns</span></div>
+    <div class="op"><b>s3() / url()</b><span>data lakes and anything with an HTTP endpoint</span></div>
+    <div class="op warm"><b>postgresql() / mysql()</b><span>live operational databases, queried in place</span></div>
+    <div class="op"><b>Python()</b><span>the pandas DataFrame sitting in memory right now</span></div>
+  </div>
+  <pre><code class="language-sql" data-trim>
+SELECT type, round(avg(price)) AS avg_price, count() AS n
+FROM s3('https://datasets-documentation.s3…/house_0.parquet')
+GROUP BY type ORDER BY avg_price DESC
+-- 2.77M rows of UK house prices, queried where they sit
+  </code></pre>
+  <table class="bench" style="width: 62%; font-size: 0.44em;">
+    <thead><tr><th>type</th><th>avg_price</th><th>n</th></tr></thead>
+    <tbody>
+      <tr><td>other</td><td>1,207,774</td><td>41,957</td></tr>
+      <tr><td>detached</td><td>286,753</td><td>640,104</td></tr>
+      <tr><td>flat</td><td>198,888</td><td>497,439</td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">
+    Every result on these slides ran on my laptop during prep — real outputs, not mockups. Full URL: datasets-documentation.s3.eu-west-3.amazonaws.com/house_parquet/house_0.parquet. First remote scan is network-bound; that trade-off gets its own slide.
+  </aside>
+</section>
+
+<section class="wide-code">
+  <h2>The Whole Talk in One Query</h2>
+  <p class="sub" style="margin-bottom: 0.3em;">&ldquo;Which of today's tickets come from our biggest customers?&rdquo;</p>
+  <pre><code class="language-sql" data-trim style="font-size: 0.56em; line-height: 1.32;">
+SELECT u.name, u.tier, t.subject, sum(o.amount) AS lifetime_spend
+FROM Python(tickets)         AS t   -- API result, in memory
+JOIN file('users.csv')       AS u   -- someone's CRM export
+  ON u.user_id = t.user_id
+JOIN file('orders.parquet')  AS o   -- data-lake extract
+  ON o.user_id = t.user_id
+GROUP BY u.name, u.tier, t.subject
+ORDER BY lifetime_spend DESC
+  </code></pre>
+  <table class="bench" style="width: 66%; font-size: 0.44em;">
+    <thead><tr><th>name</th><th>tier</th><th>subject</th><th>lifetime_spend</th></tr></thead>
+    <tbody>
+      <tr><td>user_7</td><td>free</td><td>login</td><td>1,494.80</td></tr>
+      <tr><td>user_3</td><td>enterprise</td><td>refund</td><td>1,473.80</td></tr>
+      <tr><td>user_12</td><td>enterprise</td><td>billing</td><td>1,456.30</td></tr>
+    </tbody>
+  </table>
+  <p class="dim">No warehouse. No load step. <strong>The pipeline is the query.</strong></p>
+  <aside class="notes">
+    Walk it top to bottom: a DataFrame, a CSV, a Parquet file — three places, one JOIN, real output. This exact query ran during prep. This is the thesis slide.
+  </aside>
+</section>
+
+<section>
+  <h2>So the Agent Writes the Pipeline</h2>
+  <div class="flow">
+    <div class="node">question<br><small>from the user</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node orange">LLM writes SQL<br><small>at ask-time</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node dark">chDB executes<br><small>across every source</small></div>
+    <div class="arrow">&rarr;</div>
+    <div class="node green">answer<br><small>rows, then prose</small></div>
+  </div>
+  <ul style="margin-top: 0.5em;">
+    <li class="fragment"><strong>LLMs already speak SQL.</strong> It's the best-represented query language in their training data.</li>
+    <li class="fragment"><strong>One tool replaces N connectors.</strong> Expose <code>run_sql(query)</code>; federation handles where the data lives.</li>
+    <li class="fragment"><strong>Every answer is auditable.</strong> The generated SQL is the log of exactly what was read.</li>
+  </ul>
+  <aside class="notes">
+    This is what "agent data pipeline" means here: generated at ask-time, executed in place, thrown away after. One SQL tool beats a zoo of bespoke retrieval functions — fewer tools, better tool-calling accuracy.
+  </aside>
+</section>
+
+<section>
+  <h2>Prefer pandas? Same Engine</h2>
+  <pre><code class="language-python" data-trim>
+import chdb.datastore as pd    # pandas-mirror API, ships with chDB
+
+df = pd.read_parquet("orders.parquet")
+df[df.country == "ID"].sort_values("amount", ascending=False).head(3)
+# lazy: builds one SQL plan, runs on the same in-process engine
+  </code></pre>
+  <p style="font-size: 0.74em; margin-top: 0.5em;">
+    Agents emit pandas just as happily as SQL.<br>
+    <span class="highlight">Either surface, same federated engine underneath.</span>
+  </p>
+  <aside class="notes">
+    Twenty-second slide for the pandas-first room. The filter-sort-head chain compiles to one query — it is not pandas re-implemented, it is the same engine wearing a pandas API. Verified against datastore 4.1.1.
+  </aside>
+</section>
+
+<section>
+  <h2>Honesty Slide: The Network Is Not Free</h2>
+  <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="stat"><div class="num">~60 s</div><div class="label">full aggregation over a 2.77M-row Parquet on S3, from my laptop</div></div>
+    <div class="stat"><div class="num">1 line</div><div class="label">of SQL to materialize it into a local table</div></div>
+    <div class="stat"><div class="num">19 ms</div><div class="label">the same aggregation, after caching locally</div></div>
+  </div>
+  <pre><code class="language-sql" data-trim>
+-- when a remote path gets hot, cache it — once:
+CREATE TABLE hot_orders ENGINE = MergeTree ORDER BY tuple()
+AS SELECT * FROM s3('https://…/orders/*.parquet');
+  </code></pre>
+  <blockquote class="fragment" style="font-size: 0.7em;">
+    ETL didn't disappear. <strong>It shrank to one line of SQL, applied only where the profile says it's worth it.</strong>
+  </blockquote>
+  <aside class="notes">
+    Real numbers from prep, measured on this deck's demo. Column pruning and filter pushdown soften remote scans, but a full scan still moves bytes. The pattern: federate first, measure, materialize the hot paths. That is "federated by default" — not "federated always".
+  </aside>
+</section>
+
+<section>
+  <h2>Three Takeaways</h2>
+  <ol>
+    <li class="fragment"><strong>Agents ask unpredictable questions.</strong> Pipelines built in advance answer yesterday's questions. Query data where it lives.</li>
+    <li class="fragment"><strong>One SQL surface is the agent's data tool.</strong> Files, lakes, live databases, DataFrames &mdash; chDB federates them inside your Python process.</li>
+    <li class="fragment"><strong>Materialize only what gets hot.</strong> ETL becomes a one-line optimization, not a prerequisite.</li>
+  </ol>
+  <div class="callout fragment" style="margin-top: 0.8em;">
+    <span class="mono">pip install chdb</span><br>
+    <strong>The pipeline is the query.</strong>
+  </div>
+  <aside class="notes">
+    Close on the inversion: ETL as optimization, not prerequisite. If they remember one sentence: the pipeline is the query.
+  </aside>
+</section>
+
+<section>
+  <h1 style="margin-bottom: 0.45em;">Thank You</h1>
+  <div class="logo-line">
+    <img src="logos/chdb-light.png" alt="chDB" style="height: 90px;">
+    <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="height: 58px;">
+  </div>
+  <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.62em; line-height: 2; text-align: center;">
+    <li><strong>chDB:</strong> <a href="https://github.com/chdb-io/chdb">github.com/chdb-io/chdb</a></li>
+    <li><strong>Docs:</strong> <a href="https://clickhouse.com/docs/chdb">clickhouse.com/docs/chdb</a></li>
+    <li><strong>Slides &amp; verified demos:</strong> <a href="https://auxten.com">auxten.com</a></li>
+    <li><strong>Me:</strong> <a href="https://x.com/auxten">@auxten</a></li>
+  </ul>
+  <h2 style="margin-top: 0.75em;">Q&amp;A</h2>
+  <aside class="notes">
+    Leave this up during questions. The links are the handoff.
+  </aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: true,
+  width: 1280,
+  height: 720,
+  plugins: [ RevealHighlight, RevealNotes ]
+});
+</script>
+</body>
+</html>
