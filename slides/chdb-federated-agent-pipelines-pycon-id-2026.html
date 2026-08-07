@@ -148,7 +148,7 @@
 
 <!-- 02 · ABOUT -->
 <section>
-  <div class="topbar"><span class="sec">ABOUT</span><span class="pg">02 / 14</span></div>
+  <div class="topbar"><span class="sec">ABOUT</span><span class="pg">02 / 15</span></div>
   <div class="frame">
     <div style="display:flex; gap:70px; align-items:center; margin-top:80px;">
       <div style="flex:1;">
@@ -181,7 +181,7 @@
 
 <!-- 03 · THE AGENT -->
 <section>
-  <div class="topbar"><span class="sec">THE AGENT</span><span class="pg">03 / 14</span></div>
+  <div class="topbar"><span class="sec">THE AGENT</span><span class="pg">03 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:44px;">You're building a support agent</h2>
     <div style="display:flex; gap:60px; margin-top:44px; align-items:flex-start;">
@@ -204,7 +204,7 @@
 
 <!-- 04 · THREE WORLDS, NO REACH -->
 <section>
-  <div class="topbar"><span class="sec">THE PAIN</span><span class="pg">04 / 14</span></div>
+  <div class="topbar"><span class="sec">THE PAIN</span><span class="pg">04 / 15</span></div>
   <div class="svgwrap">
     <svg width="1280" height="720" viewBox="0 0 1280 720">
       <path d="M 570 430 L 240 330" stroke="#9a9a90" stroke-width="5" stroke-dasharray="14 12" fill="none"/>
@@ -235,7 +235,7 @@
 
 <!-- 05 · ETL REFLEX -->
 <section>
-  <div class="topbar"><span class="sec">THE REFLEX</span><span class="pg">05 / 14</span></div>
+  <div class="topbar"><span class="sec">THE REFLEX</span><span class="pg">05 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">The reflex: build a pipeline first</h2>
     <p class="mono" style="font-size:21px; margin-top:12px;"><strong>ETL</strong> — Extract → Transform → Load into a warehouse. <em>Then</em> query.</p>
@@ -258,7 +258,7 @@
 
 <!-- 06 · FLIP THE DEFAULT -->
 <section>
-  <div class="topbar"><span class="sec">THE FLIP</span><span class="pg">06 / 14</span></div>
+  <div class="topbar"><span class="sec">THE FLIP</span><span class="pg">06 / 15</span></div>
   <div class="svgwrap">
     <svg width="1280" height="720" viewBox="0 0 1280 720">
       <path d="M 560 400 L 240 320"  stroke="#4d94ff" stroke-width="7" fill="none"/>
@@ -288,7 +288,7 @@
 
 <!-- 07 · CHDB -->
 <section>
-  <div class="topbar"><span class="sec">CHDB</span><span class="pg">07 / 14</span></div>
+  <div class="topbar"><span class="sec">CHDB</span><span class="pg">07 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">chDB: a rocket engine on a bicycle</h2>
     <div class="frame-img" style="position:absolute; top:180px; left:70px; width:520px; transform:rotate(-1deg);">
@@ -315,7 +315,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 08 · ONE FUNCTION PER WORLD -->
 <section>
-  <div class="topbar"><span class="sec">TABLE FUNCTIONS</span><span class="pg">08 / 14</span></div>
+  <div class="topbar"><span class="sec">TABLE FUNCTIONS</span><span class="pg">08 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">One function per place your data lives</h2>
     <div style="display:flex; gap:34px; margin-top:40px;">
@@ -340,7 +340,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 09 · THE QUERY -->
 <section>
-  <div class="topbar"><span class="sec">THESIS</span><span class="pg">09 / 14</span></div>
+  <div class="topbar"><span class="sec">THESIS</span><span class="pg">09 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">The whole talk in <span style="background:var(--yellow); padding:0 12px;">one query</span></h2>
     <div style="display:flex; gap:40px; margin-top:30px;">
@@ -368,7 +368,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 10 · WIRE INTO AGENT -->
 <section>
-  <div class="topbar"><span class="sec">THE TOOL</span><span class="pg">10 / 14</span></div>
+  <div class="topbar"><span class="sec">THE TOOL</span><span class="pg">10 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Give the agent <span style="background:var(--yellow); padding:0 12px;">one</span> data tool</h2>
     <div style="display:flex; gap:50px; margin-top:36px; align-items:flex-start;">
@@ -395,9 +395,9 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 11 · LAMBDA -->
 <section>
-  <div class="topbar"><span class="sec">PRODUCTION</span><span class="pg">11 / 14</span></div>
+  <div class="topbar"><span class="sec">PRODUCTION</span><span class="pg">11 / 15</span></div>
   <div class="frame">
-    <h2 style="margin-top:32px;">Where it runs: a MicroVM per session</h2>
+    <h2 style="margin-top:32px;">Where it runs: a Lambda per session</h2>
     <div class="frame-img" style="position:absolute; top:145px; left:70px; width:620px; padding:8px;">
       <img src="logos/fig-03-lambda-microvms.png" alt="Each isolated Lambda MicroVM carries its own private chDB and federates out to S3, CDN, PostgreSQL, ClickHouse Cloud">
     </div>
@@ -416,9 +416,37 @@ chdb.query(<span class="st">"SELECT count()</span><br>
   <aside class="notes">Production shape: every agent session gets a Firecracker-isolated MicroVM with its own private chDB — zero network round-trips for local state, federated reach for everything else, suspend/resume up to 8h. No shared warehouse in the loop.</aside>
 </section>
 
-<!-- 12 · HONESTY -->
+<!-- 12 · PERFORMANCE -->
 <section>
-  <div class="topbar"><span class="sec">HONESTY</span><span class="pg">12 / 14</span></div>
+  <div class="topbar"><span class="sec">PERFORMANCE</span><span class="pg">12 / 15</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">It reads what the query needs — <span style="background:var(--yellow); padding:0 10px;">not the file</span></h2>
+    <div style="position:absolute; top:170px; left:70px; right:70px;">
+      <div class="mono" style="font-size:17px; font-weight:700; color:#6d6d66; margin-bottom:8px;">house_0.parquet · 33 MB · 2.77M rows · 14 columns &nbsp;&nbsp;&nbsp;<span style="color:var(--blue);">▼ HTTP Range reads</span></div>
+      <div style="display:flex; height:74px; border:4px solid var(--ink); box-shadow:8px 8px 0 var(--ink); background:#fff;">
+        <div style="flex:1.2; background:var(--yellow); border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center;" class="mono"><b>type</b></div>
+        <div style="flex:1.2; background:var(--yellow); border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center;" class="mono"><b>price</b></div>
+        <div style="flex:1; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">date</div>
+        <div style="flex:1; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">town</div>
+        <div style="flex:1; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">street</div>
+        <div style="flex:2.2; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">…9 more columns</div>
+        <div style="flex:0.9; background:var(--ink); color:var(--yellow); display:flex; align-items:center; justify-content:center;" class="mono"><b>footer</b></div>
+      </div>
+      <div class="mono" style="font-size:17px; font-weight:700; margin-top:10px;"><span style="color:var(--yellow); text-shadow:0 0 1px #161616;">■</span> fetched for <span style="color:var(--ink);">avg(price) BY type</span> &nbsp;&nbsp;<span style="color:#9a9a8f;">■ skipped</span> &nbsp;&nbsp;<span style="color:var(--ink);">■ footer</span> = schema + stats, read first</div>
+    </div>
+    <div style="display:flex; gap:40px; position:absolute; top:352px; left:70px; right:70px;">
+      <div class="stat green" style="flex:1;"><div class="num">4.8 s</div><div class="lab">count() — footer only; just <em>downloading</em> the file takes 54.6 s</div></div>
+      <div class="stat ylw" style="flex:1;"><div class="num">2 / 14</div><div class="lab">columns fetched for the aggregation — ranged reads, no full scan</div></div>
+      <div class="stat" style="flex:1.15;"><div class="num" style="font-size:44px; line-height:1.15;">344 <span style="font-size:26px;">vs</span> 975 MB</div><div class="lab">peak RAM, chDB streaming vs pandas — a 33 MB file becomes a 1.5 GB DataFrame</div></div>
+    </div>
+  </div>
+  <div class="punchbar">Ranged reads: <span class="y">you pay for the columns you touch</span> — not the file.</div>
+  <aside class="notes">All measured during prep, same laptop, same network. count() proves partial reads: 4.8 s vs 54.6 s just to download. The aggregation fetches only the type and price column chunks via HTTP Range requests. And streaming never materializes the table: pandas holds a 1.5 GB DataFrame from a 33 MB compressed file. Fair note: on high-RTT links many small range reads can be slower end-to-end than one sequential download — which is exactly why the next slide exists.</aside>
+</section>
+
+<!-- 13 · HONESTY -->
+<section>
+  <div class="topbar"><span class="sec">HONESTY</span><span class="pg">13 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">The network is not free</h2>
     <div style="display:flex; gap:50px; margin-top:40px;">
@@ -436,9 +464,9 @@ chdb.query(<span class="st">"SELECT count()</span><br>
   <aside class="notes">Real numbers measured during prep on this deck's demo. Column pruning and pushdown soften remote scans, but a full scan still moves bytes. Federate first, measure, materialize hot paths. That's "federated by default" — not "federated always".</aside>
 </section>
 
-<!-- 13 · TAKEAWAYS -->
+<!-- 14 · TAKEAWAYS -->
 <section>
-  <div class="topbar"><span class="sec">CLOSE</span><span class="pg">13 / 14</span></div>
+  <div class="topbar"><span class="sec">CLOSE</span><span class="pg">14 / 15</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">Three takeaways</h2>
     <div style="display:grid; gap:22px; margin-top:30px;">
