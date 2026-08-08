@@ -319,7 +319,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
   <div class="frame">
     <h2 style="margin-top:36px;">One function per place your data lives</h2>
     <div style="display:flex; gap:34px; margin-top:40px;">
-      <div class="card" style="flex:1; padding:14px 18px;"><h3 class="mono" style="font-size:22px;">file()</h3><div class="m">60+ formats · tar &amp; glob</div></div>
+      <div class="card" style="flex:1; padding:14px 18px;"><h3 class="mono" style="font-size:22px;">file()</h3><div class="m">72 formats · tar &amp; glob</div></div>
       <div class="card b" style="flex:1; padding:14px 18px;"><h3 class="mono" style="font-size:22px;">s3() / url()</h3><div class="m">lakes &amp; HTTP endpoints</div></div>
       <div class="card o" style="flex:1; padding:14px 18px;"><h3 class="mono" style="font-size:22px;">postgresql()</h3><div class="m">live DBs, queried in place</div></div>
       <div class="card g" style="flex:1; padding:14px 18px;"><h3 class="mono" style="font-size:22px;">Python()</h3><div class="m">the DataFrame in RAM</div></div>
@@ -333,7 +333,10 @@ chdb.query(<span class="st">"SELECT count()</span><br>
     <div class="sticker" style="position:absolute; top:360px; right:70px; transform:rotate(2deg); font-size:24px; line-height:1.3;">
       2.77M rows of UK housing,<br>queried where they sit.
     </div>
-    <p class="muted" style="position:absolute; bottom:40px; left:70px; font-size:20px;">Ran live during prep — real output, not a mockup.</p>
+    <div class="sticker white mono" style="position:absolute; top:508px; right:70px; font-size:20px; line-height:1.45; padding:12px 18px; box-shadow:6px 6px 0 var(--ink);">
+      <b style="color:var(--orange);">70</b> table functions · <b style="color:var(--orange);">72</b> input formats<br><span class="muted" style="font-size:16px;">counted from the engine, not the brochure</span>
+    </div>
+    <p class="muted" style="position:absolute; bottom:40px; left:70px; font-size:20px;">Ran live during prep. Also in there: iceberg(), deltaLake(), hudi(), gcs(), azureBlobStorage()…</p>
   </div>
   <aside class="notes">Every result in this deck ran on my laptop during prep. Full URL in the repo. First remote scan is network-bound — that trade-off gets its own slide.</aside>
 </section>
