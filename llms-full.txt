@@ -80,6 +80,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 
 ## Conference Talks
 
+- **PyCon JP 2026** (22 August 2026, Hiroshima): Rediscovering DataFrames: 100× Analytics Without Leaving Pandas (Slides: https://auxten.com/slides/chdb-rediscovering-dataframes-pycon-jp-2026.html)
 - **PyCon ID 2026**: Federated by Default: Building Agent Data Pipelines Without ETL (Slides: https://auxten.com/slides/chdb-federated-agent-pipelines-pycon-id-2026.html)
 - **PyCon YVN 2026** (24 July 2026): No GIL, Real Gains: Porting a C++ Python Extension to Free-Threaded Python 3.14 (Slides: https://auxten.com/slides/chdb-nogil-pydata-yerevan-2026.html)
 - **AgentCon Perth 2026**: Your Agent's Memory Shouldn't Be a Markdown File (Slides: https://auxten.com/slides/chdb-agent-memory-agentcon-perth-2026.html)
