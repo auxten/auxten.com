@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyCon JP 2026 日语小抄 — Rediscovering DataFrames</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Hiragino Sans", sans-serif; max-width: 880px;
+         margin: 0 auto; padding: 32px 24px; color: #1a1a1a; line-height: 1.55; background: #fdfdf6; }
+  h1 { font-size: 26px; border-bottom: 4px solid #161616; padding-bottom: 8px; }
+  h2 { font-size: 19px; margin-top: 34px; background: #fadb14; display: inline-block; padding: 2px 12px; border: 2px solid #161616; }
+  table { border-collapse: collapse; width: 100%; margin-top: 14px; font-size: 14.5px; }
+  th, td { border: 2px solid #161616; padding: 7px 10px; text-align: left; vertical-align: top; }
+  th { background: #161616; color: #fff; font-size: 13.5px; }
+  td.jp { font-size: 17px; font-weight: 700; white-space: nowrap; }
+  td.pron { white-space: nowrap; }
+  .romaji { color: #1565c0; font-weight: 700; }
+  .py { color: #c62828; }
+  .say { background: #fff8d6; }
+  .note { font-size: 13.5px; color: #555; margin-top: 6px; }
+  .must { border: 3px solid #c62828; padding: 14px 18px; margin-top: 16px; background: #fff; }
+  .must b { color: #c62828; }
+  @media print { body { padding: 0; } h2 { margin-top: 22px; } }
+</style>
+</head>
+<body>
+<h1>PyCon JP 2026 日语小抄（広島 · 8/22）</h1>
+<p>发音总原则（对中文母语者）：日语每个音节<b>等长、声调平</b>，不要加汉语声调起伏；<b>r 读接近 l</b>（「り」≈ li）；元音 a=啊 i=衣 u=乌(嘴唇不圆) e=诶 o=哦；<b>长音（ō/ou）拖长一倍</b>；小っ是<b>顿一下</b>（像"哈!克"中间停半拍）。</p>
+
+<div class="must">
+  <b>全场只需开口念 3 句：</b><br>
+  ① 开场问好：<b>こんにちは</b> <span class="romaji">kon-ni-chi-wa</span>（空你七哇）— "大家好"<br>
+  ② 转折页（slide 7）：<b>一行だけ</b> <span class="romaji">i-chi-gyō da-ke</span>（衣其-哥哟——哒开，gyō 拖长）— "只有一行"。指着 punchbar 念，然后接英语 "one line."<br>
+  ③ 结尾（slide 21）：<b>ありがとうございました</b> <span class="romaji">a-ri-ga-tō go-za-i-ma-shi-ta</span>（阿里嘎多——够扎伊马西达）— 讲完后的"谢谢大家"（完成时态，演讲结束专用；说完微微鞠躬，观众一定鼓掌）
+  <div class="note">其余日文全是视觉元素，不念完全成立。想多要一次掌声：slide 9 指着お好み焼き说 "o-ko-no-mi-ya-ki"（哦扣糯米呀key）即可。</div>
+</div>
+
+<h2>标题页 &amp; 章节标题（topbar 小字）</h2>
+<table>
+<tr><th>日文</th><th>读音</th><th>意思 / 背景</th></tr>
+<tr><td class="jp">広島</td><td class="pron"><span class="romaji">Hiroshima</span>（黑咯西马）</td><td>广岛。汉字和中文一样，日本人念 hi-ro-shi-ma。</td></tr>
+<tr><td class="jp">再発見</td><td class="pron"><span class="romaji">sai-hak-ken</span>（赛-哈(顿)켄）</td><td>= 中文"再发现"。标题页红色日之丸圆里的竖排字，对应英文标题 "Rediscovering"。日之丸（红圆）就是日本国旗的太阳。</td></tr>
+<tr><td class="jp">自己紹介</td><td class="pron"><span class="romaji">ji-ko-shō-kai</span></td><td>自我介绍（slide 2 topbar）。</td></tr>
+<tr><td class="jp">愛</td><td class="pron"><span class="romaji">ai</span>（爱）</td><td>爱（slide 3：大家对 pandas 的爱）。</td></tr>
+<tr><td class="jp">限界</td><td class="pron"><span class="romaji">gen-kai</span>（根卡衣）</td><td>极限/天花板（slide 4 背景大字）。日本人日常口语和动漫里很常见："もう限界" = 我到极限了。正好对应 "the ceiling"。</td></tr>
+<tr><td class="jp">原因</td><td class="pron"><span class="romaji">gen-in</span></td><td>原因（slide 5）。写法同中文。</td></tr>
+<tr><td class="jp">出口</td><td class="pron"><span class="romaji">de-gu-chi</span>（迭古其）</td><td>出口（slide 6）。日本车站到处是这个牌子。</td></tr>
+<tr><td class="jp">転換</td><td class="pron"><span class="romaji">ten-kan</span></td><td>转换/转折（slide 7 "The Flip"）。</td></tr>
+<tr><td class="jp">仕組み</td><td class="pron"><span class="romaji">shi-ku-mi</span>（西库米）</td><td>机制/原理（slide 9 "How it works"）。</td></tr>
+<tr><td class="jp">勝負</td><td class="pron"><span class="romaji">shō-bu</span>（消——布）</td><td>较量/对决（slide 10-11 benchmark）。相扑、棋类比赛用语。</td></tr>
+<tr><td class="jp">到達</td><td class="pron"><span class="romaji">tō-ta-tsu</span></td><td>到达/触达（slide 12 "Reach"）。</td></tr>
+<tr><td class="jp">性能</td><td class="pron"><span class="romaji">sei-nō</span></td><td>性能（slide 13）。同中文。</td></tr>
+<tr><td class="jp">実演</td><td class="pron"><span class="romaji">ji-tsu-en</span></td><td>现场演示（slide 14-15 "Demo"）。</td></tr>
+<tr><td class="jp">ベクトル</td><td class="pron"><span class="romaji">be-ku-to-ru</span></td><td>"vector" 的外来语（slide 16），源自德语 Vektor。</td></tr>
+<tr><td class="jp">時系列</td><td class="pron"><span class="romaji">ji-kei-re-tsu</span></td><td>时间序列（slide 17）。</td></tr>
+<tr><td class="jp">正直</td><td class="pron"><span class="romaji">shō-ji-ki</span>（消——寄key）</td><td>诚实（slide 18 "Honesty"）。</td></tr>
+<tr><td class="jp">移行</td><td class="pron"><span class="romaji">i-kō</span></td><td>迁移（slide 19 "Migrate"）。</td></tr>
+<tr><td class="jp">まとめ</td><td class="pron"><span class="romaji">ma-to-me</span></td><td>总结（slide 20）。</td></tr>
+</table>
+
+<h2>Slide 6 · 非常口（逃生出口标志）</h2>
+<table>
+<tr><td class="jp">非常口</td><td class="pron"><span class="romaji">hi-jō-gu-chi</span>（黑就——古其）</td><td>紧急出口。<b>绿底白色奔跑小人</b>的逃生标志是日本人发明的（太田幸夫 1982 年设计，后成 ISO 国际标准），日本每栋楼里都有，观众天天见。<br><b>梗</b>：Spark/Polars/DuckDB/重写 这些"出路"都是<b>紧急逃生口</b>——你得弃楼而逃（放弃 pandas API）。讲的时候指一下标志说 "every Japanese building has this sign — these are all emergency exits: you abandon the building" 就能会心一笑。</td></tr>
+</table>
+
+<h2>Slide 9 · 広島風お好み焼き（全场最大的梗）</h2>
+<table>
+<tr><th>日文</th><th>读音</th><th>意思 / 背景</th></tr>
+<tr class="say"><td class="jp">お好み焼き</td><td class="pron"><span class="romaji">o-ko-no-mi-ya-ki</span><br>（哦扣糯米呀key）</td><td>御好烧/日式煎饼，字面意思"按你喜好煎"。<b>值得开口念一次</b>。</td></tr>
+<tr><td class="jp">広島風</td><td class="pron"><span class="romaji">hiroshima-fū</span></td><td>"广岛风格"。<b>核心文化背景</b>：御好烧有大阪派和广岛派之争——大阪式把所有材料<b>搅在面糊里</b>；广岛式<b>严格分层</b>（薄面皮→卷心菜→面条→蛋→酱），绝不搅拌。广岛人对此极其骄傲，甚至觉得只有自家的才配叫御好烧。<br><b>梗</b>：<b>"Layered, not mixed"</b> 一语双关——既是他们的乡土美食，又是 datastore 的分层惰性架构。在广岛讲这个 = 直球讨好本地观众，是全场最稳的掌声点。<br><b>小心</b>：别当着广岛人说大阪的更好吃（笑）。可以补一句 speaker note 彩蛋：御好烧酱王者 Otafuku（オタフク）总部就在广岛。</td></tr>
+<tr><td class="jp">ソース</td><td class="pron"><span class="romaji">sō-su</span></td><td>酱（sauce 外来语）→ 图上映射"你的 pandas 调用"（最上层，你看得见的）。</td></tr>
+<tr><td class="jp">麺</td><td class="pron"><span class="romaji">men</span>（面）</td><td>面条 → "lazy 算子链"。广岛式的标志就是加面条。</td></tr>
+<tr><td class="jp">キャベツ</td><td class="pron"><span class="romaji">kya-be-tsu</span></td><td>卷心菜（cabbage 外来语）→ "编译成一条 SQL plan"。</td></tr>
+<tr><td class="jp">生地</td><td class="pron"><span class="romaji">ki-ji</span>（key寄）</td><td>面糊/面皮 → "chDB 引擎"（承载一切的底）。</td></tr>
+<tr><td class="jp">鉄板</td><td class="pron"><span class="romaji">tep-pan</span>（贴(顿)胖）</td><td>铁板 → "你的 Python 进程"。teppanyaki（铁板烧）的那个铁板。</td></tr>
+<tr><td class="jp">コテ</td><td class="pron"><span class="romaji">ko-te</span>（扣贴）</td><td>煎铲。<b>广岛人吃御好烧不用筷子，直接用铁铲切着吃</b>——本地人身份象征。<br><b>梗</b>：punchbar 里"コテ翻面 = <code>len()/print()</code> 触发执行"——铲子一翻，整摞一起熟（整条链一次执行）。</td></tr>
+</table>
+
+<h2>Slide 10 · 新干线梗</h2>
+<table>
+<tr><td class="jp">各駅停車</td><td class="pron"><span class="romaji">kaku-eki-tei-sha</span><br>（卡库诶key贴——夏）</td><td>"各站停车"= 慢车/每站都停。<b>梗</b>：pandas 是慢车——每一步（每个中间结果）都要"停靠"（物化一次）。</td></tr>
+<tr><td class="jp">のぞみ</td><td class="pron"><span class="romaji">no-zo-mi</span>（糯佐米）</td><td>"希望号"——新干线最快车次，东京→广岛约 4 小时，只停大站。广岛就在山阳新干线上，观众都是坐它来的。<b>梗</b>：chDB = のぞみ，同样的轨道（API），完全不同的时刻表。冷知识：JR Pass 不能坐のぞみ（贵）。</td></tr>
+</table>
+
+<h2>Slide 12 · 宫岛鸟居</h2>
+<table>
+<tr><td class="jp">宮島</td><td class="pron"><span class="romaji">Miya-jima</span>（米呀寄马）</td><td>宫岛（正式名：厳島 Itsukushima），离广岛市区约 30-45 分钟，世界文化遗产、"日本三景"之一。会场观众几乎人人会去。</td></tr>
+<tr><td class="jp">鳥居</td><td class="pron"><span class="romaji">to-ri-i</span>（托里——衣）</td><td>神社大门/牌坊，划分"神域"与"人间"的<b>门</b>。严岛神社的大鸟居<b>立在海里</b>，涨潮时像浮在水面上——日本最出名的一座。<br><b>梗</b>：punchbar "a gateway standing in the water — the data never moves"：table function 就是立在数据所在之处的门，<b>你穿门而过去查询，数据本身不动</b>。这页的比喻建议照 punchbar 用英语讲出来。</td></tr>
+<tr><td class="jp">青海波</td><td class="pron"><span class="romaji">sei-gai-ha</span></td><td>"青海波"——同心圆扇形排列的传统波浪纹样（和服、包装纸上极常见），图上鸟居脚下的蓝色波浪就是它。纯视觉，不用讲。</td></tr>
+<tr><td class="jp">実測</td><td class="pron"><span class="romaji">ji-s-so-ku</span>（寄(顿)扫库）</td><td>"实测"。红色圆形印章 = <b>判子/印鑑（hanko）</b>，日本人代替签名的私人印章，红印泥盖在正式文件上。<br><b>梗</b>：deck 里每个真实测量的数字都盖了"実測"章 = "官方盖章认证的实测值"。第一次出现时（slide 12 或 15）可以指着说 "jissoku — actually measured, stamped"。中文里就是"实测"，观众里的日本工程师一看就懂。</td></tr>
+</table>
+
+<h2>Slide 18 · 金継ぎ</h2>
+<table>
+<tr><td class="jp">金継ぎ</td><td class="pron"><span class="romaji">kin-tsu-gi</span>（金-刺-gi，gi=英语 give 的 gi）</td><td>金缮——碗碎了用<b>金粉大漆</b>修补，<b>故意让裂缝显眼</b>：伤痕成为器物最美的部分，背后是侘寂（wabi-sabi）的残缺美学。欧美技术圈也熟这个词。<br><b>梗</b>：诚实页把工具的三条"裂缝"（小数据 pandas 更快 / API 有坑 / DuckDB 也很棒）摆在金色裂纹上——<b>不藏短，把短板镀金展示</b>。punchbar "Tools you can trust tell you when not to use them" 就是金缮精神的直译。</td></tr>
+</table>
+
+<h2>Slide 19 · だるま</h2>
+<table>
+<tr><td class="jp">だるま</td><td class="pron"><span class="romaji">da-ru-ma</span>（达噜马）</td><td>达摩不倒翁——原型就是中国人熟的<b>达摩祖师</b>（菩提达摩）。日本人买来时<b>双眼空白</b>：立目标时点左眼，达成时再点右眼。底部配重，推倒自己站起来（谚语：七転び八起き "跌七次爬起八次"）。肚子上的<b>福</b>字和中文一个意思。<br><b>梗</b>：迁移策略 = 达摩式——动手时点一只眼（换 import），pipeline 全绿再点第二只（punchbar: "Paint the second eye when the pipeline runs green"）。日本公司和政客选举时真的会这么干（当选之夜点第二只眼），观众非常熟。</td></tr>
+</table>
+
+<h2>Slide 21 · 谢幕</h2>
+<table>
+<tr class="say"><td class="jp">ありがとうございました</td><td class="pron"><span class="romaji">a-ri-ga-tō<br>go-za-i-ma-shi-ta</span><br>（阿里嘎多——够扎伊马西达）</td><td>"非常感谢（您刚才的聆听）"。<b>注意时态</b>：结尾用过去完成形 〜ました（-mashita），表示"这场演讲结束了，谢谢"；如果说成 〜ます（-masu）是进行时，用在开头。<b>念完微微鞠躬（15°）</b>，这是日本演讲的标准谢幕，观众会以掌声回应。tō 记得拖长。</td></tr>
+</table>
+
+<p class="note" style="margin-top:28px;">生成于 2026-08-18 · 配套 deck：<a href="/slides/chdb-rediscovering-dataframes-pycon-jp-2026.html">Rediscovering DataFrames — PyCon JP 2026</a> · auxten.com</p>
+</body>
+</html>
