@@ -353,29 +353,30 @@ chdb.query(<span class="st">"SELECT count()</span><br>
       <rect x="30" y="368" width="580" height="30" fill="#161616"/>
       <rect x="12" y="378" width="40" height="12" fill="#161616"/>
       <rect x="588" y="378" width="40" height="12" fill="#161616"/>
-      <!-- batter -->
-      <rect x="80" y="312" width="480" height="52" rx="24" fill="#e8c88a" stroke="#161616" stroke-width="5"/>
+      <!-- batter: thin pale crepe, lightly toasted -->
+      <rect x="80" y="332" width="480" height="32" rx="16" fill="#f2e0b0" stroke="#161616" stroke-width="5"/>
+      <path d="M 130 348 q 12 -6 24 0 M 240 350 q 12 -6 24 0 M 360 347 q 12 -6 24 0 M 460 350 q 12 -6 24 0" stroke="#c9913e" stroke-width="4" fill="none" stroke-linecap="round"/>
       <!-- cabbage -->
-      <rect x="92" y="256" width="456" height="52" rx="22" fill="#8bc34a" stroke="#161616" stroke-width="5"/>
-      <path d="M 120 276 q 14 -12 28 0 M 180 288 q 14 -12 28 0 M 250 272 q 14 -12 28 0 M 330 286 q 14 -12 28 0 M 410 272 q 14 -12 28 0 M 480 284 q 14 -12 28 0" stroke="#33691e" stroke-width="4" fill="none"/>
+      <rect x="92" y="276" width="456" height="52" rx="22" fill="#8bc34a" stroke="#161616" stroke-width="5"/>
+      <path d="M 120 296 q 14 -12 28 0 M 180 308 q 14 -12 28 0 M 250 292 q 14 -12 28 0 M 330 306 q 14 -12 28 0 M 410 292 q 14 -12 28 0 M 480 304 q 14 -12 28 0" stroke="#33691e" stroke-width="4" fill="none"/>
       <!-- noodles -->
-      <rect x="86" y="200" width="468" height="52" rx="22" fill="#fadb14" stroke="#161616" stroke-width="5"/>
-      <path d="M 110 226 q 20 -16 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0" stroke="#c79a00" stroke-width="5" fill="none"/>
+      <rect x="86" y="220" width="468" height="52" rx="22" fill="#fadb14" stroke="#161616" stroke-width="5"/>
+      <path d="M 110 246 q 20 -16 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0" stroke="#c79a00" stroke-width="5" fill="none"/>
       <!-- sauce -->
-      <rect x="100" y="146" width="440" height="50" rx="24" fill="#8d3b1b" stroke="#161616" stroke-width="5"/>
-      <path d="M 150 196 q 4 16 -2 24 M 300 196 q 4 18 -2 26 M 450 196 q 4 14 -2 22" stroke="#8d3b1b" stroke-width="10" stroke-linecap="round" fill="none"/>
-      <path d="M 130 168 q 30 -14 60 0 t 60 0 t 60 0 t 60 0 t 60 0 t 60 0" stroke="#fdfdf6" stroke-width="5" fill="none"/>
+      <rect x="100" y="166" width="440" height="50" rx="24" fill="#8d3b1b" stroke="#161616" stroke-width="5"/>
+      <path d="M 150 216 q 4 16 -2 24 M 300 216 q 4 18 -2 26 M 450 216 q 4 14 -2 22" stroke="#8d3b1b" stroke-width="10" stroke-linecap="round" fill="none"/>
       <!-- kote spatula -->
-      <g transform="rotate(-14 560 120)">
-        <rect x="530" y="96" width="110" height="34" rx="4" fill="#c9c6b8" stroke="#161616" stroke-width="5"/>
-        <rect x="636" y="106" width="70" height="14" rx="6" fill="#161616"/>
+      <g transform="rotate(-16 512 112)">
+        <path d="M 446 96 L 566 100 L 566 126 L 446 130 Z" fill="#c9c6b8" stroke="#161616" stroke-width="5"/>
+        <rect x="562" y="106" width="62" height="14" rx="7" fill="#161616"/>
       </g>
     </svg>
+    <div class="sticker white jp" style="position:absolute; top:172px; left:468px; font-size:19px; transform:rotate(-3deg); padding:2px 12px;">コテ <span class="mono" style="font-size:15px;">kote</span></div>
     <div style="position:absolute; top:158px; left:706px; width:520px; display:grid; gap:11px;">
       <div class="card" style="border-color:#8d3b1b; box-shadow:6px 6px 0 #8d3b1b; padding:10px 18px;"><h3 style="color:#8d3b1b; font-size:20px;"><span class="jp">ソース</span> sauce — your pandas calls</h3><div class="m" style="font-size:15.5px;">df[df.x &gt; 1].groupby(…).sum() — untouched</div></div>
       <div class="card" style="border-color:#c79a00; box-shadow:6px 6px 0 #c79a00; padding:10px 18px;"><h3 style="color:#c79a00; font-size:20px;"><span class="jp">麺</span> noodles — the lazy op chain</h3><div class="m" style="font-size:15.5px;">every call recorded, nothing executed</div></div>
       <div class="card g" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">キャベツ</span> cabbage — one SQL plan</h3><div class="m" style="font-size:15.5px;">the whole chain compiles to a single query</div></div>
-      <div class="card o" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">生地</span> batter — the chDB engine</h3><div class="m" style="font-size:15.5px;">columnar · vectorized · all cores</div></div>
+      <div class="card" style="border-color:#a8641f; box-shadow:6px 6px 0 #a8641f; padding:10px 18px;"><h3 style="color:#a8641f; font-size:20px;"><span class="jp">生地</span> batter — the chDB engine</h3><div class="m" style="font-size:15.5px;">columnar · vectorized · all cores</div></div>
       <div class="card" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">鉄板</span> teppan — your Python process</h3><div class="m" style="font-size:15.5px;">everything cooks in-process, no server</div></div>
     </div>
   </div>
