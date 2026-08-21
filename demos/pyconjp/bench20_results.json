@@ -1,0 +1,142 @@
+[
+ {
+  "op": "Filter (single)",
+  "match": true,
+  "pandas": 82,
+  "datastore": 25,
+  "speedup": 3.28
+ },
+ {
+  "op": "Filter (multi AND)",
+  "match": true,
+  "pandas": 129,
+  "datastore": 31,
+  "speedup": 4.16
+ },
+ {
+  "op": "Sort (single col)",
+  "match": true,
+  "pandas": 2998,
+  "datastore": 58,
+  "speedup": 51.69
+ },
+ {
+  "op": "Sort (multi col)",
+  "match": true,
+  "pandas": 3084,
+  "datastore": 79,
+  "speedup": 39.04
+ },
+ {
+  "op": "GroupBy count",
+  "match": true,
+  "pandas": 136,
+  "datastore": 682,
+  "speedup": 0.2
+ },
+ {
+  "op": "GroupBy agg x3",
+  "match": true,
+  "pandas": 179,
+  "datastore": 65,
+  "speedup": 2.75
+ },
+ {
+  "op": "Head / limit",
+  "match": true,
+  "pandas": 54,
+  "datastore": 8,
+  "speedup": 6.75
+ },
+ {
+  "op": "Filter+GroupBy+mean",
+  "match": true,
+  "pandas": 132,
+  "datastore": 279,
+  "speedup": 0.47
+ },
+ {
+  "op": "Multi-filter (4x)",
+  "match": true,
+  "pandas": 147,
+  "datastore": 30,
+  "speedup": 4.9
+ },
+ {
+  "op": "Filter+Select+Sort",
+  "match": true,
+  "pandas": 477,
+  "datastore": 22,
+  "speedup": 21.68
+ },
+ {
+  "op": "Filter+GroupBy+Sort",
+  "match": true,
+  "pandas": 181,
+  "datastore": 316,
+  "speedup": 0.57
+ },
+ {
+  "op": "Complex pipeline",
+  "match": true,
+  "pandas": 226,
+  "datastore": 57,
+  "speedup": 3.96
+ },
+ {
+  "op": "Chain 5 filters",
+  "match": true,
+  "pandas": 373,
+  "datastore": 29,
+  "speedup": 12.86
+ },
+ {
+  "op": "Ultra-complex chain",
+  "match": true,
+  "pandas": 234,
+  "datastore": 58,
+  "speedup": 4.03
+ },
+ {
+  "op": "Filter+Sort+Head",
+  "match": true,
+  "pandas": 265,
+  "datastore": 40,
+  "speedup": 6.62
+ },
+ {
+  "op": "Filter+Sort+Select",
+  "match": true,
+  "pandas": 122,
+  "datastore": 29,
+  "speedup": 4.21
+ },
+ {
+  "op": "Mixed Filter+Sort",
+  "match": true,
+  "pandas": 1302,
+  "datastore": 37,
+  "speedup": 35.19
+ },
+ {
+  "op": "Where (replace)",
+  "match": true,
+  "pandas": 66,
+  "datastore": 454,
+  "speedup": 0.15
+ },
+ {
+  "op": "Filter+Where",
+  "match": true,
+  "pandas": 172,
+  "datastore": 391,
+  "speedup": 0.44
+ },
+ {
+  "op": "Mask (replace)",
+  "match": true,
+  "pandas": 63,
+  "datastore": 537,
+  "speedup": 0.12
+ }
+]

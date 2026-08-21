@@ -410,15 +410,49 @@ chdb.query(<span class="st">"SELECT count()</span><br>
   <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span></span><span class="pg">11 / 21</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">10M rows, 20 everyday ops — <span style="background:var(--yellow); padding:0 10px;">wins 14 / 20</span></h2>
-    <div class="frame-img" style="position:absolute; top:158px; left:70px; width:1010px;">
-      <img src="logos/benchmark_pandas_datastore.png" alt="Pandas vs DataStore benchmark across 20 DataFrame operations at 10M rows: DataStore wins 14, pandas wins 6">
+    <style>
+      .bx-chart { position:absolute; top:176px; left:70px; width:1080px; display:grid; gap:2px; }
+      .bx-row { display:grid; grid-template-columns:205px 116px 745px; align-items:center; height:19px; }
+      .bx-op { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:700; text-align:right; padding-right:10px; white-space:nowrap; }
+      .bx-l { display:flex; justify-content:flex-end; align-items:center; gap:6px; height:100%; }
+      .bx-r { border-left:4px solid var(--ink); display:flex; align-items:center; gap:6px; height:100%; }
+      .bx-row i { display:block; height:15px; border:2.5px solid var(--ink); }
+      .bx-r i { background:var(--yellow); }
+      .bx-l i { background:#e8a598; }
+      .bx-row b { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:900; white-space:nowrap; }
+      .bx-legend { position:absolute; top:150px; left:70px; white-space:nowrap; font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:700; color:#6d6d66; }
+      .bx-legend .sw { display:inline-block; width:13px; height:13px; border:2.5px solid var(--ink); vertical-align:-2px; }
+    </style>
+    <div class="bx-legend"><span class="sw" style="background:var(--yellow);"></span> DataStore faster (14) &nbsp;&nbsp;<span class="sw" style="background:#e8a598;"></span> pandas faster (6) &nbsp;&nbsp;·&nbsp;&nbsp; linear scale: winner's multiple &nbsp;&nbsp;·&nbsp;&nbsp; read parquet → answer · best of 2 · outputs identical 20/20</div>
+    <div class="bx-chart">
+      <div class="bx-row"><span class="bx-op">Sort (single col)</span><span class="bx-l"></span><span class="bx-r"><i style="width:672px"></i><b>×51.7</b></span></div>
+      <div class="bx-row"><span class="bx-op">Sort (multi col)</span><span class="bx-l"></span><span class="bx-r"><i style="width:508px"></i><b>×39.0</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mixed Filter+Sort</span><span class="bx-l"></span><span class="bx-r"><i style="width:458px"></i><b>×35.2</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Select+Sort</span><span class="bx-l"></span><span class="bx-r"><i style="width:282px"></i><b>×21.7</b></span></div>
+      <div class="bx-row"><span class="bx-op">Chain 5 filters</span><span class="bx-l"></span><span class="bx-r"><i style="width:167px"></i><b>×12.9</b></span></div>
+      <div class="bx-row"><span class="bx-op">Head / limit</span><span class="bx-l"></span><span class="bx-r"><i style="width:88px"></i><b>×6.8</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Head</span><span class="bx-l"></span><span class="bx-r"><i style="width:86px"></i><b>×6.6</b></span></div>
+      <div class="bx-row"><span class="bx-op">Multi-filter (4x)</span><span class="bx-l"></span><span class="bx-r"><i style="width:64px"></i><b>×4.9</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Select</span><span class="bx-l"></span><span class="bx-r"><i style="width:55px"></i><b>×4.2</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (multi AND)</span><span class="bx-l"></span><span class="bx-r"><i style="width:54px"></i><b>×4.2</b></span></div>
+      <div class="bx-row"><span class="bx-op">Ultra-complex chain</span><span class="bx-l"></span><span class="bx-r"><i style="width:52px"></i><b>×4.0</b></span></div>
+      <div class="bx-row"><span class="bx-op">Complex pipeline</span><span class="bx-l"></span><span class="bx-r"><i style="width:51px"></i><b>×4.0</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (single)</span><span class="bx-l"></span><span class="bx-r"><i style="width:43px"></i><b>×3.3</b></span></div>
+      <div class="bx-row"><span class="bx-op">GroupBy agg ×3</span><span class="bx-l"></span><span class="bx-r"><i style="width:36px"></i><b>×2.7</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mask (replace)</span><span class="bx-l"><b>×8.5</b><i style="width:110px"></i></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Where (replace)</span><span class="bx-l"><b>×6.7</b><i style="width:87px"></i></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">GroupBy count</span><span class="bx-l"><b>×5.0</b><i style="width:65px"></i></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Where</span><span class="bx-l"><b>×2.3</b><i style="width:30px"></i></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+GroupBy+mean</span><span class="bx-l"><b>×2.1</b><i style="width:27px"></i></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+GroupBy+Sort</span><span class="bx-l"><b>×1.8</b><i style="width:23px"></i></span><span class="bx-r"></span></div>
     </div>
-    <div class="sticker" style="position:absolute; top:400px; right:56px; width:250px; transform:rotate(2deg); font-size:22px; line-height:1.35;">
+    <div class="hanko" style="top:436px; right:96px;">実測</div>
+    <div class="sticker" style="position:absolute; top:310px; right:110px; width:250px; transform:rotate(2deg); font-size:22px; line-height:1.35;">
       pandas keeps 6 —<br>and we'll tell you<br><u>which ones</u>.
     </div>
   </div>
-  <div class="punchbar">Complex chains win big. <span class="y">Tiny cached ops stay with pandas</span> — honesty slide ahead.</div>
-  <aside class="notes">Zoom from the 43 GiB monster benchmark down to everyday scale: 10M rows, 20 common operations, log-scale bars. The pattern: single filters and sorts, combined pipelines, complex chains — the lazy-compile-to-one-plan model wins 14 of 20. pandas keeps small cheap ops where engine startup dominates. I'm not hiding that — it gets its own slide.</aside>
+  <div class="punchbar">Sorts &amp; chains win big — <span class="y">full-column rewrites stay with pandas.</span></div>
+  <aside class="notes">Re-measured on this laptop for this deck: 10M-row parquet, read-to-answer, best of 2 runs, and the outputs of every op are byte-identical between engines — 20 of 20. Linear scale, no log tricks: bars show the winner's multiple. Sorts are the blowout — top-k over 10M rows is ×35–×52 because the engine never materializes the full sorted frame. Filters and chains ×3–×13. pandas keeps 6: mask/where full-column rewrites (×6.7–×8.5 — rewriting 10M values through SQL and back is the worst case for the round-trip), plain groupby-count/mean (engine spin-up dominates a 6-group count), and one groupby+sort. That's the next slide.</aside>
 </section>
 
 <!-- 12 · REACH -->
