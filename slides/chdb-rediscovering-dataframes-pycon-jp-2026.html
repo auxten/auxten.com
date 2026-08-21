@@ -51,6 +51,8 @@
   .topbar .sec { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
     background: var(--ink); color: #fff; padding: 6px 14px; letter-spacing: 1px; }
   .topbar .sec .k { font-family: "Noto Sans JP", sans-serif; color: var(--yellow); }
+  .rj { font-family: "JetBrains Mono", monospace; font-weight: 700; color: #8a8a80; text-transform: none; }
+  .topbar .sec .rj { color: #b8b8ad; font-size: 13px; }
   .topbar .pg { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
     background: #fff; border: 3px solid var(--ink); padding: 3px 12px; }
 
@@ -158,6 +160,7 @@
       display:flex; align-items:center; justify-content:center;">
       <span class="jp" style="writing-mode:vertical-rl; color:#fff; font-size:52px; font-weight:900; letter-spacing:8px;">再発見</span>
     </div>
+    <div class="rj" style="position:absolute; top:522px; right:96px; width:250px; text-align:center; font-size:17px;">sai·hak·ken — rediscovery</div>
   </div>
   <div class="foot"><span>Auxten Wang · <span class="y">ClickHouse</span> · Creator of chDB</span><span>@auxten</span></div>
   <aside class="notes">One idea in 45 minutes: your pandas code is worth keeping — it's the engine underneath that hit the ceiling. 再発見 = rediscovery. Swap the engine, keep everything else.</aside>
@@ -165,7 +168,7 @@
 
 <!-- 02 · ABOUT -->
 <section>
-  <div class="topbar"><span class="sec">ABOUT · <span class="k">自己紹介</span></span><span class="pg">02 / 18</span></div>
+  <div class="topbar"><span class="sec">ABOUT · <span class="k">自己紹介</span> <span class="rj">jikoshōkai</span></span><span class="pg">02 / 18</span></div>
   <div class="frame">
     <div style="display:flex; gap:70px; align-items:center; margin-top:80px;">
       <div style="flex:1;">
@@ -198,7 +201,7 @@
 
 <!-- 03 · THE LOVE -->
 <section>
-  <div class="topbar"><span class="sec">PANDAS · <span class="k">愛</span></span><span class="pg">03 / 18</span></div>
+  <div class="topbar"><span class="sec">PANDAS · <span class="k">愛</span> <span class="rj">ai</span></span><span class="pg">03 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:40px;">Everyone's first data tool</h2>
     <div style="display:flex; gap:56px; margin-top:44px; align-items:flex-start;">
@@ -226,7 +229,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 04 · THE CEILING -->
 <section>
-  <div class="topbar"><span class="sec">THE CEILING · <span class="k">限界</span></span><span class="pg">04 / 18</span></div>
+  <div class="topbar"><span class="sec">THE CEILING · <span class="k">限界</span> <span class="rj">genkai</span></span><span class="pg">04 / 18</span></div>
   <div class="frame">
     <span class="jp" style="position:absolute; top:20px; right:60px; font-size:210px; font-weight:900; color:#00000010; z-index:0;">限界</span>
     <h2 style="margin-top:40px;" class="z2">Then your data grew.</h2>
@@ -242,7 +245,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 05 · WHY -->
 <section>
-  <div class="topbar"><span class="sec">WHY · <span class="k">原因</span></span><span class="pg">05 / 18</span></div>
+  <div class="topbar"><span class="sec">WHY · <span class="k">原因</span> <span class="rj">gen'in</span></span><span class="pg">05 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">The ceiling has three walls</h2>
     <div style="display:flex; gap:40px; margin-top:44px;">
@@ -263,7 +266,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 06 · THE EXITS -->
 <section>
-  <div class="topbar"><span class="sec">THE EXITS · <span class="k">出口</span></span><span class="pg">06 / 18</span></div>
+  <div class="topbar"><span class="sec">THE EXITS · <span class="k">出口</span> <span class="rj">deguchi</span></span><span class="pg">06 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">The usual exits all cost the same thing</h2>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:40px; width:820px;">
@@ -286,7 +289,7 @@ df[df.amount &gt; 100] \<br>
         </g>
         <circle cx="131" cy="44" r="16" fill="#fff"/>
       </svg>
-      <div class="sticker white jp" style="margin-top:8px; font-size:23px; transform:rotate(1.5deg);">非常口 — emergency exit</div>
+      <div class="sticker white jp" style="margin-top:8px; font-size:23px; transform:rotate(1.5deg);">非常口 <span class="rj" style="font-size:15px;">hijōguchi</span> — emergency exit</div>
     </div>
   </div>
   <div class="punchbar">Every exit asks you to leave the API. <span class="y">What if you didn't have to?</span></div>
@@ -295,7 +298,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 07 · THE FLIP -->
 <section>
-  <div class="topbar"><span class="sec">THE FLIP · <span class="k">転換</span></span><span class="pg">07 / 18</span></div>
+  <div class="topbar"><span class="sec">THE FLIP · <span class="k">転換</span> <span class="rj">tenkan</span></span><span class="pg">07 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Change <span style="background:var(--yellow); padding:0 12px;">one line</span></h2>
     <div class="code" style="position:absolute; top:180px; left:70px; width:780px; font-size:23px; line-height:1.7;">
@@ -345,9 +348,9 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 09 · HOW IT WORKS · OKONOMIYAKI -->
 <section>
-  <div class="topbar"><span class="sec">HOW · <span class="k">仕組み</span></span><span class="pg">09 / 18</span></div>
+  <div class="topbar"><span class="sec">HOW · <span class="k">仕組み</span> <span class="rj">shikumi</span></span><span class="pg">09 / 18</span></div>
   <div class="frame">
-    <h2 style="margin-top:28px;">Layered, not mixed — <span class="jp" style="background:var(--yellow); padding:0 12px;">広島風</span></h2>
+    <h2 style="margin-top:28px;">Layered, not mixed — <span class="jp" style="background:var(--yellow); padding:0 12px;">広島風</span> <span class="rj" style="font-size:20px;">hiroshima-fū</span></h2>
     <svg style="position:absolute; top:150px; left:40px;" width="640" height="440" viewBox="0 0 640 440">
       <!-- teppan -->
       <rect x="30" y="368" width="580" height="30" fill="#161616"/>
@@ -373,20 +376,20 @@ chdb.query(<span class="st">"SELECT count()</span><br>
     </svg>
     <div class="sticker white jp" style="position:absolute; top:172px; left:468px; font-size:19px; transform:rotate(-3deg); padding:2px 12px;">コテ <span class="mono" style="font-size:15px;">kote</span></div>
     <div style="position:absolute; top:158px; left:706px; width:520px; display:grid; gap:11px;">
-      <div class="card" style="border-color:#8d3b1b; box-shadow:6px 6px 0 #8d3b1b; padding:10px 18px;"><h3 style="color:#8d3b1b; font-size:20px;"><span class="jp">ソース</span> sauce — your pandas calls</h3><div class="m" style="font-size:15.5px;">df[df.x &gt; 1].groupby(…).sum() — untouched</div></div>
-      <div class="card" style="border-color:#c79a00; box-shadow:6px 6px 0 #c79a00; padding:10px 18px;"><h3 style="color:#c79a00; font-size:20px;"><span class="jp">麺</span> noodles — the lazy op chain</h3><div class="m" style="font-size:15.5px;">every call recorded, nothing executed</div></div>
-      <div class="card g" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">キャベツ</span> cabbage — one SQL plan</h3><div class="m" style="font-size:15.5px;">the whole chain compiles to a single query</div></div>
-      <div class="card" style="border-color:#a8641f; box-shadow:6px 6px 0 #a8641f; padding:10px 18px;"><h3 style="color:#a8641f; font-size:20px;"><span class="jp">生地</span> batter — the chDB engine</h3><div class="m" style="font-size:15.5px;">columnar · vectorized · all cores</div></div>
-      <div class="card" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">鉄板</span> teppan — your Python process</h3><div class="m" style="font-size:15.5px;">everything cooks in-process, no server</div></div>
+      <div class="card" style="border-color:#8d3b1b; box-shadow:6px 6px 0 #8d3b1b; padding:10px 18px;"><h3 style="color:#8d3b1b; font-size:20px;"><span class="jp">ソース</span> <span class="rj" style="font-size:14px;">sōsu</span> · sauce — your pandas calls</h3><div class="m" style="font-size:15.5px;">df[df.x &gt; 1].groupby(…).sum() — untouched</div></div>
+      <div class="card" style="border-color:#c79a00; box-shadow:6px 6px 0 #c79a00; padding:10px 18px;"><h3 style="color:#c79a00; font-size:20px;"><span class="jp">麺</span> <span class="rj" style="font-size:14px;">men</span> · noodles — the lazy op chain</h3><div class="m" style="font-size:15.5px;">every call recorded, nothing executed</div></div>
+      <div class="card g" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">キャベツ</span> <span class="rj" style="font-size:14px;">kyabetsu</span> · cabbage — one SQL plan</h3><div class="m" style="font-size:15.5px;">the whole chain compiles to a single query</div></div>
+      <div class="card" style="border-color:#a8641f; box-shadow:6px 6px 0 #a8641f; padding:10px 18px;"><h3 style="color:#a8641f; font-size:20px;"><span class="jp">生地</span> <span class="rj" style="font-size:14px;">kiji</span> · batter — the chDB engine</h3><div class="m" style="font-size:15.5px;">columnar · vectorized · all cores</div></div>
+      <div class="card" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">鉄板</span> <span class="rj" style="font-size:14px;">teppan</span> · teppan — your Python process</h3><div class="m" style="font-size:15.5px;">everything cooks in-process, no server</div></div>
     </div>
   </div>
-  <div class="punchbar"><span class="mono">len()</span> · <span class="mono">print()</span> · <span class="mono">for</span> — the <span class="jp y">コテ</span> flip: <span class="y">the whole stack executes at once.</span></div>
+  <div class="punchbar"><span class="mono">len()</span> · <span class="mono">print()</span> · <span class="mono">for</span> — the <span class="jp y">コテ</span> <span class="rj" style="font-size:16px; color:#b8b8ad;">kote</span> flip: <span class="y">everything cooks at once.</span></div>
   <aside class="notes">Hiroshima okonomiyaki is layered, never mixed — and so is this. Your pandas calls are the sauce on top; underneath, each call is recorded into a lazy chain, compiled into ONE SQL plan, and executed by the columnar engine only when you actually look at the result — len, print, iteration. That's why chained pandas ops stop costing a copy each: the layers cook as one. (Architecture diagram with the full detail: auxten.com slides repo.)</aside>
 </section>
 
 <!-- 10 · WHERE 100× LIVES -->
 <section>
-  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span></span><span class="pg">10 / 18</span></div>
+  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">10 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Where the 100× lives</h2>
     <div style="position:absolute; top:160px; left:70px; right:70px; display:grid; gap:16px;">
@@ -407,7 +410,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 11 · 20 OPS AT 10M -->
 <section>
-  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span></span><span class="pg">11 / 18</span></div>
+  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">11 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:30px; font-size:38px;">10M rows, 20 ops — <span style="background:var(--yellow); padding:0 10px;">faster on most, leaner on nearly all</span></h2>
     <style>
@@ -465,7 +468,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 12 · REACH -->
 <section>
-  <div class="topbar"><span class="sec">REACH · <span class="k">到達</span></span><span class="pg">12 / 18</span></div>
+  <div class="topbar"><span class="sec">REACH · <span class="k">到達</span> <span class="rj">tōtatsu</span></span><span class="pg">12 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Your data lives on many islands</h2>
     <div class="code" style="position:absolute; top:166px; left:70px; width:800px; font-size:20px; line-height:1.7;">
@@ -510,7 +513,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 13 · RANGED READS -->
 <section>
-  <div class="topbar"><span class="sec">PERFORMANCE · <span class="k">性能</span></span><span class="pg">13 / 18</span></div>
+  <div class="topbar"><span class="sec">PERFORMANCE · <span class="k">性能</span> <span class="rj">seinō</span></span><span class="pg">13 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">It reads what the query needs — <span style="background:var(--yellow); padding:0 10px;">not the file</span></h2>
     <div style="position:absolute; top:170px; left:70px; right:70px;">
@@ -538,7 +541,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 14 · AGENT MEMORY · THREE DATABASES -->
 <section>
-  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span></span><span class="pg">14 / 18</span></div>
+  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">14 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Agent memory today: <span style="background:var(--yellow); padding:0 10px;">three databases</span></h2>
     <div class="card dark" style="position:absolute; top:280px; left:70px; width:250px; text-align:center; padding:26px 20px;">
@@ -570,7 +573,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 15 · AGENT MEMORY · ONE QUERY -->
 <section>
-  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span></span><span class="pg">15 / 18</span></div>
+  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">15 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">One query does all three</h2>
     <div class="code" style="position:absolute; top:166px; left:70px; width:760px; font-size:22px; line-height:1.75;">
@@ -591,7 +594,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
         <div class="row"><span class="sq ok"></span><span><strong>In-process</strong> — zero network hops</span></div>
         <div class="row"><span class="sq ok"></span><span><strong>No servers</strong> — nothing to deploy or babysit</span></div>
       </div>
-      <div class="sticker jp" style="margin-top:40px; transform:rotate(1.5deg); font-size:24px; line-height:1.4;">三本の矢 → 一本<br><span class="mono" style="font-size:15px;">three arrows, one query</span></div>
+      <div class="sticker jp" style="margin-top:40px; transform:rotate(1.5deg); font-size:24px; line-height:1.4;">三本の矢 → 一本<br><span class="rj" style="font-size:14px;">sanbon-no-ya → ippon</span><br><span class="mono" style="font-size:14px;">three arrows, one query</span></div>
     </div>
   </div>
   <div class="punchbar">One table, in-process. <span class="y">No servers.</span></div>
@@ -600,7 +603,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 16 · TRENDS · THE GAP GROWS -->
 <section>
-  <div class="topbar"><span class="sec">TRENDS · <span class="k">傾向</span></span><span class="pg">16 / 18</span></div>
+  <div class="topbar"><span class="sec">TRENDS · <span class="k">傾向</span> <span class="rj">keikō</span></span><span class="pg">16 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">The gap grows — <span style="background:var(--yellow); padding:0 10px;">with size, and with depth</span></h2>
     <style>
@@ -645,7 +648,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 17 · TAKEAWAYS -->
 <section>
-  <div class="topbar"><span class="sec">CLOSE · <span class="k">まとめ</span></span><span class="pg">17 / 18</span></div>
+  <div class="topbar"><span class="sec">CLOSE · <span class="k">まとめ</span> <span class="rj">matome</span></span><span class="pg">17 / 18</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">Three takeaways</h2>
     <div style="display:grid; gap:22px; margin-top:30px;">
@@ -664,6 +667,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 <section>
   <div class="frame">
     <span class="sticker jp" style="position:absolute; top:64px; left:70px; transform:rotate(-2deg); font-size:28px;">ありがとうございました！</span>
+    <div class="rj" style="position:absolute; top:82px; left:510px; font-size:17px;">← arigatō gozaimashita</div>
     <h1 style="position:absolute; top:150px; left:70px; font-size:92px;">Thank you.</h1>
     <div class="sticker white mono" style="position:absolute; top:296px; left:70px; font-size:30px; box-shadow:8px 8px 0 var(--orange);">pip install chdb</div>
     <div style="position:absolute; top:412px; left:70px;" class="rows">
