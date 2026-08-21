@@ -1,0 +1,122 @@
+[
+ {
+  "op": "Filter (single)",
+  "pandas_mb": 967,
+  "datastore_mb": 359,
+  "mem_ratio": 2.69
+ },
+ {
+  "op": "Filter (multi AND)",
+  "pandas_mb": 978,
+  "datastore_mb": 326,
+  "mem_ratio": 3.0
+ },
+ {
+  "op": "Sort (single col)",
+  "pandas_mb": 2076,
+  "datastore_mb": 688,
+  "mem_ratio": 3.02
+ },
+ {
+  "op": "Sort (multi col)",
+  "pandas_mb": 2099,
+  "datastore_mb": 718,
+  "mem_ratio": 2.92
+ },
+ {
+  "op": "GroupBy count",
+  "pandas_mb": 1067,
+  "datastore_mb": 1880,
+  "mem_ratio": 0.57
+ },
+ {
+  "op": "GroupBy agg x3",
+  "pandas_mb": 1069,
+  "datastore_mb": 431,
+  "mem_ratio": 2.48
+ },
+ {
+  "op": "Head / limit",
+  "pandas_mb": 830,
+  "datastore_mb": 390,
+  "mem_ratio": 2.13
+ },
+ {
+  "op": "Filter+GroupBy+mean",
+  "pandas_mb": 1030,
+  "datastore_mb": 869,
+  "mem_ratio": 1.19
+ },
+ {
+  "op": "Multi-filter (4x)",
+  "pandas_mb": 1194,
+  "datastore_mb": 436,
+  "mem_ratio": 2.74
+ },
+ {
+  "op": "Filter+Select+Sort",
+  "pandas_mb": 1049,
+  "datastore_mb": 380,
+  "mem_ratio": 2.76
+ },
+ {
+  "op": "Filter+GroupBy+Sort",
+  "pandas_mb": 1206,
+  "datastore_mb": 1178,
+  "mem_ratio": 1.02
+ },
+ {
+  "op": "Complex pipeline",
+  "pandas_mb": 1386,
+  "datastore_mb": 400,
+  "mem_ratio": 3.46
+ },
+ {
+  "op": "Chain 5 filters",
+  "pandas_mb": 1552,
+  "datastore_mb": 477,
+  "mem_ratio": 3.25
+ },
+ {
+  "op": "Ultra-complex chain",
+  "pandas_mb": 1464,
+  "datastore_mb": 528,
+  "mem_ratio": 2.77
+ },
+ {
+  "op": "Filter+Sort+Head",
+  "pandas_mb": 1010,
+  "datastore_mb": 473,
+  "mem_ratio": 2.14
+ },
+ {
+  "op": "Filter+Sort+Select",
+  "pandas_mb": 1006,
+  "datastore_mb": 408,
+  "mem_ratio": 2.47
+ },
+ {
+  "op": "Mixed Filter+Sort",
+  "pandas_mb": 1424,
+  "datastore_mb": 443,
+  "mem_ratio": 3.21
+ },
+ {
+  "op": "Where (replace)",
+  "pandas_mb": 947,
+  "datastore_mb": 1882,
+  "mem_ratio": 0.5
+ },
+ {
+  "op": "Filter+Where",
+  "pandas_mb": 1353,
+  "datastore_mb": 1627,
+  "mem_ratio": 0.83
+ },
+ {
+  "op": "Mask (replace)",
+  "pandas_mb": 965,
+  "datastore_mb": 1889,
+  "mem_ratio": 0.51
+ }
+]

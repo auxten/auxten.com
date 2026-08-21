@@ -411,40 +411,47 @@ chdb.query(<span class="st">"SELECT count()</span><br>
   <div class="frame">
     <h2 style="margin-top:30px;">10M rows, 20 everyday ops — <span style="background:var(--yellow); padding:0 10px;">wins 14 / 20</span></h2>
     <style>
-      .bx-chart { position:absolute; top:176px; left:70px; width:1080px; display:grid; gap:2px; }
-      .bx-row { display:grid; grid-template-columns:205px 116px 745px; align-items:center; height:19px; }
+      .bx-chart { position:absolute; top:182px; left:70px; width:1080px; display:grid; gap:0; }
+      .bx-row { display:grid; grid-template-columns:190px 160px 730px; align-items:center; height:20px; }
       .bx-op { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:700; text-align:right; padding-right:10px; white-space:nowrap; }
       .bx-l { display:flex; justify-content:flex-end; align-items:center; gap:6px; height:100%; }
       .bx-r { border-left:4px solid var(--ink); display:flex; align-items:center; gap:6px; height:100%; }
-      .bx-row i { display:block; height:15px; border:2.5px solid var(--ink); }
-      .bx-r i { background:var(--yellow); }
-      .bx-l i { background:#e8a598; }
+      .bx-row .bars { display:flex; flex-direction:column; gap:1px; }
+      .bx-l .bars { align-items:flex-end; }
+      .bx-row i.sp { display:block; height:7px; border:2.5px solid var(--ink); }
+      .bx-row i.rm { display:block; height:2px; border:2px solid var(--ink); background:var(--blue); }
+      .bx-r i.sp { background:var(--yellow); }
+      .bx-l i.sp { background:#e8a598; }
       .bx-row b { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:900; white-space:nowrap; }
-      .bx-legend { position:absolute; top:150px; left:70px; white-space:nowrap; font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:700; color:#6d6d66; }
+      .bx-legend { position:absolute; top:146px; left:70px; white-space:nowrap; font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:700; color:#6d6d66; line-height:1.3; }
       .bx-legend .sw { display:inline-block; width:13px; height:13px; border:2.5px solid var(--ink); vertical-align:-2px; }
+      .bx-legend .swm { display:inline-block; width:13px; height:2px; border:2px solid var(--ink); background:var(--blue); vertical-align:2px; }
     </style>
-    <div class="bx-legend"><span class="sw" style="background:var(--yellow);"></span> DataStore faster (14) &nbsp;&nbsp;<span class="sw" style="background:#e8a598;"></span> pandas faster (6) &nbsp;&nbsp;·&nbsp;&nbsp; linear scale: winner's multiple &nbsp;&nbsp;·&nbsp;&nbsp; read parquet → answer · best of 2 · outputs identical 20/20</div>
+    <div class="bx-legend">
+      <span class="sw" style="background:var(--yellow);"></span> DataStore faster (14) &nbsp;&nbsp;<span class="sw" style="background:#e8a598;"></span> pandas faster (6) &nbsp;&nbsp;<span class="swm"></span> thin bar = peak RAM, winner's × &nbsp;&nbsp;·&nbsp;&nbsp; linear scale, winner's multiple<br>
+      read parquet → answer · best of 2 · outputs identical 20/20 &nbsp;&nbsp;·&nbsp;&nbsp; peak RSS median: pandas <b style="color:#161616;">1,069 MB</b> → DataStore <b style="color:#161616;">477 MB</b>
+    </div>
     <div class="bx-chart">
-      <div class="bx-row"><span class="bx-op">Sort (single col)</span><span class="bx-l"></span><span class="bx-r"><i style="width:672px"></i><b>×51.7</b></span></div>
-      <div class="bx-row"><span class="bx-op">Sort (multi col)</span><span class="bx-l"></span><span class="bx-r"><i style="width:508px"></i><b>×39.0</b></span></div>
-      <div class="bx-row"><span class="bx-op">Mixed Filter+Sort</span><span class="bx-l"></span><span class="bx-r"><i style="width:458px"></i><b>×35.2</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Select+Sort</span><span class="bx-l"></span><span class="bx-r"><i style="width:282px"></i><b>×21.7</b></span></div>
-      <div class="bx-row"><span class="bx-op">Chain 5 filters</span><span class="bx-l"></span><span class="bx-r"><i style="width:167px"></i><b>×12.9</b></span></div>
-      <div class="bx-row"><span class="bx-op">Head / limit</span><span class="bx-l"></span><span class="bx-r"><i style="width:88px"></i><b>×6.8</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Sort+Head</span><span class="bx-l"></span><span class="bx-r"><i style="width:86px"></i><b>×6.6</b></span></div>
-      <div class="bx-row"><span class="bx-op">Multi-filter (4x)</span><span class="bx-l"></span><span class="bx-r"><i style="width:64px"></i><b>×4.9</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Sort+Select</span><span class="bx-l"></span><span class="bx-r"><i style="width:55px"></i><b>×4.2</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter (multi AND)</span><span class="bx-l"></span><span class="bx-r"><i style="width:54px"></i><b>×4.2</b></span></div>
-      <div class="bx-row"><span class="bx-op">Ultra-complex chain</span><span class="bx-l"></span><span class="bx-r"><i style="width:52px"></i><b>×4.0</b></span></div>
-      <div class="bx-row"><span class="bx-op">Complex pipeline</span><span class="bx-l"></span><span class="bx-r"><i style="width:51px"></i><b>×4.0</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter (single)</span><span class="bx-l"></span><span class="bx-r"><i style="width:43px"></i><b>×3.3</b></span></div>
-      <div class="bx-row"><span class="bx-op">GroupBy agg ×3</span><span class="bx-l"></span><span class="bx-r"><i style="width:36px"></i><b>×2.7</b></span></div>
-      <div class="bx-row"><span class="bx-op">Mask (replace)</span><span class="bx-l"><b>×8.5</b><i style="width:110px"></i></span><span class="bx-r"></span></div>
-      <div class="bx-row"><span class="bx-op">Where (replace)</span><span class="bx-l"><b>×6.7</b><i style="width:87px"></i></span><span class="bx-r"></span></div>
-      <div class="bx-row"><span class="bx-op">GroupBy count</span><span class="bx-l"><b>×5.0</b><i style="width:65px"></i></span><span class="bx-r"></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Where</span><span class="bx-l"><b>×2.3</b><i style="width:30px"></i></span><span class="bx-r"></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+GroupBy+mean</span><span class="bx-l"><b>×2.1</b><i style="width:27px"></i></span><span class="bx-r"></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+GroupBy+Sort</span><span class="bx-l"><b>×1.8</b><i style="width:23px"></i></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Sort (single col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:672px"></i><i class="rm" style="width:39px"></i></span><b>×51.7</b></span></div>
+      <div class="bx-row"><span class="bx-op">Sort (multi col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:508px"></i><i class="rm" style="width:38px"></i></span><b>×39.0</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mixed Filter+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:458px"></i><i class="rm" style="width:42px"></i></span><b>×35.2</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Select+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:282px"></i><i class="rm" style="width:36px"></i></span><b>×21.7</b></span></div>
+      <div class="bx-row"><span class="bx-op">Chain 5 filters</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:167px"></i><i class="rm" style="width:42px"></i></span><b>×12.9</b></span></div>
+      <div class="bx-row"><span class="bx-op">Head / limit</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:88px"></i><i class="rm" style="width:28px"></i></span><b>×6.8</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Head</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:86px"></i><i class="rm" style="width:28px"></i></span><b>×6.6</b></span></div>
+      <div class="bx-row"><span class="bx-op">Multi-filter (4x)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:64px"></i><i class="rm" style="width:36px"></i></span><b>×4.9</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Select</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:55px"></i><i class="rm" style="width:32px"></i></span><b>×4.2</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (multi AND)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:54px"></i><i class="rm" style="width:39px"></i></span><b>×4.2</b></span></div>
+      <div class="bx-row"><span class="bx-op">Ultra-complex chain</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:52px"></i><i class="rm" style="width:36px"></i></span><b>×4.0</b></span></div>
+      <div class="bx-row"><span class="bx-op">Complex pipeline</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:51px"></i><i class="rm" style="width:45px"></i></span><b>×4.0</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (single)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:43px"></i><i class="rm" style="width:35px"></i></span><b>×3.3</b></span></div>
+      <div class="bx-row"><span class="bx-op">GroupBy agg ×3</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:36px"></i><i class="rm" style="width:32px"></i></span><b>×2.7</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mask (replace)</span><span class="bx-l"><b>×8.5</b><span class="bars"><i class="sp" style="width:110px"></i><i class="rm" style="width:25px"></i></span></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Where (replace)</span><span class="bx-l"><b>×6.7</b><span class="bars"><i class="sp" style="width:87px"></i><i class="rm" style="width:26px"></i></span></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">GroupBy count</span><span class="bx-l"><b>×5.0</b><span class="bars"><i class="sp" style="width:65px"></i><i class="rm" style="width:23px"></i></span></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Where</span><span class="bx-l"><b>×2.3</b><span class="bars"><i class="sp" style="width:30px"></i><i class="rm" style="width:16px"></i></span></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+GroupBy+mean</span><span class="bx-l"><b>×2.1</b><span class="bars"><i class="sp" style="width:27px"></i></span></span><span class="bx-r"><span class="bars"><i class="rm" style="width:15px"></i></span></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+GroupBy+Sort</span><span class="bx-l"><b>×1.8</b><span class="bars"><i class="sp" style="width:23px"></i></span></span><span class="bx-r"><span class="bars"><i class="rm" style="width:13px"></i></span></span></div>
     </div>
     <div class="hanko" style="top:436px; right:96px;">実測</div>
     <div class="sticker" style="position:absolute; top:310px; right:110px; width:250px; transform:rotate(2deg); font-size:22px; line-height:1.35;">
@@ -452,7 +459,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
     </div>
   </div>
   <div class="punchbar">Sorts &amp; chains win big — <span class="y">full-column rewrites stay with pandas.</span></div>
-  <aside class="notes">Re-measured on this laptop for this deck: 10M-row parquet, read-to-answer, best of 2 runs, and the outputs of every op are byte-identical between engines — 20 of 20. Linear scale, no log tricks: bars show the winner's multiple. Sorts are the blowout — top-k over 10M rows is ×35–×52 because the engine never materializes the full sorted frame. Filters and chains ×3–×13. pandas keeps 6: mask/where full-column rewrites (×6.7–×8.5 — rewriting 10M values through SQL and back is the worst case for the round-trip), plain groupby-count/mean (engine spin-up dominates a 6-group count), and one groupby+sort. That's the next slide.</aside>
+  <aside class="notes">Re-measured on this laptop for this deck: 10M-row parquet, read-to-answer, best of 2 runs, and the outputs of every op are byte-identical between engines — 20 of 20. Linear scale, no log tricks: bars show the winner's multiple. Sorts are the blowout — top-k over 10M rows is ×35–×52 because the engine never materializes the full sorted frame. Filters and chains ×3–×13. pandas keeps 6: mask/where full-column rewrites (×6.7–×8.5 — rewriting 10M values through SQL and back is the worst case for the round-trip), plain groupby-count/mean (engine spin-up dominates a 6-group count), and one groupby+sort. That's the next slide. The thin blue bars are peak RAM, same winner's-multiple encoding — fresh process per op, ru_maxrss (mem20.py). Streaming holds a half to a third of pandas' RAM on 16 of 20 ops — median peak 1,069 vs 477 MB, sorts 2.1 GB vs 0.7 GB. And note the two bottom rows: pandas wins them on speed, but the thin RAM bar still points right — even there the lazy plan is leaner. The same full-column rewrites that cost time also cost memory (~1.9 GB DataStore peaks) — the whole column round-trips.</aside>
 </section>
 
 <!-- 12 · REACH -->
