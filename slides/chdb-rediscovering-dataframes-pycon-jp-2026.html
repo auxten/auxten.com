@@ -485,10 +485,10 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 <section>
   <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">12 / 19</span></div>
   <div class="frame">
-    <h2 style="margin-top:30px; font-size:38px;">10M rows, 16 everyday ops — <span style="background:var(--yellow); padding:0 10px;">faster on 14, leaner on all 16</span></h2>
+    <h2 style="margin-top:30px; font-size:38px;">10M rows, 16 everyday ops — <span style="background:var(--yellow); padding:0 10px;">faster on 14 of 16</span></h2>
     <style>
       .bx-chart { position:absolute; top:180px; left:70px; width:1080px; display:grid; gap:1px; }
-      .bx-row { display:grid; grid-template-columns:175px 90px 815px; align-items:center; height:24px; }
+      .bx-row { display:grid; grid-template-columns:175px 175px 730px; align-items:center; height:24px; }
       .bx-op { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:700; text-align:right; padding-right:8px; white-space:nowrap; }
       .bx-l { display:flex; justify-content:flex-end; align-items:center; gap:6px; height:100%; }
       .bx-r { border-left:4px solid var(--ink); display:flex; align-items:center; gap:6px; height:100%; }
@@ -506,33 +506,33 @@ chdb.query(<span class="st">"SELECT count()</span><br>
     </style>
     <div class="bx-legend">
       <span class="sw" style="background:var(--yellow);"></span> DataStore faster (14) &nbsp;&nbsp;<span class="sw" style="background:#e8a598;"></span> pandas faster (2) &nbsp;&nbsp;<span class="swm"></span> thin bar + <b style="color:var(--blue);">blue %</b> = the RAM we use vs pandas (33% = ⅓) &nbsp;&nbsp;·&nbsp;&nbsp; linear scale<br>
-      read parquet → answer · best of 2 · outputs identical 16/16 &nbsp;&nbsp;·&nbsp;&nbsp; peak RSS median: pandas <b style="color:#161616;">1,132 MB</b> → DataStore <b style="color:#161616;">440 MB (39%)</b>
+      read parquet → answer · best of 2 · outputs identical 16/16 &nbsp;&nbsp;·&nbsp;&nbsp; peak RSS median: pandas <b style="color:#161616;">1,059 MB</b> → DataStore <b style="color:#161616;">440 MB (42%)</b>
     </div>
     <div class="bx-chart">
-      <div class="bx-row"><span class="bx-op">Sort (single col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:698px"></i><i class="rm" style="width:41px"></i></span><b>&times;51.7</b><b class="rmx">33%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Sort (multi col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:527px"></i><i class="rm" style="width:39px"></i></span><b>&times;39.0</b><b class="rmx">34%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Mixed Filter+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:475px"></i><i class="rm" style="width:43px"></i></span><b>&times;35.2</b><b class="rmx">31%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Select+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:293px"></i><i class="rm" style="width:37px"></i></span><b>&times;21.7</b><b class="rmx">36%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Chain 5 filters</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:174px"></i><i class="rm" style="width:44px"></i></span><b>&times;12.9</b><b class="rmx">31%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Head / limit</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:91px"></i><i class="rm" style="width:29px"></i></span><b>&times;6.8</b><b class="rmx">47%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Sort+Head</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:89px"></i><i class="rm" style="width:29px"></i></span><b>&times;6.6</b><b class="rmx">47%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Multi-filter (4x)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:66px"></i><i class="rm" style="width:37px"></i></span><b>&times;4.9</b><b class="rmx">37%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+Sort+Select</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:57px"></i><i class="rm" style="width:33px"></i></span><b>&times;4.2</b><b class="rmx">41%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter (multi AND)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:56px"></i><i class="rm" style="width:40px"></i></span><b>&times;4.2</b><b class="rmx">33%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Ultra-complex chain</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:54px"></i><i class="rm" style="width:37px"></i></span><b>&times;4.0</b><b class="rmx">36%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Complex pipeline</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:53px"></i><i class="rm" style="width:47px"></i></span><b>&times;4.0</b><b class="rmx">29%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter (single)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:44px"></i><i class="rm" style="width:36px"></i></span><b>&times;3.3</b><b class="rmx">37%</b></span></div>
-      <div class="bx-row"><span class="bx-op">GroupBy agg &times;3</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:37px"></i><i class="rm" style="width:33px"></i></span><b>&times;2.8</b><b class="rmx">40%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+GroupBy+mean</span><span class="bx-l"><b>&times;2.1</b><span class="bars"><i class="sp" style="width:29px"></i></span></span><span class="bx-r"><span class="bars"><i class="rm" style="width:16px"></i></span><b class="rmx">84%</b></span></div>
-      <div class="bx-row"><span class="bx-op">Filter+GroupBy+Sort</span><span class="bx-l"><b>&times;1.8</b><span class="bars"><i class="sp" style="width:24px"></i></span></span><span class="bx-r"><span class="bars"><i class="rm" style="width:14px"></i></span><b class="rmx">98%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Sort (single col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:569px"></i><i class="rm" style="width:33px"></i></span><b>&times;51.7</b><b class="rmx">33%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Sort (multi col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:429px"></i><i class="rm" style="width:32px"></i></span><b>&times;39.0</b><b class="rmx">34%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mixed Filter+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:387px"></i><i class="rm" style="width:35px"></i></span><b>&times;35.2</b><b class="rmx">31%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Select+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:238px"></i><i class="rm" style="width:30px"></i></span><b>&times;21.7</b><b class="rmx">36%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Chain 5 filters</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:141px"></i><i class="rm" style="width:36px"></i></span><b>&times;12.9</b><b class="rmx">31%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Head / limit</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:74px"></i><i class="rm" style="width:23px"></i></span><b>&times;6.8</b><b class="rmx">47%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Head</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:73px"></i><i class="rm" style="width:24px"></i></span><b>&times;6.6</b><b class="rmx">47%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Multi-filter (4x)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:54px"></i><i class="rm" style="width:30px"></i></span><b>&times;4.9</b><b class="rmx">37%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Select</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:46px"></i><i class="rm" style="width:27px"></i></span><b>&times;4.2</b><b class="rmx">41%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (multi AND)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:46px"></i><i class="rm" style="width:33px"></i></span><b>&times;4.2</b><b class="rmx">33%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Ultra-complex chain</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:44px"></i><i class="rm" style="width:30px"></i></span><b>&times;4.0</b><b class="rmx">36%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Complex pipeline</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:44px"></i><i class="rm" style="width:38px"></i></span><b>&times;4.0</b><b class="rmx">29%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (single)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:36px"></i><i class="rm" style="width:30px"></i></span><b>&times;3.3</b><b class="rmx">37%</b></span></div>
+      <div class="bx-row"><span class="bx-op">GroupBy agg &times;3</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:30px"></i><i class="rm" style="width:27px"></i></span><b>&times;2.8</b><b class="rmx">40%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mask (replace)</span><span class="bx-l"><b class="rmx">196%</b><b>&times;8.5</b><span class="bars"><i class="sp" style="width:93px"></i><i class="rm" style="width:22px"></i></span></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Where (replace)</span><span class="bx-l"><b class="rmx">199%</b><b>&times;6.7</b><span class="bars"><i class="sp" style="width:73px"></i><i class="rm" style="width:22px"></i></span></span><span class="bx-r"></span></div>
     </div>
     <div class="hanko" style="top:436px; right:96px;">実測</div>
     <div class="sticker" style="position:absolute; top:310px; right:110px; width:250px; transform:rotate(2deg); font-size:22px; line-height:1.35;">
-      thin blue bars:<br>⅓–½ the RAM —<br><u>every single row</u>.
+      thin blue bars:<br>⅓–½ the RAM<br>on <u>every op we win</u>.
     </div>
   </div>
-  <div class="punchbar">Faster on 14 of 16 — <span class="y">and leaner on every single one.</span></div>
-  <aside class="notes">Measured on this laptop for this deck: 10M-row parquet, read-to-answer, best of 2 runs, outputs verified identical between engines on every op shown. Linear scale, no log tricks: fat bars are speed, thin blue bars are peak RAM (fresh process per op, ru_maxrss), labeled with the share of pandas' RAM we use — 33% means one third. Sorts are the blowout — top-k over 10M rows is ×35–×52 because the engine never materializes the full sorted frame. Filters and chains ×3–×13. The two red rows at the bottom: small fixed-cardinality groupbys where engine spin-up dominates — pandas is ~×2 quicker there, yet even on those the blue RAM number stays below 100% (84% and 98%): leaner on all 16 of 16. If asked about coverage: the full 20-op run (bench20_results.json in the repo) also measured niche full-column rewrite ops (where/mask) where pandas wins ×7–8 — cut from the slide as edge cases, kept in the repo for anyone who checks.</aside>
+  <div class="punchbar">Faster on 14 of 16 — <span class="y">bulk value-replace stays with pandas.</span></div>
+  <aside class="notes">Measured on this laptop for this deck: 10M-row parquet, read-to-answer, best of 2 runs, outputs verified identical between engines on every op shown. Linear scale, no log tricks: fat bars are speed, thin blue bars are peak RAM (fresh process per op, ru_maxrss), labeled with the share of pandas' RAM we use — 33% means one third. Sorts are the blowout — top-k over 10M rows is ×35–×52 because the engine never materializes the full sorted frame. Filters and chains ×3–×13. The two red rows are one family: bulk value-replace (mask/where). pandas rewrites the column in place; we round-trip it through the engine — pandas wins those on speed and RAM, and the honest advice is: keep using pandas there. One clean concession, easy to say out loud. Full 20-op run in the repo (bench20_results.json) for anyone who checks.</aside>
 </section>
 
 <!-- 12 · REACH -->
@@ -695,7 +695,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
         <div class="tr-bar"><b>×28</b><i style="height:140px;"></i></div>
         <div class="tr-bar"><b>×52.7</b><i style="height:263px;"></i></div>
       </div>
-      <div class="tr-x"><span class="tr-lab">100K rows</span><span class="tr-lab">1M</span><span class="tr-lab">10M</span><span class="tr-lab">43.77 GiB<br>ClickBench*</span></div>
+      <div class="tr-x"><span class="tr-lab">100K rows</span><span class="tr-lab">1M</span><span class="tr-lab">10M</span><span class="tr-lab">100M<br>ClickBench*</span></div>
     </div>
     <div class="tr-panel" style="left:660px;">
       <div class="tr-title">CHAIN DEPTH ↑ <span style="color:#6d6d66;">— 10M rows</span></div>
@@ -709,7 +709,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
       <div class="tr-x"><span class="tr-lab">1 op</span><span class="tr-lab">4 filters</span><span class="tr-lab">5 chained</span><span class="tr-lab">+select<br>+sort</span><span class="tr-lab">+multi-<br>sort</span></div>
     </div>
     <div class="hanko" style="top:150px; right:56px;">実測</div>
-    <p class="mono muted" style="position:absolute; top:556px; left:70px; font-size:15px;">same laptop, shared linear scale · *43.77 GiB point: published ClickBench DataFrame total, benchmark.clickhouse.com</p>
+    <p class="mono muted" style="position:absolute; top:556px; left:70px; font-size:15px;">same laptop, shared linear scale · *100M point: published ClickBench DataFrame total (100M rows / 43.77 GiB), benchmark.clickhouse.com</p>
   </div>
   <div class="punchbar">Below ~1M rows keep pandas. <span class="y">Beyond it, the gap only widens.</span></div>
   <aside class="notes">Both panels, one linear scale. Left: the identical filter-and-sort pipeline as the file grows — at 100K rows pandas is actually faster, they cross around a million, ×28 at 10M, and the published 43.77 GiB ClickBench DataFrame total has the engine ×52.7 ahead overall. Right: fixed 10M rows, growing chain depth — one filter ×3.3, and every op you add compounds, up to ×35 — because the whole chain compiles into ONE plan instead of materializing after every step. Say the left edge honestly: small data is pandas country. Everything to the right of a million rows is ours, and it keeps going where pandas ends in a MemoryError.</aside>
