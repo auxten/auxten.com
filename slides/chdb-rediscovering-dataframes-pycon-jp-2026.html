@@ -168,7 +168,7 @@
 
 <!-- 02 · ABOUT -->
 <section>
-  <div class="topbar"><span class="sec">ABOUT · <span class="k">自己紹介</span> <span class="rj">jikoshōkai</span></span><span class="pg">02 / 18</span></div>
+  <div class="topbar"><span class="sec">ABOUT · <span class="k">自己紹介</span> <span class="rj">jikoshōkai</span></span><span class="pg">02 / 19</span></div>
   <div class="frame">
     <div style="display:flex; gap:70px; align-items:center; margin-top:80px;">
       <div style="flex:1;">
@@ -201,7 +201,7 @@
 
 <!-- 03 · THE LOVE -->
 <section>
-  <div class="topbar"><span class="sec">PANDAS · <span class="k">愛</span> <span class="rj">ai</span></span><span class="pg">03 / 18</span></div>
+  <div class="topbar"><span class="sec">PANDAS · <span class="k">愛</span> <span class="rj">ai</span></span><span class="pg">03 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:40px;">Everyone's first data tool</h2>
     <div style="display:flex; gap:56px; margin-top:44px; align-items:flex-start;">
@@ -229,7 +229,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 04 · THE CEILING -->
 <section>
-  <div class="topbar"><span class="sec">THE CEILING · <span class="k">限界</span> <span class="rj">genkai</span></span><span class="pg">04 / 18</span></div>
+  <div class="topbar"><span class="sec">THE CEILING · <span class="k">限界</span> <span class="rj">genkai</span></span><span class="pg">04 / 19</span></div>
   <div class="frame">
     <span class="jp" style="position:absolute; top:20px; right:60px; font-size:210px; font-weight:900; color:#00000010; z-index:0;">限界</span>
     <h2 style="margin-top:40px;" class="z2">Then your data grew.</h2>
@@ -245,7 +245,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 05 · WHY -->
 <section>
-  <div class="topbar"><span class="sec">WHY · <span class="k">原因</span> <span class="rj">gen'in</span></span><span class="pg">05 / 18</span></div>
+  <div class="topbar"><span class="sec">WHY · <span class="k">原因</span> <span class="rj">gen'in</span></span><span class="pg">05 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">The ceiling has three walls</h2>
     <div style="display:flex; gap:40px; margin-top:44px;">
@@ -266,7 +266,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 06 · THE EXITS -->
 <section>
-  <div class="topbar"><span class="sec">THE EXITS · <span class="k">出口</span> <span class="rj">deguchi</span></span><span class="pg">06 / 18</span></div>
+  <div class="topbar"><span class="sec">THE EXITS · <span class="k">出口</span> <span class="rj">deguchi</span></span><span class="pg">06 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">The usual exits all cost the same thing</h2>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:40px; width:820px;">
@@ -298,7 +298,7 @@ df[df.amount &gt; 100] \<br>
 
 <!-- 07 · THE FLIP -->
 <section>
-  <div class="topbar"><span class="sec">THE FLIP · <span class="k">転換</span> <span class="rj">tenkan</span></span><span class="pg">07 / 18</span></div>
+  <div class="topbar"><span class="sec">THE FLIP · <span class="k">転換</span> <span class="rj">tenkan</span></span><span class="pg">07 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Change <span style="background:var(--yellow); padding:0 12px;">one line</span></h2>
     <div class="code" style="position:absolute; top:180px; left:70px; width:780px; font-size:23px; line-height:1.7;">
@@ -321,7 +321,7 @@ top = (df[df.status == 200]<br>
 
 <!-- 08 · CHDB -->
 <section>
-  <div class="topbar"><span class="sec">CHDB</span><span class="pg">08 / 18</span></div>
+  <div class="topbar"><span class="sec">CHDB</span><span class="pg">08 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:36px;">chDB: a rocket engine on a bicycle</h2>
     <div class="frame-img" style="position:absolute; top:180px; left:70px; width:520px; transform:rotate(-1deg);">
@@ -348,7 +348,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 09 · HOW IT WORKS · OKONOMIYAKI -->
 <section>
-  <div class="topbar"><span class="sec">HOW · <span class="k">仕組み</span> <span class="rj">shikumi</span></span><span class="pg">09 / 18</span></div>
+  <div class="topbar"><span class="sec">HOW · <span class="k">仕組み</span> <span class="rj">shikumi</span></span><span class="pg">09 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:28px;">Layered, not mixed — <span class="jp" style="background:var(--yellow); padding:0 12px;">お好み焼き</span> <span class="rj" style="font-size:20px;">o-ko-no-mi-ya-ki</span></h2>
     <svg style="position:absolute; top:150px; left:40px;" width="640" height="440" viewBox="0 0 640 440">
@@ -387,9 +387,82 @@ chdb.query(<span class="st">"SELECT count()</span><br>
   <aside class="notes">Hiroshima okonomiyaki is layered, never mixed — and so is this. Your pandas calls are the sauce on top; underneath, each call is recorded into a lazy chain, compiled into ONE SQL plan, and executed by the columnar engine only when you actually look at the result — len, print, iteration. That's why chained pandas ops stop costing a copy each: the layers cook as one. (Architecture diagram with the full detail: auxten.com slides repo.)</aside>
 </section>
 
+<!-- 10 · WHY SO FAST -->
+<section>
+  <div class="topbar"><span class="sec">ENGINE · <span class="k">秘密</span> <span class="rj">himitsu</span></span><span class="pg">10 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:30px;">The engine knocks down <span style="background:var(--yellow); padding:0 10px;">all three walls</span></h2>
+    <style>
+      .wf-card h3 { font-size: 23px; }
+      .wf-tag { font-family:"JetBrains Mono",monospace; font-size:15px; font-weight:900; margin-top:14px;
+                display:inline-block; background:var(--ink); color:var(--yellow); padding:3px 10px; }
+      .wf-lanes { display:flex; gap:4px; margin-top:14px; }
+      .wf-lanes i { display:block; flex:1; height:30px; background:var(--yellow); border:2.5px solid var(--ink); }
+      .wf-lanes.p i { background:#eceade; }
+      .wf-lanes.p i:first-child { background:#e8a598; }
+      .wf-simd { display:flex; align-items:center; gap:14px; }
+      .wf-simd .cells { display:flex; gap:4px; }
+      .wf-simd .cells i { display:block; width:34px; height:34px; background:var(--yellow); border:2.5px solid var(--ink); }
+    </style>
+    <div style="display:flex; gap:34px; margin-top:30px;">
+      <div class="card g wf-card" style="flex:1;"><h3>A SQL COMPILER</h3>
+        <div class="m" style="font-size:17.5px;">an internal compiler rewrites your whole pandas chain into <b>one SQL query</b> for the ClickHouse engine</div>
+        <div class="wf-tag">pandas → SQL → ClickHouse</div>
+      </div>
+      <div class="card g wf-card" style="flex:1;"><h3>EVERY CORE</h3>
+        <div class="m" style="font-size:17.5px;">pandas computes on 1 of 14 cores — the engine fills them all</div>
+        <div class="wf-lanes p"><i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i></div>
+        <div class="wf-lanes"><i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i></div>
+      </div>
+      <div class="card g wf-card" style="flex:1;"><h3>STREAMING</h3>
+        <div class="m" style="font-size:17.5px;">top-10 of 10M rows keeps a 10-row heap — never the sorted table</div>
+        <div class="wf-tag">RAM: 100% → 33%</div>
+      </div>
+    </div>
+    <div style="position:absolute; top:440px; left:70px; right:70px; display:flex; align-items:center; gap:26px;">
+      <div class="card" style="padding:14px 22px;"><span class="mono" style="font-size:20px; font-weight:900;">…and each core is vectorized</span><div class="m" style="font-size:16px;">one SIMD instruction processes a whole block of values</div></div>
+      <div class="wf-simd">
+        <span class="mono" style="font-size:17px; font-weight:900; border:3px solid var(--ink); background:#fff; padding:8px 12px;">1 instruction</span>
+        <span style="font-size:34px; font-weight:900;">→</span>
+        <div class="cells"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="mono" style="font-size:16px; font-weight:700; color:#55554f;">per tick</span>
+      </div>
+      <div class="sticker" style="transform:rotate(1.5deg); font-size:19px; line-height:1.3; margin-left:auto; width:210px; flex-shrink:0;">that's the ×51.7 sort<br>and the 33% RAM.</div>
+    </div>
+  </div>
+  <div class="punchbar">Not a faster pandas — <span class="y">a different machine underneath.</span></div>
+  <aside class="notes">Mirror of the three walls from slide 5, one by one. First wall: inside datastore sits a compiler — it records your pandas calls and rewrites as much of the chain as it can into a single SQL statement, handed to the embedded ClickHouse engine. Ten chained ops cost one execution, not ten copies; anything it cannot translate falls back to real pandas mid-pipeline, so you never lose. Single-core becomes every core: this laptop has 14; pandas computes on one, the engine's pipeline saturates all of them. All-in-RAM becomes streaming: data flows through in blocks — a top-10 sort keeps a 10-row heap instead of materializing 10 million sorted rows, which is exactly why sort is ×51.7 and why RAM sits at a third. And inside each core, execution is vectorized — SIMD processes blocks of values per instruction instead of one Python-object at a time. This is 15 years of ClickHouse engine engineering, compiled into your import line.</aside>
+</section>
+
 <!-- 10 · WHERE 100× LIVES -->
 <section>
-  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">10 / 18</span></div>
+  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">11 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Where the 100× lives</h2>
     <div style="position:absolute; top:160px; left:70px; right:70px; display:grid; gap:16px;">
@@ -410,7 +483,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 11 · 20 OPS AT 10M -->
 <section>
-  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">11 / 18</span></div>
+  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">12 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:30px; font-size:38px;">10M rows, 16 everyday ops — <span style="background:var(--yellow); padding:0 10px;">faster on 14, leaner on all 16</span></h2>
     <style>
@@ -464,7 +537,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 12 · REACH -->
 <section>
-  <div class="topbar"><span class="sec">REACH · <span class="k">到達</span> <span class="rj">tōtatsu</span></span><span class="pg">12 / 18</span></div>
+  <div class="topbar"><span class="sec">REACH · <span class="k">到達</span> <span class="rj">tōtatsu</span></span><span class="pg">13 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Your data lives on many islands</h2>
     <div class="code" style="position:absolute; top:166px; left:70px; width:800px; font-size:20px; line-height:1.7;">
@@ -509,7 +582,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 13 · RANGED READS -->
 <section>
-  <div class="topbar"><span class="sec">PERFORMANCE · <span class="k">性能</span> <span class="rj">seinō</span></span><span class="pg">13 / 18</span></div>
+  <div class="topbar"><span class="sec">PERFORMANCE · <span class="k">性能</span> <span class="rj">seinō</span></span><span class="pg">14 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">It reads what the query needs — <span style="background:var(--yellow); padding:0 10px;">not the file</span></h2>
     <div style="position:absolute; top:170px; left:70px; right:70px;">
@@ -537,7 +610,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 14 · AGENT MEMORY · THREE DATABASES -->
 <section>
-  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">14 / 18</span></div>
+  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">15 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">Agent memory today: <span style="background:var(--yellow); padding:0 10px;">three databases</span></h2>
     <div class="card dark" style="position:absolute; top:280px; left:70px; width:250px; text-align:center; padding:26px 20px;">
@@ -569,7 +642,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 15 · AGENT MEMORY · ONE QUERY -->
 <section>
-  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">15 / 18</span></div>
+  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">16 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:32px;">One query does all three</h2>
     <div class="code" style="position:absolute; top:166px; left:70px; width:760px; font-size:22px; line-height:1.75;">
@@ -599,7 +672,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 16 · TRENDS · THE GAP GROWS -->
 <section>
-  <div class="topbar"><span class="sec">TRENDS · <span class="k">傾向</span> <span class="rj">keikō</span></span><span class="pg">16 / 18</span></div>
+  <div class="topbar"><span class="sec">TRENDS · <span class="k">傾向</span> <span class="rj">keikō</span></span><span class="pg">17 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">The gap grows — <span style="background:var(--yellow); padding:0 10px;">with size, and with depth</span></h2>
     <style>
@@ -644,7 +717,7 @@ chdb.query(<span class="st">"SELECT count()</span><br>
 
 <!-- 17 · TAKEAWAYS -->
 <section>
-  <div class="topbar"><span class="sec">CLOSE · <span class="k">まとめ</span> <span class="rj">matome</span></span><span class="pg">17 / 18</span></div>
+  <div class="topbar"><span class="sec">CLOSE · <span class="k">まとめ</span> <span class="rj">matome</span></span><span class="pg">18 / 19</span></div>
   <div class="frame">
     <h2 style="margin-top:30px;">Three takeaways</h2>
     <div style="display:grid; gap:22px; margin-top:30px;">
