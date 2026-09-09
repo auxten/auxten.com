@@ -181,7 +181,6 @@
         <p style="margin-top:22px; font-size:25px; color:var(--ink); max-width:780px;">Porting a C++ Python extension to free-threaded Python&nbsp;3.14</p>
         <p style="margin-top:18px; font-size:22px;">Auxten Wang · Technical Director @ ClickHouse · Creator of chDB</p>
       </div>
-      <!-- De Stijl block: GIL struck, 3.14t -->
       <svg viewBox="0 0 400 400" width="400" height="400" style="display:block;">
         <rect x="0" y="0" width="400" height="400" fill="#fff"/>
         <rect x="0" y="0" width="250" height="240" fill="#d4342c"/>
@@ -204,7 +203,7 @@
     <use href="#skyline" x="0" y="0" width="700" height="190" fill="#14161a"/>
     <use href="#skyline" x="700" y="0" width="700" height="190" fill="#14161a"/>
   </svg>
-  <aside class="notes">Thirty minutes, one story: what it actually took to make a C++ extension benefit from free-threaded Python, and what we measured at the end. This is not a history talk. If you want the PEP 703 saga, find me after. The honest reason we did this port: the workloads that hurt in 2026 were many concurrent queries from one Python process, most of them coming out of AI-agent tool loops, and the GIL sat in the middle of every one of them. Sixteen cores, one process, no worker pool: that is the target shape, and I will show the numbers when we get to the benchmarks.</aside>
+  <aside class="notes">One story. What it took to make a C++ extension faster on free-threaded Python, and what we measured at the end. The workload that hurt us was many concurrent queries from one Python process, most of them coming out of our own agent tool loops. The GIL sat in the middle of every one of them. Every core, one process, no worker pool: that is the target. Numbers at the end.</aside>
 </section>
 
 <!-- 02 · ABOUT -->
@@ -227,13 +226,10 @@
           <div class="row"><span class="sq"></span><span class="m">ex Shopee principal engineer</span></div>
         </div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:36px; align-items:center;">
-        <img class="logo" src="logos/chdb-light.png" alt="chDB" style="width:200px; height:200px;">
-        <img class="logo" src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="width:240px;">
-      </div>
+      <img class="logo" src="logos/chdb-light.png" alt="chDB" style="width:220px; height:220px;">
     </div>
   </div>
-  <aside class="notes">Twenty seconds. The relevant credential: I created chDB, an embedded ClickHouse for Python, and I have spent the last year putting it inside agent processes and data pipelines. That is where the free-threading itch came from. The rest of the bio is that I have written C++ for twenty years, which mostly means I have written twenty years of data races that the GIL forgave.</aside>
+  <aside class="notes">Twenty seconds. I created chDB, an embedded ClickHouse for Python, and I have spent the last year putting it inside agent processes and data pipelines. That is where the free-threading itch came from. The rest of the bio is that I have written C++ for twenty years, which mostly means twenty years of data races that the GIL forgave.</aside>
 </section>
 
 <!-- 03 · DIVIDER 01 -->
@@ -244,7 +240,7 @@
       <div>
         <div class="num">01</div>
         <h2>Why free-threaded Python matters for native extensions</h2>
-        <p class="thesis">3.14 runs Python on every core. Your C extension does not get that for free.</p>
+        <p class="thesis">3.14t runs Python on every core. Your C extension does not get that for free.</p>
       </div>
       <svg viewBox="0 0 300 300" width="300" height="300" style="margin-top:20px;">
         <rect x="0" y="0" width="300" height="300" fill="#fff"/>
@@ -260,42 +256,43 @@
     <use href="#skyline" x="0" y="0" width="700" height="190" fill="#14161a"/>
     <use href="#skyline" x="700" y="0" width="700" height="190" fill="#14161a"/>
   </svg>
-  <aside class="notes">Part one, about four minutes. One slide on why we bothered, one on what changed in 3.14, one on why extensions do not benefit automatically.</aside>
+  <aside class="notes">Part one. Why we bothered, what changed in 3.14, and why your extension does not benefit automatically.</aside>
 </section>
 
 <!-- 04 · WHY WE BOTHERED -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p1"></span><span class="txt">Part 1 · The motivation</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:42px;">Why we bothered: many queries, one process</h2>
-    <p style="margin-top:12px; font-size:23px;">The load started looking like an agent's tool loop: <strong>one interpreter, many threads.</strong></p>
-    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-top:28px;">
-      <div class="card b" style="min-height:210px;"><h3 class="blue">Recall</h3><p style="margin-top:12px; font-size:24px;">Filter + rank a memory table.</p></div>
-      <div class="card y" style="min-height:210px;"><h3>Federate</h3><p style="margin-top:12px; font-size:24px;">S3 + Postgres + a DataFrame. One SQL.</p></div>
-      <div class="card o" style="min-height:210px;"><h3 class="oranje">Score in Python</h3><p style="margin-top:12px; font-size:24px;">A Python function, per row.</p></div>
-      <div class="card g" style="min-height:210px;"><h3 class="green">Hand back a frame</h3><p style="margin-top:12px; font-size:24px;">Results back as DataFrames.</p></div>
+    <h2 style="font-size:42px;">The engine had every core. Python had one lane.</h2>
+    <p style="margin-top:12px; font-size:23px;">Our load became an agent's tool loop: <strong>many queries at once, one interpreter.</strong></p>
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-top:26px;">
+      <div class="card b" style="min-height:190px;"><h3 class="blue">Recall</h3><p style="margin-top:12px; font-size:24px;">Filter + rank a memory table.</p></div>
+      <div class="card y" style="min-height:190px;"><h3>Federate</h3><p style="margin-top:12px; font-size:24px;">S3 + Postgres + a DataFrame. One SQL.</p></div>
+      <div class="card o" style="min-height:190px;"><h3 class="oranje">Score in Python</h3><p style="margin-top:12px; font-size:24px;">Call a Python function per row.</p></div>
+      <div class="card g" style="min-height:190px;"><h3 class="green">Hand back a DataFrame</h3><p style="margin-top:12px; font-size:24px;">Millions of Python objects.</p></div>
     </div>
-    <p style="margin-top:36px; font-size:26px; color:var(--ink);">Sixteen engine cores were ready. <strong>The Python side was single-file.</strong></p>
+    <p style="margin-top:30px; font-size:26px; color:var(--ink);"><strong>Same pattern for data engineers:</strong> a service running many pandas jobs from one process.</p>
   </div>
-  <div class="punch">The engine was multi-threaded. <span class="y">The process it lived in was not.</span></div>
-  <aside class="notes">This is the honest "why". A chatbot is one request. An agent is a loop: plan, call a tool, read, call another tool, typically five to twenty times per turn, and most of those calls are data access. Recall over a memory table, a federated query joining a lake file with a live database and whatever the last tool returned, a Python function inside that query to score rows, and the result handed back as a DataFrame. We had already won the latency argument for putting the data layer in-process: our local-vs-remote benchmark measured in-process recall at p50 1.1 ms against 63 ms for the same query over the wire, with a p99 tail that reaches seconds when the network hiccups (github.com/auxten/agent-local-vs-remote). But once everything runs inside one process, that process has to use the machine. Sixteen engine threads were ready. The Python side was single-file. That is the itch. Data engineers in the room: the same shape shows up as a service that runs many pandas-style jobs from one process. Same lock.</aside>
+  <div class="punch">The engine was multi-threaded. <span class="y">The Python process around it was not.</span></div>
+  <aside class="notes">A chatbot is one request. An agent is a loop: plan, call a tool, read, call another tool, and most of those calls are data access. Look at the cards: those are the four things a tool call does, and every one of them touches Python. We had already put the data layer in-process for latency. Once everything runs inside one process, that process has to use the machine. The engine could. Python let one thread through at a time. If you never touch an agent, read the bottom line: a service that runs many pandas jobs from one process has exactly the same lock in the middle.</aside>
 </section>
 
 <!-- 05 · WHAT 3.14 CHANGES -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p1"></span><span class="txt">Part 1 · Python 3.14t</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>What 3.14 changes — all the history you get today</h2>
+    <h2>What 3.14t changes</h2>
     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; margin-top:26px;">
-      <div class="card b"><h3 class="blue">PEP 703 → PEP 779</h3><p style="margin-top:12px; font-size:24px;">GIL optional in 3.13. <strong>Supported in 3.14.</strong></p></div>
-      <div class="card y"><h3>A separate build</h3><p style="margin-top:12px; font-size:24px;"><span class="mono">python3.14t</span>, <span class="mono">cp314t</span> wheels. <strong>~5–10%</strong> single-thread cost.</p></div>
-      <div class="card g"><h3 class="green">The stack moved</h3><p style="margin-top:12px; font-size:24px;"><strong>61%</strong> of top compiled packages ship 3.14t wheels.</p></div>
+      <div class="card b"><h3 class="blue">PEP 703 → PEP 779</h3><p style="margin-top:12px; font-size:24px;">GIL optional in 3.13. <strong>Free-threading supported in 3.14.</strong></p></div>
+      <div class="card y"><h3>A separate download</h3><p style="margin-top:12px; font-size:24px;"><span class="mono">python3.14t</span> — the <strong>t</strong> is for threads. <strong>~1–8%</strong> single-thread cost.</p></div>
+      <div class="card g"><h3 class="green">The ecosystem moved</h3><p style="margin-top:12px; font-size:24px;"><strong>Most</strong> of the top compiled packages ship 3.14t wheels.</p></div>
     </div>
     <pre style="margin-top:34px; font-size:22px;"><code class="language-bash" style="font-size:22px;">$ python3.14t -c "import sys; print(sys._is_gil_enabled())"
-False        # threads now run Python bytecode in parallel</code></pre>
+False</code></pre>
+    <p style="margin-top:14px; font-size:22px;">False: threads now run Python bytecode in parallel.</p>
   </div>
   <div class="punch">One slide of context. <span class="y">The rest is engineering.</span></div>
-  <aside class="notes">Deliberately one slide. PEP 703 made the GIL optional in 3.13 as an experiment; PEP 779 made it supported in 3.14. It is a separate interpreter binary, python3.14t, and a separate wheel tag, cp314t. The single-thread penalty came down from roughly 40 percent in 3.13t to 5 to 10, which is what made it usable. The ecosystem followed: as of July, 61 percent of the top 360 compiled packages ship free-threaded wheels, per hugovk's tracker, and manylinux dropped 3.13t, so 3.14t is the only free-threaded target worth building for. The engineering under it, biased refcounting, immortal objects, per-object locks, lock-free dict and list reads, is why it is fast, and also why a borrowed reference that was harmless for thirty years is now a use-after-free. That is the whole history lesson.</aside>
+  <aside class="notes">Deliberately one slide. PEP 703 made the GIL optional in 3.13 as an experiment; PEP 779 made it supported in 3.14. It is a separate interpreter, python3.14t, and a separate wheel tag. The single-thread penalty came down from roughly 40 percent in 3.13t to a few percent. That made it usable. The ecosystem followed: most of the top compiled packages now ship free-threaded wheels, and the community tracker lists the rest. Under the hood: biased refcounting, immortal objects, per-object locks. That is why it is fast. It is also why a borrowed reference that was harmless for thirty years can now be a use-after-free when another thread mutates the container. That is the whole history lesson.</aside>
 </section>
 
 <!-- 06 · NOTHING FOR FREE -->
@@ -303,17 +300,18 @@ False        # threads now run Python bytecode in parallel</code></pre>
   <div class="topbar"><span class="sec"><span class="chip p1"></span><span class="txt">Part 1 · The catch</span></span><span class="pg"></span></div>
   <div class="frame">
     <h2>Your extension gets nothing for free</h2>
-    <div class="rows" style="margin-top:34px; gap:26px;">
-      <div class="row"><span class="sq x"></span><span style="font-size:28px;"><strong>One undeclared import</strong> turns the GIL back on for everyone.</span></div>
-      <div class="row"><span class="sq x"></span><span style="font-size:28px;"><strong>"Thread-safe because GIL"</strong> is now a data race.</span></div>
-      <div class="row"><span class="sq x"></span><span style="font-size:28px;"><strong>No stable ABI</strong> on 3.14t. New wheels, new CI.</span></div>
+    <div class="rows" style="margin-top:30px; gap:22px;">
+      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>One extension that has not opted in</strong> turns the GIL back on for the whole process.</span></div>
+      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>"Thread-safe because GIL"</strong> is now a data race.</span></div>
+      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>No abi3</strong> (one wheel for many Python versions) on 3.14t. New wheels, new CI.</span></div>
     </div>
-    <pre style="margin-top:40px;"><code class="language-text" style="font-size:21px;">$ python3.14t -c "import _chdb"
-RuntimeWarning: The global interpreter lock (GIL) has been enabled to load
-module '_chdb', which has not declared that it can run safely without the GIL.</code></pre>
+    <pre style="margin-top:30px;"><code class="language-text" style="font-size:19px;">$ python3.14t -c "import _chdb"
+RuntimeWarning: The global interpreter lock (GIL) has been enabled to load module
+'_chdb', which has not declared that it can run safely without the GIL.
+To override, set PYTHON_GIL=0 or -Xgil=0.</code></pre>
   </div>
   <div class="punch">Free-threading is <span class="y">opt-in, per extension module.</span> This talk: what opting in took.</div>
-  <aside class="notes">Three things bite extension authors. First, the silent re-enable: import one extension that has not declared itself safe and CPython turns the GIL back on for everyone, with a warning most people never read. Second, twenty years of code that was thread-safe only because the GIL serialized it. Third, the stable ABI does not exist on the free-threaded build, so your abi3 wheel is out; you build and ship cp314t wheels separately. The practical consequence for us: a process running sixteen concurrent queries on 3.14t got zero benefit, because our module was the undeclared import. That warning is us. Fixing it is the rest of the talk.</aside>
+  <aside class="notes">Three things bite. First, the silent re-enable: import one extension that has not declared itself safe and CPython turns the GIL back on for the whole process, with a warning most people never read. Second, twenty years of code that was thread-safe only because the GIL serialized it. Third, the stable ABI does not exist on the free-threaded build, so the one-wheel-fits-all shortcut is gone; you build and ship a separate wheel. The practical consequence: a process running concurrent queries on 3.14t got zero benefit, because our module was the extension that had not opted in. That warning is us. Fixing it is the rest of the talk.</aside>
 </section>
 
 <!-- 07 · DIVIDER 02 -->
@@ -324,7 +322,7 @@ module '_chdb', which has not declared that it can run safely without the GIL.</
       <div>
         <div class="num">02</div>
         <h2>Where our embedded engine still hit the GIL</h2>
-        <p class="thesis">The engine was already parallel. Every conversation it had with Python was not.</p>
+        <p class="thesis">The engine was already parallel. Every call into Python was not.</p>
       </div>
       <svg viewBox="0 0 300 300" width="300" height="300" style="margin-top:20px;">
         <rect x="0" y="0" width="300" height="300" fill="#fff"/>
@@ -340,52 +338,52 @@ module '_chdb', which has not declared that it can run safely without the GIL.</
     <use href="#skyline" x="0" y="0" width="700" height="190" fill="#14161a"/>
     <use href="#skyline" x="700" y="0" width="700" height="190" fill="#14161a"/>
   </svg>
-  <aside class="notes">Part two, about five minutes: where exactly the lock was. One slide to introduce the patient for people who do not know it, then one slide with the three places every engine thread had to queue.</aside>
+  <aside class="notes">Part two: where exactly the lock was. One slide to introduce the patient, then the three places every engine thread had to queue.</aside>
 </section>
 
 <!-- 08 · THE PATIENT -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p2"></span><span class="txt">Part 2 · The patient</span></span><span class="pg"></span></div>
   <div class="frame">
-    <div style="display:grid; grid-template-columns: 1fr 440px; gap:36px; align-items:start;">
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:36px; align-items:start;">
       <div>
-        <h2 style="font-size:42px;">Our patient: chDB, a rocket engine on a bicycle</h2>
-        <p style="margin-top:14px; font-size:23px; color:var(--ink);">The ClickHouse engine, embedded in your Python process.</p>
+        <h2 style="font-size:42px;">chDB: a rocket engine on a bicycle</h2>
+        <p style="margin-top:14px; font-size:23px; color:var(--ink);">The ClickHouse engine (the rocket), embedded in your Python process (the bicycle).</p>
         <pre style="margin-top:20px;"><code class="language-python">pip install chdb
 
 sess = chdb.session.Session("./brain")
 sess.query("""
   SELECT m.text FROM memory m
   JOIN s3('s3://lake/events/*.parquet') e USING (user_id)
-  JOIN Python(tickets) t USING (user_id)  -- DataFrame
+  JOIN Python(tickets) t USING (user_id)  -- a DataFrame
   WHERE m.user_id = 'u1' LIMIT 8""")</code></pre>
         <div class="rows" style="margin-top:22px; gap:12px;">
-          <div class="row"><span class="sq"></span><span><strong>Multi-threaded C++</strong> behind pybind11</span></div>
-          <div class="row"><span class="sq"></span><span>Touches Python in <strong>three places</strong>: UDFs, DataFrames, strings</span></div>
+          <div class="row"><span class="sq"></span><span><strong>Multi-threaded C++</strong>, glued to Python by pybind11</span></div>
+          <div class="row"><span class="sq"></span><span>Touches Python in <strong>three places</strong>: UDFs (your Python function, called from SQL), DataFrames, strings</span></div>
         </div>
       </div>
-      <img src="logos/rocket-bike.png" alt="A rocket engine on a bicycle" style="width:440px; border:3px solid var(--ink); margin-top:10px;">
+      <img src="logos/rocket-bike.png" alt="A rocket engine on a bicycle" style="width:380px; border:3px solid var(--ink); margin-top:10px;">
     </div>
   </div>
-  <aside class="notes">For those who do not know ClickHouse: it is the open-source columnar analytics database. chDB is that whole engine as a pip install, living inside your Python process, no server; local tables on disk, or files where they sit, S3, Postgres, a live DataFrame, all as tables in one statement. The query on the slide is the shape of a tool call we see every day. You do not need any ClickHouse knowledge for the rest of the talk. What matters is the last two bullets: the engine is heavily multi-threaded C++, and it touches Python in exactly three places, UDFs, DataFrames in and out, and strings. Those three places are the whole story.</aside>
+  <aside class="notes">For those who do not know ClickHouse: it is the open-source columnar analytics database. chDB is that whole engine as a pip install, living inside your Python process, no server. Local tables on disk, files on S3, a Postgres table, a live DataFrame: all tables in one statement. You do not need any ClickHouse knowledge for the rest of the talk. What matters is the last two bullets. The engine is heavily multi-threaded C++, and it touches Python in exactly three places: UDFs, DataFrames in and out, and strings. Those three places are the whole story.</aside>
 </section>
 
 <!-- 09 · THE TOLL GATES -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p2"></span><span class="txt">Part 2 · The toll gate</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>Parallel engine × serial glue = serial query</h2>
+    <h2>Parallel engine, serial glue, serial query</h2>
     <div style="display:grid; grid-template-columns: 500px 1fr; gap:30px; margin-top:16px; align-items:start;">
-      <img class="fig" src="logos/fig-nogil-boundary.png" alt="16 parallel engine threads queue single-file at the GIL to reach Python UDFs, DataFrame columns and strings" style="width:500px; height:330px; border:3px solid var(--ink); background:#fff;">
+      <img class="fig" src="logos/fig-nogil-boundary.png" alt="Parallel engine threads queue single-file at the GIL to reach Python UDFs, DataFrame columns and strings" style="width:500px; height:330px; border:3px solid var(--ink); background:#fff;">
       <div style="display:grid; gap:14px;">
-        <div class="card o" style="padding:16px 20px;"><h3 class="oranje" style="font-size:23px;">Python UDF calls</h3><p style="font-size:21px; margin-top:8px;"><span class="mono">score(text, q)</span> per row. Sixteen streams, one lock.</p></div>
-        <div class="card r" style="padding:16px 20px;"><h3 class="red" style="font-size:23px;">String-heavy columns</h3><p style="font-size:21px; margin-top:8px;">Chat logs, tool output, JSON: <strong>one PyObject per cell</strong>, read under the lock.</p></div>
-        <div class="card b" style="padding:16px 20px;"><h3 class="blue" style="font-size:23px;">DataFrame integration</h3><p style="font-size:21px; margin-top:8px;">pandas in, pandas out. <span class="mono">chdb.datastore</span> turns a pandas chain into one SQL — the frame still crosses the lock.</p></div>
+        <div class="card o" style="padding:16px 20px;"><h3 class="oranje" style="font-size:23px;">Python UDF calls</h3><p style="font-size:21px; margin-top:8px;"><span class="mono">score(text, q)</span> per row. <strong>Every engine thread, one lock.</strong></p></div>
+        <div class="card r" style="padding:16px 20px;"><h3 class="red" style="font-size:23px;">String-heavy columns</h3><p style="font-size:21px; margin-top:8px;">Chat logs, tool output, JSON: one <strong>PyObject</strong> (a refcounted heap object) per cell, read under the lock.</p></div>
+        <div class="card b" style="padding:16px 20px;"><h3 class="blue" style="font-size:23px;">DataFrame integration</h3><p style="font-size:21px; margin-top:8px;">pandas in, pandas out. <strong>Every frame crosses the toll gate.</strong></p></div>
       </div>
     </div>
   </div>
   <div class="punch">The GIL did not slow the engine down. <span class="y">It serialized every conversation with Python.</span></div>
-  <aside class="notes">The picture: sixteen engine threads on the left, happily parallel, all queuing single-file at the GIL to reach three things on the right. Python UDFs: a function that scores or embeds rows calls back into the interpreter per row, and on a stock build sixteen streams take turns. Strings: agent memory is text all the way down, chat logs, tool output, JSON, and a pandas object column of that is one PyObject per cell, each read under the lock. And the DataFrame path, which matters most to this room: data engineers live in pandas. chdb.datastore is our pandas-compatible API; it records a pandas chain and compiles it into one SQL statement for the engine. Every frame that goes in or comes out still has to cross this border, with NULL checks and dtype lookups that are each a tiny Python call. The engine was never the bottleneck. The border was.</aside>
+  <aside class="notes">Look at the right side of the picture. Three doors, and every door has the same lock. A UDF that scores rows calls back into the interpreter per row; on a stock build the engine threads take turns. Strings: agent memory is text all the way down, and a pandas object column of text is one Python object per cell, each one read under the lock. And the DataFrame path, which matters most to this room: every frame that goes in or comes out is a long series of tiny Python calls, NULL checks, dtype lookups. The engine was never the bottleneck. The toll gate was.</aside>
 </section>
 
 <!-- 10 · DIVIDER 03 -->
@@ -409,7 +407,7 @@ sess.query("""
     <use href="#skyline" x="0" y="0" width="700" height="190" fill="#14161a"/>
     <use href="#skyline" x="700" y="0" width="700" height="190" fill="#14161a"/>
   </svg>
-  <aside class="notes">The meat, about twelve minutes. Three changes in the order we made them, and the order matters: first restructure so that there is something for free-threading to speed up, then the one-line declaration and the audit behind it, then the string hot paths, which is where most of the bytes actually are.</aside>
+  <aside class="notes">The meat. Three changes in the order we made them, and the order matters: first restructure so that there is something for free-threading to speed up, then the one-line declaration and the audit behind it, then the string hot paths, where most of the bytes are.</aside>
 </section>
 
 <!-- 11 · CHANGE 1a · OUT OF PROCESS -->
@@ -418,10 +416,10 @@ sess.query("""
   <div class="frame">
     <div style="display:grid; grid-template-columns: 1fr 520px; gap:34px; align-items:start;">
       <div>
-        <h2 style="font-size:42px;">UDFs ran <span class="red">out of process</span></h2>
+        <h2 style="font-size:42px;">Free-threading cannot speed up a <span class="red mono">fork()</span></h2>
         <div class="rows" style="margin-top:30px; gap:18px;">
-          <div class="row"><span class="sq x"></span><span style="font-size:24px;"><span class="mono">fork()</span> a Python interpreter per query</span></div>
-          <div class="row"><span class="sq x"></span><span style="font-size:24px;">Rows piped as text. Every argument a <span class="mono">str</span>.</span></div>
+          <div class="row"><span class="sq x"></span><span style="font-size:24px;">Our UDFs <span class="mono">fork()</span>ed a Python interpreter per query</span></div>
+          <div class="row"><span class="sq x"></span><span style="font-size:24px;">Rows piped as text. Every argument arrived as a string.</span></div>
           <div class="row"><span class="sq x"></span><span style="font-size:24px;">Your loaded model? <strong>Loaded again, per fork.</strong></span></div>
         </div>
         <div class="card r" style="margin-top:34px; padding:16px 20px;"><p style="font-size:23px; color:var(--ink); font-weight:800;">The bottleneck was <span class="mono">fork()</span>, not the GIL.</p></div>
@@ -429,14 +427,14 @@ sess.query("""
       <img class="fig" src="logos/fig-nogil-udf.png" alt="Before: engine forks a Python subprocess and pipes rows as text. After: the Python function runs in-process inside the engine." style="width:520px; height:420px; border:3px solid var(--ink); background:#fff;">
     </div>
   </div>
-  <aside class="notes">Change one, and it starts with an embarrassing admission. Our Python UDFs did not run in the process at all. The decorator generated a script and an XML config, the engine forked a fresh interpreter, and rows went through as tab-separated text. Every argument arrived as a string. For a scoring or embedding UDF this was fatal: the model you had already loaded in the process was not there. It got loaded again, inside the fork, per query. Free-threading would have done nothing for this design. There was no Python in our process to parallelize. So step one had nothing to do with the GIL.</aside>
+  <aside class="notes">Change one starts with an embarrassing admission. Our Python UDFs did not run in the process at all. The decorator generated a script and a config file, the engine forked a fresh interpreter, and rows went through as tab-separated text. For a scoring or embedding function this was fatal: the model you had already loaded was not there. It got loaded again, inside the fork, per query. Free-threading would have done nothing for this design. There was no Python in our process to parallelize. So step one had nothing to do with the GIL.</aside>
 </section>
 
 <!-- 12 · CHANGE 1b · IN-PROCESS -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Change 1 · UDFs</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:42px;">After: native <span class="green">in-process</span> UDFs</h2>
+    <h2 style="font-size:42px;">In-process: faster, and now there is <span class="green">something to unlock</span></h2>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:28px; align-items:start; margin-top:20px;">
       <pre><code class="language-python">from chdb import func
 from chdb.sqltypes import STRING, FLOAT64
@@ -462,7 +460,7 @@ for (size_t row = 0; row &lt; rows; ++row)
       </div>
     </div>
   </div>
-  <aside class="notes">After: the decorator registers a real Python callable, C++ keeps a py::function, and the engine's worker threads call it with typed arguments. The example is a reranker scoring rows against the current question, using the model the process already has. No fork, no text protocol. Now look at the C++ on the right. One line, gil_scoped_acquire. Correct, necessary, and on a stock interpreter it is the toll gate: sixteen engine threads reach that line and take turns. We had moved the Python into the process precisely so that free-threading would have something to work on. Next slide is what happened when it did.</aside>
+  <aside class="notes">After: the decorator registers a real Python callable and the engine's worker threads call it with typed arguments. The example is a reranker scoring rows against the current question, using the model the process already has. No fork, no text protocol. On the right, the one line that matters is the acquire. Correct, necessary, and on a stock interpreter it is the toll gate: every worker thread reaches that line and waits its turn. We moved Python execution into the process precisely so that free-threading would have something to work on. Next slide is what happened when it did.</aside>
 </section>
 
 <!-- 13 · CHANGE 1c · LANES -->
@@ -480,7 +478,7 @@ for (size_t row = 0; row &lt; rows; ++row)
           <use href="#bike" x="30" y="56" width="64" height="40"/><use href="#bike" x="100" y="56" width="64" height="40"/><use href="#bike" x="170" y="56" width="64" height="40"/><use href="#bike" x="240" y="56" width="64" height="40"/>
         </g>
         <use href="#bike" x="470" y="56" width="64" height="40" color="#14161a"/>
-        <text x="16" y="136" font-family="Inter, sans-serif" font-weight="700" font-size="16" fill="#4e535b">one thread runs Python at a time — <tspan font-weight="900" fill="#d4342c">~0.85 s flat</tspan></text>
+        <text x="16" y="136" font-family="Inter, sans-serif" font-weight="700" font-size="16" fill="#4e535b">one thread runs Python at a time — <tspan font-weight="900" fill="#d4342c">~0.85 s, any thread count</tspan></text>
         <rect x="0" y="180" width="560" height="180" fill="#fff" stroke="#14161a" stroke-width="3"/>
         <text x="16" y="210" font-family="JetBrains Mono, monospace" font-weight="700" font-size="15" fill="#2e7d32">FREE-THREADED 3.14t · a lane per thread</text>
         <g>
@@ -495,40 +493,39 @@ for (size_t row = 0; row &lt; rows; ++row)
         <text x="16" y="354" font-family="Inter, sans-serif" font-weight="700" font-size="15" fill="#4e535b">same code, same acquire — <tspan font-weight="900" fill="#2e7d32">0.72 → 0.15 s</tspan></text>
       </svg>
       <div>
-        <div class="rows" style="gap:18px;">
-          <div class="row"><span class="sq x"></span><span style="font-size:24px;"><strong>Stock:</strong> 0.85 s flat, any thread count</span></div>
-          <div class="row"><span class="sq ok"></span><span style="font-size:24px;"><strong>3.14t:</strong> 0.72 → 0.15 s from 1 → 8 threads. Holds at 32.</span></div>
-          <div class="row"><span class="sq"></span><span style="font-size:24px;">Your UDF runs concurrently now. <strong>Make it thread-safe.</strong></span></div>
+        <div class="rows" style="gap:20px;">
+          <div class="row"><span class="sq x"></span><span style="font-size:25px;"><strong>Stock:</strong> 0.85 s, any thread count</span></div>
+          <div class="row"><span class="sq ok"></span><span style="font-size:25px;"><strong>3.14t:</strong> 1 thread 0.72 s → 8 threads 0.15 s. Flat to 32.</span></div>
+          <div class="row"><span class="sq"></span><span style="font-size:25px;">Your UDF runs concurrently now. <strong>Make it thread-safe.</strong></span></div>
         </div>
-        <p style="font-size:15px; margin-top:22px;">4M-row scalar UDF, 16-core x86_64. Vectorcall later cut boxing 4.7× (chdb-core #142).</p>
+        <p style="font-size:16px; margin-top:26px;">4M-row scalar UDF, 16-core x86_64, best of 3.</p>
       </div>
     </div>
   </div>
-  <div class="punch">Order matters: in-process <span class="o">first</span>, then remove the GIL.</div>
-  <aside class="notes">Amsterdam picture. Stock 3.14 is one bike lane: sixteen engine threads, one of them runs Python at a time, the rest queue. On the 4M-row scalar UDF that was a flat 0.85 seconds no matter how many threads we gave it. 3.14t gives every thread its own lane. Same C++, same gil_scoped_acquire, but on the free-threaded build that acquire is per-thread bookkeeping, not a global lock. 0.72 seconds on one thread down to 0.15 on eight, and it held at 32. Two caveats, both honest. Your UDF now runs concurrently, so it has to be thread-safe; a model forward pass usually is, a plain dict you use as a cache is not. And boxing arguments per row still costs; switching to PyObject_Vectorcall with a reused argument frame took another 4.7x off that overhead, chdb-core PR 142. This benchmark UDF is trivial on purpose: it measures the calling floor under any real scoring function. TODO if time allows before Thursday: the same curve with an actual reranker model. A subprocess pipeline gains nothing from free-threading, which is why the order was in-process first.</aside>
+  <div class="punch">Order matters: in-process <span class="o">first</span>, then go free-threaded.</div>
+  <aside class="notes">Amsterdam picture. Stock 3.14 is one bike lane: sixteen engine threads, only one of them runs Python at a time, the rest queue. 3.14t gives every thread its own lane. Same C++, same gil_scoped_acquire, but on the free-threaded build that acquire is per-thread bookkeeping, not a global lock. Two caveats. Your UDF now runs concurrently, so it has to be thread-safe. A model forward pass usually is, if the model library ships free-threaded wheels. A dict you use as a cache is subtler: single operations are atomic on 3.14t, but "if key not in cache, compute and store" still races, and you compute twice. And a subprocess pipeline gains nothing from any of this, which is why the order was in-process first.</aside>
 </section>
 
 <!-- 14 · CHANGE 2a · ONE LINE -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Change 2 · Opt in</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>Opting in: one line, and an audit</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:22px; margin-top:20px;">
-      <pre><code class="language-cpp" style="font-size:22px;">// pybind11
+    <h2 style="font-size:42px;">One line, one promise: nothing here needs the GIL</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:22px; margin-top:22px;">
+      <pre><code class="language-cpp" style="font-size:22px;">// pybind11 ≥ 2.13
 PYBIND11_MODULE(_chdb, m,
                 py::mod_gil_not_used())</code></pre>
       <pre><code class="language-c" style="font-size:22px;">// raw C API
 {Py_mod_gil, Py_MOD_GIL_NOT_USED},</code></pre>
     </div>
-    <p style="margin-top:34px; font-size:27px; color:var(--ink);">The line is easy. It is <strong>a claim about every global in your codebase.</strong></p>
-    <div class="rows" style="margin-top:28px; gap:22px;">
-      <div class="row"><span class="sq"></span><span style="font-size:26px;">Caches, registries, singletons → <span class="mono">call_once</span>, <span class="mono">shared_mutex</span>, <span class="mono">PyMutex</span></span></div>
-      <div class="row"><span class="sq"></span><span style="font-size:26px;">Borrowed → strong refs: <span class="mono">PyList_GetItem</span> → <span class="mono">PyList_GetItemRef</span></span></div>
-      <div class="row"><span class="sq"></span><span style="font-size:26px;">Our import cache had raced <strong>for years</strong>. The GIL was its alibi.</span></div>
+    <div class="rows" style="margin-top:34px; gap:24px;">
+      <div class="row"><span class="sq"></span><span style="font-size:27px;"><strong>Every global variable and cache</strong> needed a real lock.</span></div>
+      <div class="row"><span class="sq"></span><span style="font-size:27px;"><strong>Every borrowed reference</strong> (a pointer you do not own) became a strong one.</span></div>
+      <div class="row"><span class="sq"></span><span style="font-size:27px;">Our import cache had a race <strong>for years</strong>. The GIL was its alibi.</span></div>
     </div>
   </div>
   <div class="punch">None of the fixes were exotic. The GIL was just <span class="y">hiding the to-do list.</span></div>
-  <aside class="notes">Change two is one line in two dialects: py::mod_gil_not_used() in pybind11, or the Py_mod_gil slot with Py_MOD_GIL_NOT_USED in the raw C API. We compile it in only for the free-threaded build, because that build also forced us off the stable-ABI pybind11 fork and onto upstream pybind11, which is its own CI matrix. The line itself is a promise: nothing in this module relies on the GIL for correctness. Keeping that promise meant auditing every global. The import cache that resolves pandas and numpy types, the UDF registry, the engine singleton, the dtype caches. Each got a real primitive: call_once for one-shot init, shared_mutex where readers dominate, PyMutex where Python objects are involved. And borrowed references became strong ones wherever another thread could mutate the container underneath us. None of it is clever. The uncomfortable finding was that our import cache's supposedly lock-free fast path had been a race for years. The GIL had been covering for it.</aside>
+  <aside class="notes">Change two is one line in two dialects. The line itself is a promise: nothing in this module relies on the GIL for correctness. Keeping that promise meant auditing every global: the cache that resolves pandas and numpy types, the UDF registry, the engine singleton. Each got a lock that fits. One detail matters later: CPython's own PyMutex detaches the thread from the interpreter while it waits; a C++ mutex or call_once does not. Remember that for the bug story. Borrowed references became strong ones wherever another thread could mutate the container underneath us. None of it is clever. The uncomfortable finding was that our import cache's lock-free fast path had been a race for years. The GIL had been covering for it.</aside>
 </section>
 
 <!-- 15 · CHANGE 2b · SHARED STATE + THE NASTIEST BUG -->
@@ -549,15 +546,15 @@ PYBIND11_MODULE(_chdb, m,
       cache = std::make_shared&lt;ImportCache&gt;();
 #endif</code></pre>
       <div style="display:grid; gap:16px;">
-        <div class="card y" style="padding:12px 18px;"><p style="font-size:22px; color:var(--ink);"><strong>Trigger.</strong> First <span class="mono">NULL</span> in a string column → lazy import of <span class="mono">pandas.NaT</span>, no thread state.</p></div>
+        <div class="card y" style="padding:12px 18px;"><p style="font-size:22px; color:var(--ink);"><strong>Trigger.</strong> First <span class="mono">NULL</span> in a string column (every other row in real data) → lazy import of <span class="mono">pandas.NaT</span> from a thread Python does not know about.</p></div>
         <div class="card r" style="padding:12px 18px;"><p style="font-size:22px; color:var(--ink);"><strong>Crash.</strong> Segfault in the allocator, far from the bug.</p></div>
         <div class="card dark" style="padding:12px 18px;"><p style="font-size:22px;"><strong style="color:#fff;">Hang.</strong> Signal handler deadlocks. No traceback. Forever.</p></div>
-        <p style="font-size:24px; color:var(--ink); margin-top:6px;"><strong>Fix:</strong> resolve imports <span class="oranje" style="font-weight:900;">eagerly, while you hold the GIL.</span></p>
+        <p style="font-size:24px; color:var(--ink); margin-top:6px;"><strong>Fix:</strong> resolve imports <span class="oranje" style="font-weight:900;">eagerly, at module init.</span></p>
       </div>
     </div>
   </div>
   <div class="punch">Debugging <span class="y">silence</span> is the expensive part. Budget for it.</div>
-  <aside class="notes">Left is the actual code from the import cache, because it shows the trade-off. This function sits on the per-row scan path. A global mutex would have been correct and would have serialized every scan thread once per row, which defeats the point. call_once gives a one-shot init and a lock-free read afterwards; the initializer is pure C++, no Python calls, so it cannot recurse into the interpreter or block on a lock it is holding. Right is the bug that fixing the race exposed. First NULL in a string column, which in real data is every other row. A scan thread lazily imports pandas.NaT, from a thread that has no Python thread state. Segfault inside the allocator, nowhere near the cause. Then the fatal-signal handler deadlocks, so no traceback, no exit, the query just hangs. In a long-running service that looks like a request that never returns. The fix was two lines: resolve those attributes eagerly at import time, while you hold the GIL. Finding it was days. Free-threading bugs do not crash loudly; they go quiet.</aside>
+  <aside class="notes">Left is the real code from the import cache. This function sits on the scan path, so a global mutex would have serialized every scan thread. call_once gives a one-shot init and a lock-free read afterwards. Note what the initializer does: it resolves Python types, pandas and numpy. That detail comes back in part four. Right is the bug that fixing the race exposed. First NULL in a string column. A scan thread lazily imports pandas.NaT. On the stock build that path had run under a GIL acquire; our new fast path had dropped it, so the thread was not attached to the interpreter at all. Segfault inside the allocator, nowhere near the cause. Then the fatal-signal handler deadlocks: no traceback, no exit, the query just hangs. In a service that looks like a request that never returns. The fix was two lines: resolve those attributes eagerly at module init, while the thread is attached. Finding it took days. Free-threading bugs do not crash loudly. They go quiet.</aside>
 </section>
 
 <!-- 16 · CHANGE 3a · STRINGS -->
@@ -565,30 +562,27 @@ PYBIND11_MODULE(_chdb, m,
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Change 3 · Strings</span></span><span class="pg"></span></div>
   <div class="frame">
     <h2>Strings are the hot path: go straight to the bytes</h2>
-    <pre style="margin-top:24px;"><code class="language-cpp" style="font-size:21px;">// FillColumnString — free-threaded build
-if (PyUnicode_IS_COMPACT_ASCII(obj)) {                 // most logs, ids, keys
-    data = (const char *) PyUnicode_1BYTE_DATA(obj);   // pointer, no copy
+    <pre style="margin-top:26px;"><code class="language-cpp" style="font-size:22px;">// FillColumnString — free-threaded build
+if (PyUnicode_IS_COMPACT_ASCII(obj)) {                // most logs, ids, keys
+    data = (const char *) PyUnicode_1BYTE_DATA(obj);  // pointer, no copy
     len  = PyUnicode_GET_LENGTH(obj);
 }
-else if (auto * u = (PyCompactUnicodeObject *) obj; u->utf8) {
-    data = u->utf8;  len = u->utf8_length;             // no copy
-}
-// ...other kinds transcoded</code></pre>
-    <div class="rows" style="margin-top:24px; gap:18px;">
-      <div class="row"><span class="sq"></span><span style="font-size:27px;">ASCII <span class="mono">str</span> → <strong>a pointer read.</strong> Immutable, so thread-safe.</span></div>
-      <div class="row"><span class="sq"></span><span style="font-size:27px;">No stable ABI on 3.14t anyway. <strong>Go low-level.</strong></span></div>
+else data = PyUnicode_AsUTF8AndSize(obj, &amp;len);       // public, thread-safe</code></pre>
+    <div class="rows" style="margin-top:30px; gap:20px;">
+      <div class="row"><span class="sq"></span><span style="font-size:27px;">ASCII <span class="mono">str</span> → <strong>a pointer read.</strong> The buffer never changes, so any thread may read it.</span></div>
+      <div class="row"><span class="sq"></span><span style="font-size:27px;">Millions of values per query: <strong>one shim call per value is one too many.</strong></span></div>
     </div>
   </div>
-  <div class="punch">On hot paths, the friendlier the API, <span class="y">the more it costs per row.</span></div>
-  <aside class="notes">Change three, strings. For a memory table or a log, strings are not metadata, they are the payload. Millions of them cross the C++/Python border per query, and every one went through a pybind11 shim and a friendly Unicode API, one call per value, each touching the interpreter. The free-threaded build cannot use the stable ABI at all, which turned out to be liberating: we replaced the limited-API wrappers with direct CPython calls. If the string is compact ASCII, which most logs, identifiers and JSON keys are, it is a pointer and a length; no copy. If CPython already cached a UTF-8 representation, we use that; still no copy. Only the 2- and 4-byte kinds get transcoded. A str is immutable, so reading its buffer from any engine thread is safe without a lock. This is the actual code from FillColumnString under the free-threading define, slightly compressed.</aside>
+  <div class="punch">No stable ABI on 3.14t anyway. <span class="y">Nothing left to lose by going low-level.</span></div>
+  <aside class="notes">Change three, strings. For a memory table or a log, strings are the payload. Millions of them cross the C++/Python border per query, and every one went through a pybind11 shim and a friendly Unicode API, one call per value. The free-threaded build cannot use the stable ABI at all, which turned out to be a gift: we replaced the wrappers with direct CPython calls. If the string is compact ASCII, which most logs, identifiers and JSON keys are, it is a pointer and a length; no copy. That buffer is immutable, so reading it from any engine thread is safe. Everything else goes through PyUnicode_AsUTF8AndSize, the public call. We first read CPython's cached UTF-8 field directly; that field is filled lazily, and reading it from another thread is a data race on 3.14t. The public call handles that. Low-level where the layout is fixed, public API where it is not.</aside>
 </section>
 
 <!-- 17 · CHANGE 3b · SKIP PYOBJECT -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Change 3 · Strings</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>The biggest win: skip PyObject entirely</h2>
-    <p style="margin-top:10px; font-size:23px;">pandas 3.x <span class="mono">str</span> columns are <strong>Arrow-backed</strong>: plain C buffers, no GIL at all.</p>
+    <h2 style="font-size:42px;">Then the biggest win turned out not to be the lock at all</h2>
+    <p style="margin-top:10px; font-size:22px;">pandas 3 (with PyArrow) stores strings the way Parquet does: <strong>one buffer, not a million tiny Python objects.</strong></p>
     <div style="display:grid; grid-template-columns: 560px 1fr; gap:28px; margin-top:14px; align-items:center;">
       <img class="fig" src="logos/fig-nogil-arrow.png" alt="Slow path: one PyObject per row behind the GIL. Fast path: zero-copy from Arrow validity/offsets/data buffers straight into ColumnString, GIL-free on all threads." style="width:560px; height:320px; border:3px solid var(--ink); background:#fff;">
       <div>
@@ -596,72 +590,43 @@ else if (auto * u = (PyCompactUnicodeObject *) obj; u->utf8) {
           <div><div style="font-size:20px; font-weight:800; margin-bottom:6px;">object dtype — <span class="red">219.2 s</span></div><div class="bar-row" style="grid-template-columns:1fr;"><div class="tr"><div class="fl" style="width:100%; background:var(--red);"></div></div></div></div>
           <div><div style="font-size:20px; font-weight:800; margin-bottom:6px;">Arrow zero-copy — <span class="green">20.1 s</span></div><div class="bar-row" style="grid-template-columns:1fr;"><div class="tr"><div class="fl" style="width:9.2%; background:var(--green);"></div></div></div></div>
         </div>
-        <p style="margin-top:14px; font-size:18px;">ClickBench, 50M-row DataFrame · <strong>10.9×</strong> total · string queries up to <strong>64×</strong></p>
-        <p style="margin-top:14px; font-size:18px; color:var(--ink);"><span class="mono">chdb.datastore</span> hands back Arrow-backed frames — <strong>the same win, in a pandas-shaped API.</strong></p>
+        <p style="margin-top:16px; font-size:22px; color:var(--ink);"><strong>10.9× less total time.</strong> No GIL involved: this works on <strong>stock Python</strong> today.</p>
+        <p style="margin-top:12px; font-size:15px;">ClickBench, 50M-row DataFrame, all 43 queries, hot run · geomean 4.5× · string-heavy queries up to 64×</p>
       </div>
     </div>
   </div>
-  <div class="punch">Priority: <span class="y">no PyObject</span> &gt; cheap PyObject access &gt; friendly PyObject APIs.</div>
-  <aside class="notes">And then the biggest single win had nothing to do with locks. pandas 3 makes string columns Arrow-backed by default: a validity bitmap, an offsets array and one contiguous data buffer. Plain C memory. Every engine stream reads them directly, zero-copy, and no thread ever touches a PyObject. ClickBench on a 50-million-row hits DataFrame, all queries, pandas 3.x, hot run: 219 seconds to 20; geomean 4.5x; string-heavy queries up to 64x. For the pandas people: this is exactly the path chdb.datastore uses. You write a pandas chain, it compiles to one SQL, the engine runs it on every core and streams, and the frame you get back is Arrow-backed. In the PyCon JP measurements on a 10M-row Parquet, that API was faster than pandas on 14 of 16 everyday ops, sorts 35 to 52 times, at a median peak RAM of 440 MB against pandas' 1,059. So the ranking on a hot path: avoid Python objects entirely if the layout lets you; if not, read them as cheaply as CPython allows; friendly APIs only where the row count is small. Free-threading fixes the middle tier. Zero-copy removes the tier.</aside>
+  <div class="punch">Avoid Python objects first. <span class="y">Free-threading is for the ones you cannot avoid.</span></div>
+  <aside class="notes">And then the biggest single win had nothing to do with locks. pandas 3, with PyArrow installed, stores string columns the way Parquet does: a validity bitmap, an offsets array and one contiguous buffer. Plain memory. Every engine thread reads it directly, zero-copy, and no thread ever touches a Python object. ClickBench on a 50-million-row DataFrame: 219 seconds down to 20, 10.9 times less total time; the geometric mean across queries is 4.5. This one needs no free-threading. It works on the Python you already have. So the ranking on a hot path: avoid Python objects entirely if the layout lets you; if not, read them as cheaply as CPython allows. Zero-copy removes a tier. Free-threading fixes the tier you cannot remove.</aside>
 </section>
 
-<!-- 18 · DIVIDER 04 -->
-<section class="divider">
+<!-- 18 · WHAT BROKE (Part 4, merged divider) -->
+<section>
   <div class="topbar"><span class="sec"><span class="chip p4"></span><span class="txt">Part 4 · What broke</span></span><span class="pg"></span></div>
   <div class="frame">
-    <div style="display:grid; grid-template-columns: 1fr 300px; gap: 40px; align-items:start;">
-      <div>
-        <div class="num">04</div>
-        <h2>What broke and what surprised us</h2>
-        <p class="thesis">Free-threading did not create these bugs. It revoked their amnesty.</p>
-      </div>
-      <svg viewBox="0 0 300 300" width="300" height="300" style="margin-top:20px;">
-        <rect x="0" y="0" width="300" height="300" fill="#fff"/>
-        <rect x="0" y="0" width="110" height="300" fill="#14161a"/>
-        <rect x="110" y="0" width="190" height="90" fill="#d4342c"/>
-        <rect x="200" y="200" width="100" height="100" fill="#f5c518"/>
-        <g stroke="#14161a" stroke-width="10"><line x1="110" y1="0" x2="110" y2="300"/><line x1="110" y1="90" x2="300" y2="90"/><line x1="110" y1="200" x2="300" y2="200"/><line x1="200" y1="200" x2="200" y2="300"/></g>
-        <rect x="0" y="0" width="300" height="300" fill="none" stroke="#14161a" stroke-width="10"/>
-      </svg>
+    <div class="num" style="font-family:'JetBrains Mono', monospace; font-size:64px; font-weight:900; line-height:1; letter-spacing:-3px; color:var(--oranje);">04</div>
+    <h2 style="margin-top:8px;">Three bugs the GIL had been hiding</h2>
+    <div class="rows" style="margin-top:40px; gap:34px;">
+      <div class="row"><span class="sq x"></span><span style="font-size:29px;"><strong>Crashes hide as hangs.</strong> Segfault → signal-handler deadlock. No traceback.</span></div>
+      <div class="row"><span class="sq x"></span><span style="font-size:29px;"><strong>Cold start, 32 threads:</strong> threads blocked in <span class="mono">call_once</span> while attached; GC's stop-the-world never finished.</span></div>
+      <div class="row"><span class="sq x"></span><span style="font-size:29px;"><strong>Per-row argument tuples</strong> triggered GC storms above 8 threads.</span></div>
     </div>
-  </div>
-  <svg class="houses" viewBox="0 0 1400 190" preserveAspectRatio="none" style="height:170px; opacity:0.9;">
-    <use href="#skyline" x="0" y="0" width="700" height="190" fill="#14161a"/>
-    <use href="#skyline" x="700" y="0" width="700" height="190" fill="#14161a"/>
-  </svg>
-  <aside class="notes">Part four, about four minutes, the scar tissue. Two slides: what broke, and where free-threading honestly did not help.</aside>
-</section>
-
-<!-- 19 · WHAT BROKE -->
-<section>
-  <div class="topbar"><span class="sec"><span class="chip p4"></span><span class="txt">Part 4 · Scar tissue</span></span><span class="pg"></span></div>
-  <div class="frame">
-    <h2>What broke, what surprised us</h2>
-    <div class="rows" style="margin-top:34px; gap:28px;">
-      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>One undeclared dependency:</strong> our "no-GIL" benchmark measured the GIL.</span></div>
-      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>Crashes hide as hangs.</strong> Segfault → signal-handler deadlock.</span></div>
-      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>No stable ABI:</strong> upstream pybind11, doubled CI.</span></div>
-      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>Cold start + 32 threads hung:</strong> GC stop-the-world vs <span class="mono">call_once</span>.</span></div>
-      <div class="row"><span class="sq x"></span><span style="font-size:27px;"><strong>Per-row arg tuples fed GC storms</strong> past 8 threads.</span></div>
-    </div>
-    <p style="font-size:16px; margin-top:30px;">Fixed in chdb-core 26.5.1 (#128, #131).</p>
   </div>
   <div class="punch">Free-threading did not <em>create</em> these bugs. It <span class="y">revoked the amnesty.</span></div>
-  <aside class="notes">Five scars. The silent re-enable got us: a real environment has dozens of compiled dependencies, one had not opted in, and our first "free-threaded" benchmark was quietly measuring the GIL. Crashes turning into hangs is worse in a service than in a script, because a hung call looks like a slow one. The stable ABI going away was the biggest structural cost: upstream pybind11 for the free-threaded build, direct CPython calls, doubled CI. Then two we found only by benchmarking. A cold process with a high thread count hung on the first UDF: the free-threaded GC stops the world, and one of our threads was blocked inside a call_once while still attached, so the stop never completed; the fix is to detach from the interpreter before blocking on anything. And UDF throughput collapsed past eight threads because per-row argument tuples were feeding GC storms; reusing the argument frame fixed it. Free-threaded GC is more sensitive to allocation churn, not less. Both fixed in 26.5.1. That is what benchmarks are for.</aside>
+  <aside class="notes">Part four, the scar tissue. Three bugs, all of them older than the port. Crashes turning into hangs is worse in a service than in a script, because a hung call looks like a slow one. The second one is the import-cache initializer from part three. It resolves Python types, so it can allocate, so it can trigger a garbage collection. The free-threaded GC stops the world and waits for every attached thread to reach a safe point. The other threads were blocked inside std::call_once, still attached, never reaching one. Everything froze. The fix: detach from the interpreter before you block on a C++ primitive, or use PyMutex, which detaches for you. Third, UDF throughput collapsed past eight threads because per-row argument tuples were feeding GC storms. Reusing the argument frame with Vectorcall fixed it and cut the call overhead 4.7 times. The free-threaded GC is more sensitive to allocation churn, not less. We found the last two only by benchmarking.</aside>
 </section>
 
-<!-- 20 · WHERE IT DID NOT HELP -->
+<!-- 19 · WHERE IT DID NOT HELP -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p4"></span><span class="txt">Part 4 · Decision guide</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>Where no-GIL did not help, and where it did</h2>
+    <h2>Where no-GIL helps, and where it does not</h2>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:22px; margin-top:34px; align-items:stretch;">
       <div class="card r">
         <h3 class="red">No gain when…</h3>
         <div class="rows" style="margin-top:18px; gap:20px;">
-          <div class="row"><span class="sq x"></span><span style="font-size:25px;">Your C++ already releases the GIL. <strong>Parity: 0.161 s both.</strong></span></div>
+          <div class="row"><span class="sq x"></span><span style="font-size:25px;">Your library already runs its heavy work outside Python (numpy, Polars, pyarrow). <strong>0.161 s on both builds.</strong></span></div>
           <div class="row"><span class="sq x"></span><span style="font-size:25px;">You can avoid PyObjects entirely (Arrow, buffers).</span></div>
-          <div class="row"><span class="sq x"></span><span style="font-size:25px;">The workload is single-threaded. You pay ~5–10%.</span></div>
+          <div class="row"><span class="sq x"></span><span style="font-size:25px;">Single-threaded work — one Airflow task — pays ~1–8%.</span></div>
         </div>
       </div>
       <div class="card g">
@@ -669,178 +634,124 @@ else if (auto * u = (PyCompactUnicodeObject *) obj; u->utf8) {
         <div class="rows" style="margin-top:18px; gap:20px;">
           <div class="row"><span class="sq ok"></span><span style="font-size:25px;">Many threads must <strong>execute Python</strong>: UDFs, callbacks.</span></div>
           <div class="row"><span class="sq ok"></span><span style="font-size:25px;">Many threads must <strong>read PyObjects</strong>: object columns.</span></div>
-          <div class="row"><span class="sq ok"></span><span style="font-size:25px;">Many <strong>concurrent callers in one process</strong>, and you measured it.</span></div>
+          <div class="row"><span class="sq ok"></span><span style="font-size:25px;"><strong>Many concurrent callers in one process</strong> — a service running many of those tasks.</span></div>
         </div>
       </div>
     </div>
   </div>
-  <div class="punch">Zero-copy beat lock-removal. <span class="y">Free-threading fixes what zero-copy cannot reach:</span> running Python in parallel.</div>
-  <aside class="notes">Be fair about it. Anything that already ran outside the GIL did not get faster: the pure-engine query, no Python objects involved, was 0.161 seconds on both builds. Anything we could make zero-copy got faster without free-threading, and got more from that than from the lock going away. And a single-threaded workload pays the 5 to 10 percent tax for nothing. Where it paid: whenever many threads have to run Python or read Python objects. The scoring UDF in the query. The object column of tool output. And the case that started all this: many callers in one process, each holding Python state, each wanting the engine now. That was our measured bottleneck, not a hunch.</aside>
+  <div class="punch">Free-threading fixes what zero-copy cannot reach: <span class="y">running Python in parallel.</span></div>
+  <aside class="notes">Anything that already ran outside the GIL did not get faster: the pure-engine query, no Python objects involved, was 0.161 seconds on both builds. Anything we could make zero-copy got faster without free-threading, and got more from that than from the lock going away. And a single-threaded job pays the small tax for nothing. Where it paid: whenever many threads have to run Python or read Python objects. The scoring function in the query. The object column of tool output. And the case that started all this: many callers in one process, each holding Python state, each wanting the engine now. If you keep Python out of the query, stay on stock. If you want Python in the query, this is what makes it scale.</aside>
 </section>
 
-<!-- 21 · DIVIDER 05 -->
-<section class="divider">
-  <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Part 5 · Numbers &amp; checklist</span></span><span class="pg"></span></div>
-  <div class="frame">
-    <div style="display:grid; grid-template-columns: 1fr 300px; gap: 40px; align-items:start;">
-      <div>
-        <div class="num">05</div>
-        <h2>Benchmarks and a migration checklist</h2>
-        <p class="thesis">Measured, not vibes. Then the list I wish someone had handed me.</p>
-      </div>
-      <svg viewBox="0 0 300 300" width="300" height="300" style="margin-top:20px;">
-        <rect x="0" y="0" width="300" height="300" fill="#fff"/>
-        <rect x="0" y="0" width="300" height="110" fill="#ee6c1b"/>
-        <rect x="0" y="110" width="90" height="190" fill="#1b4fd8"/>
-        <rect x="180" y="200" width="120" height="100" fill="#d4342c"/>
-        <g stroke="#14161a" stroke-width="10"><line x1="0" y1="110" x2="300" y2="110"/><line x1="90" y1="110" x2="90" y2="300"/><line x1="180" y1="110" x2="180" y2="300"/><line x1="180" y1="200" x2="300" y2="200"/></g>
-        <rect x="0" y="0" width="300" height="300" fill="none" stroke="#14161a" stroke-width="10"/>
-      </svg>
-    </div>
-  </div>
-  <svg class="houses" viewBox="0 0 1400 190" preserveAspectRatio="none" style="height:170px; opacity:0.9;">
-    <use href="#skyline" x="0" y="0" width="700" height="190" fill="#14161a"/>
-    <use href="#skyline" x="700" y="0" width="700" height="190" fill="#14161a"/>
-  </svg>
-  <aside class="notes">Last part, about five minutes. The numbers, one slide on what this shape of process now lets you do, and the checklist.</aside>
-</section>
-
-<!-- 22 · BENCHMARKS -->
+<!-- 20 · BENCHMARK (Part 5, merged divider) -->
 <section>
-  <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Part 5 · Benchmarks</span></span><span class="pg"></span></div>
+  <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Part 5 · Numbers</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>Measured, not vibes</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-top:8px;">
-      <svg viewBox="0 0 560 380" width="560" height="380" style="display:block;">
-        <text x="0" y="22" font-family="JetBrains Mono, monospace" font-weight="700" font-size="16" fill="#14161a">A · scalar Python UDF, 4M rows</text>
-        <text x="0" y="44" font-family="Inter, sans-serif" font-weight="600" font-size="14" fill="#4e535b">seconds, lower is better</text>
-        <line x1="60" y1="70" x2="60" y2="330" stroke="#14161a" stroke-width="3"/>
-        <line x1="60" y1="330" x2="540" y2="330" stroke="#14161a" stroke-width="3"/>
-        <g font-family="JetBrains Mono, monospace" font-size="13" fill="#4e535b" text-anchor="end">
-          <text x="52" y="334">0</text><text x="52" y="204">0.5 s</text><text x="52" y="74">1.0 s</text>
-        </g>
-        <line x1="60" y1="200" x2="540" y2="200" stroke="#d9d4c6" stroke-width="2"/>
-        <line x1="60" y1="109" x2="540" y2="109" stroke="#d4342c" stroke-width="4" stroke-dasharray="12 8"/>
-        <text x="536" y="100" text-anchor="end" font-family="Inter, sans-serif" font-weight="800" font-size="15" fill="#d4342c">stock 3.14 · ~0.85 s flat, any thread count</text>
-        <rect x="120" y="143" width="100" height="187" fill="#2e7d32" stroke="#14161a" stroke-width="3"/>
-        <rect x="260" y="291" width="100" height="39" fill="#2e7d32" stroke="#14161a" stroke-width="3"/>
-        <rect x="400" y="291" width="100" height="39" fill="#2e7d32" stroke="#14161a" stroke-width="3" stroke-dasharray="6 4"/>
-        <g font-family="JetBrains Mono, monospace" font-weight="900" font-size="20" fill="#14161a" text-anchor="middle">
-          <text x="170" y="134">0.72 s</text><text x="310" y="282">0.15 s</text><text x="450" y="282">≈0.15 s</text>
-        </g>
-        <g font-family="Inter, sans-serif" font-weight="700" font-size="15" fill="#4e535b" text-anchor="middle">
-          <text x="170" y="356">1 thread</text><text x="310" y="356">8 threads</text><text x="450" y="356">32 threads (holds)</text>
-        </g>
-        <text x="330" y="256" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="26" fill="#2e7d32">4.8×</text>
-      </svg>
-      <svg viewBox="0 0 560 380" width="560" height="380" style="display:block;">
-        <text x="0" y="22" font-family="JetBrains Mono, monospace" font-weight="700" font-size="16" fill="#14161a">B · object-dtype string scan, 5M rows, 16 threads</text>
-        <text x="0" y="44" font-family="Inter, sans-serif" font-weight="600" font-size="14" fill="#4e535b">one PyObject per value</text>
-        <line x1="60" y1="70" x2="60" y2="330" stroke="#14161a" stroke-width="3"/>
-        <line x1="60" y1="330" x2="540" y2="330" stroke="#14161a" stroke-width="3"/>
-        <g font-family="JetBrains Mono, monospace" font-size="13" fill="#4e535b" text-anchor="end">
-          <text x="52" y="334">0</text><text x="52" y="204">.125 s</text><text x="52" y="74">.25 s</text>
-        </g>
-        <line x1="60" y1="200" x2="540" y2="200" stroke="#d9d4c6" stroke-width="2"/>
-        <rect x="110" y="101" width="110" height="229" fill="#d4342c" stroke="#14161a" stroke-width="3"/>
-        <rect x="260" y="247" width="110" height="83" fill="#2e7d32" stroke="#14161a" stroke-width="3"/>
-        <rect x="410" y="163" width="110" height="167" fill="#fff" stroke="#14161a" stroke-width="3"/>
-        <rect x="410" y="163" width="110" height="167" fill="url(#hatch)"/>
-        <g font-family="JetBrains Mono, monospace" font-weight="900" font-size="20" fill="#14161a" text-anchor="middle">
-          <text x="165" y="92">0.22 s</text><text x="315" y="238">0.08 s</text><text x="465" y="154">0.161 s</text>
-        </g>
-        <g font-family="Inter, sans-serif" font-weight="700" font-size="15" fill="#4e535b" text-anchor="middle">
-          <text x="165" y="356">stock 3.14</text><text x="315" y="356">3.14t</text><text x="465" y="356">no-Python query, both</text>
-        </g>
-        <text x="315" y="216" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="26" fill="#2e7d32">2.6×</text>
-        <defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#9aa0a8" stroke-width="2"/></pattern></defs>
-      </svg>
-    </div>
-    <p style="margin-top:2px; font-size:15px;">A: 16-core x86_64, chdb-core 26.5.1 · B: 56-vCPU Xeon, CPython 3.14.6 vs 3.14.6t · on stock, more threads made B <em>slower</em> (0.13 → 0.22 s)</p>
+    <h2 style="font-size:42px;">One Python object per value, all threads: 0.22 s → 0.08 s</h2>
+    <svg viewBox="0 0 1160 330" width="1160" height="330" style="display:block; margin-top:10px;">
+      <line x1="90" y1="20" x2="90" y2="280" stroke="#14161a" stroke-width="3"/>
+      <line x1="90" y1="280" x2="1140" y2="280" stroke="#14161a" stroke-width="3"/>
+      <g font-family="JetBrains Mono, monospace" font-size="14" fill="#4e535b" text-anchor="end">
+        <text x="80" y="284">0</text><text x="80" y="154">0.125 s</text><text x="80" y="24">0.25 s</text>
+      </g>
+      <line x1="90" y1="150" x2="1140" y2="150" stroke="#d9d4c6" stroke-width="2"/>
+      <!-- stock 0.22 -> 229px ; 3.14t 0.08 -> 83px ; control 0.161 -> 167px (260px = 0.25 s) -->
+      <rect x="190" y="51" width="220" height="229" fill="#d4342c" stroke="#14161a" stroke-width="3"/>
+      <rect x="510" y="197" width="220" height="83" fill="#2e7d32" stroke="#14161a" stroke-width="3"/>
+      <rect x="830" y="113" width="220" height="167" fill="#fff" stroke="#14161a" stroke-width="3"/>
+      <rect x="830" y="113" width="220" height="167" fill="url(#hatch)"/>
+      <g font-family="JetBrains Mono, monospace" font-weight="900" font-size="26" fill="#14161a" text-anchor="middle">
+        <text x="300" y="42">0.22 s</text><text x="620" y="188">0.08 s</text><text x="940" y="104">0.161 s</text>
+      </g>
+      <g font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b" text-anchor="middle">
+        <text x="300" y="308">stock 3.14 · 16 threads</text><text x="620" y="308">3.14t · 16 threads</text><text x="940" y="308">control: no Python objects, both builds</text>
+      </g>
+      <text x="620" y="160" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="34" fill="#2e7d32">2.6×</text>
+      <defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#9aa0a8" stroke-width="2"/></pattern></defs>
+    </svg>
+    <p style="margin-top:8px; font-size:22px; color:var(--ink);">On stock, <strong>adding threads made it slower</strong> (0.13 → 0.22 s). On 3.14t, faster.</p>
+    <p style="margin-top:6px; font-size:15px;">5M object-dtype strings, 16 threads · 56-vCPU Xeon · CPython 3.14.6 vs 3.14.6t · min of 6 runs</p>
   </div>
   <div class="punch">Same engine, same speed on both builds. <span class="y">Only the Python touchpoints moved.</span></div>
-  <aside class="notes">Two panels, both the real shapes. A is a scalar Python UDF over 4 million rows, the per-row scoring case. Stock 3.14 is the dashed red line: 0.85 seconds flat, threads make no difference because one runs Python at a time. On 3.14t, 0.72 seconds on one thread, 0.15 on eight, 4.8 times, and it holds at 32; the dashed bar means "did not regress", not a separately reported figure. B is the string case: an object-dtype scan of 5 million values, one PyObject each, the shape of a log or transcript column. Sixteen threads on stock: 0.22 seconds, and note the footnote, adding threads on stock made it worse, 0.13 to 0.22, because they pile onto the lock. Same sixteen threads on 3.14t: 0.08, 2.6 times. The hatched bar is the control: a query with no Python objects at all ran at 0.161 on both builds. Same engine, same speed; only the Python touchpoints moved. The two panels are different machines, which is why they are two charts and not one. TODO before the talk: run N concurrent recall queries, the memory-table query from slide 8, from a 16-thread pool on 3.14 vs 3.14t. I do not have that number yet and I am not going to make one up on stage.</aside>
+  <aside class="notes">Part five, the number. This is the string case: a scan over five million values, one Python object each, the pattern of a log or transcript column. Sixteen threads on stock: 0.22 seconds. Same thread count on 3.14t: 0.08. And read the line under the chart: on stock, adding threads made it slower, because they pile onto the lock. The hatched bar is the control, a query with no Python objects at all. 0.161 on both builds. Same engine, same speed. Only the Python touchpoints moved.</aside>
 </section>
 
-<!-- 23 · WHAT THIS BUYS -->
+<!-- 21 · WHAT THIS BUYS -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Part 5 · What it buys</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:42px;">What this buys: one process, no worker pool</h2>
-    <div style="display:grid; grid-template-columns: 1fr 360px; gap:28px; margin-top:16px; align-items:start;">
-      <pre class="small"><code class="language-python">import chdb.datastore as pd            # pandas API
+    <h2 style="font-size:42px;">Agent queries and pandas jobs, one process</h2>
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:28px; margin-top:14px; align-items:start;">
+      <pre class="small"><code class="language-python">import chdb.datastore as pd             # pandas API, ClickHouse engine
 sess = chdb.session.Session("./brain")
-
 @func([STRING, STRING], FLOAT64)
 def score(text, q): return reranker(text, q)
 
-def recall(user, q):                    # tool call
-    return sess.query(f"SELECT text, score(text, '{q}') AS s "
-                      f"FROM memory WHERE user_id = '{user}' "
-                      f"ORDER BY s DESC LIMIT 8", "DataFrame")
+def recall(user, q):                    # an agent tool call
+    return sess.query("SELECT text, score(text, {q:String}) AS s "
+                      "FROM memory WHERE user_id = {user:String} "
+                      "ORDER BY s DESC LIMIT 8", "DataFrame",
+                      params={"q": q, "user": user})
 
-def report(day):                        # analytics job
+def report(day):                        # a pandas job
     ev = pd.read_parquet("s3://lake/events/*.parquet")
     return ev[ev.ts >= day].groupby("user_id").amount.sum().nlargest(10)
 
-with ThreadPoolExecutor(16) as pool:    # both at once
-    ...</code></pre>
-      <div class="rows" style="gap:18px; margin-top:6px;">
-        <div class="row"><span class="sq ok"></span><span style="font-size:22px;"><strong>One model in memory.</strong> No worker pool.</span></div>
-        <div class="row"><span class="sq ok"></span><span style="font-size:22px;"><strong>pandas chain → one SQL</strong> → every core.</span></div>
-        <div class="row"><span class="sq ok"></span><span style="font-size:22px;"><strong>Engine and Python threads share the cores.</strong></span></div>
+with ThreadPoolExecutor(16) as pool:    # both at once, one interpreter ...</code></pre>
+      <div style="display:grid; gap:12px;">
+        <div class="card b" style="padding:12px 16px;"><h3 class="blue" style="font-size:21px;">On stock Python</h3><p style="font-size:19px; margin-top:8px;">The pandas chain becomes <strong>one SQL</strong> on every core, Arrow back. Faster than pandas on <strong>14 of 16</strong> everyday ops, <strong>⅓ the RAM</strong>.*</p></div>
+        <div class="card g" style="padding:12px 16px;"><h3 class="green" style="font-size:21px;">3.14t adds</h3><p style="font-size:19px; margin-top:8px;"><strong>Many of these jobs in flight</strong>, one model in memory. No worker pool.</p></div>
+        <p style="font-size:13px;">* We measured: 10M-row Parquet vs pandas, one laptop (PyCon JP 2026). Sorts ×35–×52; peak RSS 1,059 → 440 MB.</p>
       </div>
     </div>
   </div>
-  <div class="punch">Sixteen queries in flight, one interpreter, <span class="y">zero subprocesses.</span></div>
-  <aside class="notes">This is the shape we were after, and it only works on 3.14t. One process holds local tables and one reranker loaded once, and serves two kinds of work from a thread pool. recall is an agent's tool call: a SQL query over the memory table with the Python scoring function inline, returned as a DataFrame. report is what most of this room writes every day: a pandas chain over Parquet on S3. Because it is chdb.datastore, that chain compiles to a single SQL statement and runs on the engine, every core, streaming, and hands back an Arrow-backed frame. In the PyCon JP measurements that API beat pandas on 14 of 16 everyday ops on 10M rows, sorts by 35 to 52 times, at 440 MB median peak RAM against 1,059 for pandas; those numbers are single-process, single-job. What free-threading adds is the pool: sixteen of these in flight at once. On stock Python the pool would be theatre; the UDF, the object columns and the DataFrame conversion all funnel through one lock. On 3.14t engine threads and Python threads share the cores. No worker processes, so one copy of the model and no pickling results across a pipe. If the process itself is disposable, a Lambda or a sandbox, the local tables can also be flushed to object storage and reopened elsewhere, but that is a separate topic. To be clear, this slide is a sketch of the pattern, not a benchmark; the measured numbers are the previous slide.</aside>
+  <div class="punch">A pool of queries in flight. <span class="y">One interpreter. Zero subprocesses.</span></div>
+  <aside class="notes">This is the pattern. One process, one reranker loaded once, a thread pool. recall is an agent tool call with a Python scoring function inline. report is a pandas chain over Parquet on S3; it compiles to one SQL and runs on the engine, and that part works on stock Python today, at the numbers in the blue card. On stock Python the pool is decoration: every path funnels through the GIL. On 3.14t the pool is real. No worker processes, no pickling, one copy of the model. This is a sketch, not a benchmark. The numbers were the previous slide.</aside>
 </section>
 
-<!-- 24 · CHECKLIST -->
+<!-- 22 · TRY IT YOURSELF -->
 <section>
-  <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Part 5 · Checklist</span></span><span class="pg"></span></div>
+  <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Part 5 · Try it</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2>Porting checklist for extension authors</h2>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px 32px; margin-top:34px;">
-      <div class="rows" style="gap:24px;">
-        <div class="row"><span class="sq y"></span><span style="font-size:25px;"><strong>Measure first.</strong> Count threads waiting on the GIL.</span></div>
-        <div class="row"><span class="sq y"></span><span style="font-size:25px;"><strong>Restructure first.</strong> In-process, then zero-copy, then lock-free.</span></div>
-        <div class="row"><span class="sq b"></span><span style="font-size:25px;"><strong>Declare it:</strong> <span class="mono">Py_mod_gil</span> / <span class="mono">mod_gil_not_used()</span>. No abi3.</span></div>
-        <div class="row"><span class="sq b"></span><span style="font-size:25px;"><strong>Audit every global</strong> → <span class="mono">PyMutex</span>, <span class="mono">call_once</span>, <span class="mono">shared_mutex</span>.</span></div>
-        <div class="row"><span class="sq b"></span><span style="font-size:25px;"><strong>Borrowed → strong refs</strong> (<span class="mono">Py*_GetItemRef</span>).</span></div>
-      </div>
-      <div class="rows" style="gap:24px;">
-        <div class="row"><span class="sq b"></span><span style="font-size:25px;"><strong>Resolve imports eagerly</strong>, while you hold the GIL.</span></div>
-        <div class="row"><span class="sq b"></span><span style="font-size:25px;"><strong>Detach before you block</strong>, or GC deadlocks you.</span></div>
-        <div class="row"><span class="sq b"></span><span style="font-size:25px;"><strong>Cut per-row PyObject churn:</strong> Vectorcall, reused frames.</span></div>
-        <div class="row"><span class="sq ok"></span><span style="font-size:25px;"><strong>Assert <span class="mono">sys._is_gil_enabled()</span> is False</strong> in tests.</span></div>
-        <div class="row"><span class="sq ok"></span><span style="font-size:25px;"><strong>CI:</strong> <span class="mono">cp314t</span> lanes + a cold-process, high-thread stress test.</span></div>
-      </div>
+    <h2>Try it yourself: install, check, try</h2>
+    <div style="display:grid; grid-template-columns: 330px 1fr; gap:14px 24px; margin-top:20px; align-items:stretch;">
+      <div class="card y" style="padding:14px 18px;"><h3>1 · Install</h3><p style="font-size:20px; margin-top:6px;">A separate build. The <strong>t</strong> is for threads.</p></div>
+      <pre class="small" style="margin:0;"><code class="language-bash">uv python install 3.14t &amp;&amp; uv venv -p 3.14t &amp;&amp; source .venv/bin/activate
+# or the python.org installer → tick "free-threaded"</code></pre>
+      <div class="card b" style="padding:14px 18px;"><h3 class="blue">2 · Check</h3><p style="font-size:20px; margin-top:6px;"><strong>False</strong> = GIL off. The warning = a dependency dragged it back.</p></div>
+      <pre class="small" style="margin:0;"><code class="language-bash">$ python -c "import sys, yourstack; print(sys._is_gil_enabled())"
+False
+# the tell-tale, if one package has not opted in:
+RuntimeWarning: The global interpreter lock (GIL) has been enabled
+  to load module 'X', which has not declared that it can run safely ...
+# force it off anyway (hides the warning): PYTHON_GIL=0 / -X gil=0</code></pre>
+      <div class="card g" style="padding:14px 18px;"><h3 class="green">3 · Try</h3><p style="font-size:20px; margin-top:6px;">Which packages are ready: <span class="mono" style="font-size:16px;">py-free-threading.github.io/tracking</span></p></div>
+      <pre class="small" style="margin:0;"><code class="language-python"># pip install chdb
+import sys, chdb                             # no warning?
+from concurrent.futures import ThreadPoolExecutor
+run = lambda i: chdb.query("SELECT count() FROM numbers(1e8)")
+with ThreadPoolExecutor(8) as p: list(p.map(run, range(8)))
+print(sys._is_gil_enabled())                 # still False: your stack opted in</code></pre>
     </div>
-    <p style="margin-top:40px; font-size:18px;"><span style="display:inline-block; width:12px; height:12px; background:var(--yellow); border:2px solid var(--ink); vertical-align:-1px;"></span> before &nbsp; <span style="display:inline-block; width:12px; height:12px; background:var(--blue); border:2px solid var(--ink); vertical-align:-1px;"></span> port &nbsp; <span style="display:inline-block; width:12px; height:12px; background:var(--green); border:2px solid var(--ink); vertical-align:-1px;"></span> verify &nbsp;·&nbsp; the long version: <span class="mono">py-free-threading.github.io</span></p>
   </div>
-  <aside class="notes">The list I wish I had. Yellow, before you touch code: measure whether the GIL is actually the bottleneck, count threads waiting on it under real load; and restructure first, because in-process and zero-copy each gave us more than the lock did. Blue, the port itself: declare it, in pybind11 or the raw slot or Cython's freethreading_compatible; audit every global; turn borrowed references into strong ones where another thread can mutate the container; resolve imports eagerly; detach from the interpreter before blocking on anything; and stop allocating per row, Vectorcall with a reused argument frame. Green, verification: assert sys._is_gil_enabled() is False in your tests and treat the RuntimeWarning as a failure, because one dependency silently reverts everything; run the full suite under PYTHON_GIL=0; and give CI a cold-process, high-thread case, because that is where our two nastiest bugs lived. The long version of all of this is the py-free-threading guide; this is the part we personally bled on.</aside>
+  <aside class="notes">This is the slide to photograph. Three steps. Install: uv will fetch the free-threaded build if you ask for 3.14t; the python.org installer has a free-threaded checkbox. Check: import your whole stack, then print the flag. False means the GIL is off. If you see the RuntimeWarning, one of your packages has not opted in and dragged the GIL back for the whole process; the message names it. You can force the GIL off with PYTHON_GIL=0, but that hides the warning, so check first, force second. The community tracker tells you which packages are ready before you try. Try: install chdb, run a few queries from a thread pool, print the flag again. If it is still False, your stack is free-threaded. This is a smoke test, not a benchmark.</aside>
 </section>
 
-<!-- 25 · TAKEAWAYS + THANKS -->
+<!-- 23 · CLOSE -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Close</span></span><span class="pg"></span></div>
   <div class="frame">
     <div style="display:grid; grid-template-columns: 1fr 300px; gap:40px; align-items:start;">
       <div>
-        <h2>Three takeaways</h2>
-        <div style="display:grid; gap:12px; margin-top:16px;">
-          <div class="tk"><span class="no">01</span><div><h3>Restructure before you parallelize.</h3><p>In-process, zero-copy, then free-threading.</p></div></div>
-          <div class="tk"><span class="no">02</span><div><h3>The GIL was an amnesty, not a feature.</h3><p>The bugs it exposes were already yours.</p></div></div>
-          <div class="tk"><span class="no">03</span><div><h3>Your pandas code. Every core. One process.</h3><p>No worker pool required.</p></div></div>
-        </div>
-        <div style="display:flex; gap:26px; margin-top:18px; align-items:center;">
+        <h2 style="font-size:54px; line-height:1.05;">The GIL was an <span class="oranje">amnesty</span>,<br>not a feature.</h2>
+        <p style="margin-top:22px; font-size:26px; color:var(--ink);">Restructure first. Then remove the lock. <strong>The bugs were always yours.</strong></p>
+        <div style="display:flex; gap:26px; margin-top:54px; align-items:center;">
           <pre class="small" style="width:auto;"><code class="language-bash">pip install chdb
 python3.14t your_tests.py</code></pre>
           <div class="rows" style="gap:6px;">
-            <div class="row" style="font-size:19px;"><span class="sq"></span><span class="mono" style="font-size:19px;">github.com/chdb-io/chdb</span></div>
-            <div class="row" style="font-size:19px;"><span class="sq"></span><span class="mono" style="font-size:19px;">auxten.com · @auxten</span></div>
-            <div class="row" style="font-size:19px;"><span class="sq"></span><span class="mono" style="font-size:19px;">py-free-threading.github.io</span></div>
+            <div class="row" style="font-size:18px;"><span class="sq"></span><span class="mono" style="font-size:18px;">github.com/chdb-io/chdb</span></div>
+            <div class="row" style="font-size:18px;"><span class="sq"></span><span class="mono" style="font-size:18px;">auxten.com · @auxten</span></div>
+            <div class="row" style="font-size:18px;"><span class="sq"></span><span class="mono" style="font-size:18px;">py-free-threading.github.io</span></div>
           </div>
         </div>
       </div>
@@ -853,8 +764,8 @@ python3.14t your_tests.py</code></pre>
       </div>
     </div>
   </div>
-  <div class="punch">Python can finally scale across cores. <span class="y">Now it is our extensions' turn.</span> Dank je wel, Amsterdam.</div>
-  <aside class="notes">If you remember one thing: restructure first, then remove the lock, and the bugs that show up were always yours. The third takeaway is for the pandas people: your pandas code, compiled to one SQL, on every core, from one process, with no worker pool, is now a real thing you can run, and it serves an agent's memory queries from the same process at the same time. The QR is these slides with the speaker notes. Leave this up for questions. Dank je wel.</aside>
+  <div class="punch">Python can finally scale across cores. <span class="y">Now the extensions have to catch up.</span> Dank jullie wel, Amsterdam.</div>
+  <aside class="notes">If you remember one thing: the GIL was an amnesty. Restructure first, then remove the lock, and the bugs that show up were always yours. Slides and notes are on the QR. Dank jullie wel.</aside>
 </section>
 
 </div>
