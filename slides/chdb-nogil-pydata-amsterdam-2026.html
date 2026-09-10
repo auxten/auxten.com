@@ -78,15 +78,25 @@
   .card.lite h3 { font-size: 30px; }
   .card.lite p { font-size: 29px; margin-top: 22px; color: var(--ink); }
 
+  /* the judge: Guido's rule banner */
+  .judge { display: inline-flex; align-items: center; gap: 18px; margin-top: 22px; background: #fff; border: 3px solid var(--ink); border-left: 14px solid var(--oranje); padding: 10px 26px 10px 14px; font-size: 26px; font-weight: 800; color: var(--ink); }
+  .judge img { width: 76px; height: 76px; border-radius: 50%; border: 4px solid var(--ink); object-fit: cover; }
+
+  /* why nogil passed: four small diagrams */
+  .diag { background: #fff; border: 3px solid var(--ink); padding: 14px 20px 12px; }
+  .diag h3 { font-size: 26px; }
+  .diag svg { display: block; width: 100%; height: 100px; margin-top: 8px; }
+  .diag p { font-size: 21px; margin-top: 6px; }
+
   /* GIL history timeline */
-  .tl { position: relative; margin-top: 72px; }
-  .tl-line { position: absolute; left: 40px; right: 40px; top: 74px; height: 10px; background: var(--oranje); border: 3px solid var(--ink); }
+  .tl { position: relative; margin-top: 40px; }
+  .tl-line { position: absolute; left: 40px; right: 40px; top: 64px; height: 10px; background: var(--oranje); border: 3px solid var(--ink); }
   .tl-nodes { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
   .node { text-align: center; }
-  .node .av { display: block; width: 160px; height: 160px; margin: 0 auto; border-radius: 50%; border: 5px solid var(--ink); object-fit: cover; background: #fff; }
-  .node .av.ini { display:flex; align-items:center; justify-content:center; font-family:"JetBrains Mono", monospace; font-size:56px; font-weight:900; color:#fff; background:var(--ink); border-color:var(--ink); }
+  .node .av { display: block; width: 140px; height: 140px; margin: 0 auto; border-radius: 50%; border: 5px solid var(--ink); object-fit: cover; background: #fff; }
+  .node .av.ini { display:flex; align-items:center; justify-content:center; font-family:"JetBrains Mono", monospace; font-size:50px; font-weight:900; color:#fff; background:var(--ink); border-color:var(--ink); }
   .node.landed .av { border-color: var(--oranje); box-shadow: 0 0 0 5px var(--ink); }
-  .node .yr { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; color: var(--oranje); margin-top: 18px; }
+  .node .yr { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 700; color: var(--oranje); margin-top: 14px; }
   .node .nm { font-size: 26px; font-weight: 900; color: var(--ink); margin-top: 4px; }
   .node .why { font-size: 21px; font-weight: 600; color: var(--muted); margin-top: 8px; line-height: 1.3; }
 
@@ -311,13 +321,17 @@
   <div class="topbar"><span class="sec"><span class="chip p1"></span><span class="txt">History</span></span><span class="pg"></span></div>
   <div class="frame">
     <h2 style="font-size:50px;">Removing the GIL: 29 years of tries</h2>
+    <div class="judge">
+      <img src="avatars/gvanrossum.png" alt="Guido van Rossum">
+      <div><span class="oranje">Guido's rule (2007):</span> single-threaded code must not get slower.</div>
+    </div>
     <div class="tl">
       <div class="tl-line"></div>
       <div class="tl-nodes">
         <div class="node">
           <img class="av" src="avatars/gstein.png" alt="Greg Stein">
           <div class="yr">1996</div><div class="nm">Greg Stein</div>
-          <div class="why">Worked. Single thread too slow.</div>
+          <div class="why">Worked. Single thread 2× slower.</div>
         </div>
         <div class="node">
           <div class="av ini">AP</div>
@@ -342,7 +356,74 @@
       </div>
     </div>
   </div>
-  <aside class="notes">Thirty seconds of history, because it explains the tax. 1996: Greg Stein removed the GIL from Python 1.4 with fine-grained locks. It worked, and single-threaded code got much slower, so it died. 2009: Antoine Pitrou rewrote the GIL for 3.2. Fairer scheduling, same lock. 2016: Larry Hastings' Gilectomy. Every refcount became an atomic operation and the interpreter crawled; abandoned. 2017 onwards: Eric Snow gave each sub-interpreter its own GIL, landed in 3.12. A sidestep, not a removal. 2021: Sam Gross's nogil fork solved the refcount problem with biased reference counting and immortal objects, kept single-thread speed within a few percent, and became PEP 703. Every failure was the same failure: single-thread speed. That is why the small remaining tax on the next slide matters.</aside>
+  <aside class="notes">Thirty seconds of history, because it explains the tax. The yardstick is Guido's, from 2007: he would take GIL removal only if single-threaded programs did not get slower. Every attempt here was measured against that sentence. 1996: Greg Stein removed the GIL from Python 1.4 with fine-grained locks. It worked, and single-threaded code ran nearly twice as slow, so it died. 2009: Antoine Pitrou rewrote the GIL for 3.2. Fairer scheduling, same lock. 2016: Larry Hastings' Gilectomy. Every refcount became an atomic operation and the interpreter crawled; abandoned. 2017 onwards: Eric Snow gave each sub-interpreter its own GIL, landed in 3.12. A sidestep, not a removal. 2021: Sam Gross's nogil fork solved the refcount problem with biased reference counting and immortal objects, kept single-thread speed within a few percent, and became PEP 703. Every failure was the same failure: single-thread speed. Next slide: how the last one got under the bar.</aside>
+</section>
+
+<!-- 06 · WHY NOGIL PASSED -->
+<section>
+  <div class="topbar"><span class="sec"><span class="chip p1"></span><span class="txt">History</span></span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:46px;">Why nogil passed: no big trick, four small ones</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:26px;">
+      <div class="diag">
+        <h3>Biased refcounting</h3>
+        <svg viewBox="0 0 520 100" role="img" aria-label="One object, two counters: owner thread fast, other threads atomic">
+          <rect x="10" y="10" width="120" height="80" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+          <text x="70" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" fill="#14161a">obj</text>
+          <g stroke="#14161a" stroke-width="3"><line x1="130" y1="30" x2="200" y2="30"/><line x1="130" y1="70" x2="200" y2="70"/></g>
+          <rect x="200" y="12" width="300" height="36" fill="#f5c518" stroke="#14161a" stroke-width="3"/>
+          <text x="350" y="38" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#14161a">owner thread: plain ++</text>
+          <rect x="200" y="52" width="300" height="36" fill="#fff" stroke="#d4342c" stroke-width="3"/>
+          <text x="350" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#d4342c">other threads: atomic</text>
+        </svg>
+        <p>Owner counts without atomics.</p>
+      </div>
+      <div class="diag">
+        <h3>Immortal objects</h3>
+        <svg viewBox="0 0 520 100" role="img" aria-label="None, True and small ints are never reference counted">
+          <g font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" fill="#14161a" text-anchor="middle">
+            <rect x="10" y="20" width="120" height="60" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/><text x="70" y="58">None</text>
+            <rect x="150" y="20" width="120" height="60" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/><text x="210" y="58">True</text>
+            <rect x="290" y="20" width="120" height="60" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/><text x="350" y="58">42</text>
+          </g>
+          <text x="470" y="72" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="64" fill="#ee6c1b">∞</text>
+        </svg>
+        <p>Never refcounted at all.</p>
+      </div>
+      <div class="diag">
+        <h3>Deferred refcounting</h3>
+        <svg viewBox="0 0 520 100" role="img" aria-label="References from the interpreter stack are not counted; the garbage collector accounts for them">
+          <rect x="10" y="10" width="130" height="80" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+          <g stroke="#d9d4c6" stroke-width="2"><line x1="10" y1="36" x2="140" y2="36"/><line x1="10" y1="62" x2="140" y2="62"/></g>
+          <text x="75" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="20" fill="#14161a">stack</text>
+          <line x1="140" y1="50" x2="248" y2="50" stroke="#4e535b" stroke-width="3" stroke-dasharray="8 7"/><path d="M240 42 L254 50 L240 58 Z" fill="#4e535b"/>
+          <text x="197" y="32" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">skipped</text>
+          <rect x="254" y="10" width="130" height="80" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+          <text x="319" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" fill="#14161a">func</text>
+          <circle cx="470" cy="50" r="34" fill="#2e7d32" stroke="#14161a" stroke-width="3"/>
+          <text x="470" y="58" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#fff">GC</text>
+          <line x1="436" y1="50" x2="392" y2="50" stroke="#2e7d32" stroke-width="4"/><path d="M400 42 L386 50 L400 58 Z" fill="#2e7d32"/>
+        </svg>
+        <p>Stack refs skipped; GC checks.</p>
+      </div>
+      <div class="diag">
+        <h3>Per-object locks</h3>
+        <svg viewBox="0 0 520 100" role="img" aria-label="Each dict and list carries a tiny lock: reads need none, writes take it">
+          <rect x="10" y="10" width="160" height="80" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+          <text x="80" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" fill="#14161a">dict</text>
+          <g transform="translate(140,18)"><rect x="0" y="12" width="22" height="18" fill="#ee6c1b" stroke="#14161a" stroke-width="2.5"/><path d="M4 12 V7 a7 7 0 0 1 14 0 V12" fill="none" stroke="#14161a" stroke-width="2.5"/></g>
+          <g stroke="#14161a" stroke-width="3"><line x1="170" y1="30" x2="230" y2="30"/><line x1="170" y1="70" x2="230" y2="70"/></g>
+          <rect x="230" y="12" width="270" height="36" fill="#fff" stroke="#2e7d32" stroke-width="3"/>
+          <text x="365" y="38" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#2e7d32">read: no lock</text>
+          <rect x="230" y="52" width="270" height="36" fill="#fff" stroke="#d4342c" stroke-width="3"/>
+          <text x="365" y="78" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#d4342c">write: this lock only</text>
+        </svg>
+        <p>One tiny lock per container.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px; font-size:27px; color:var(--ink);"><strong>Result: ~1–8% single-thread cost.</strong> Guido's rule, met.</p>
+  </div>
+  <aside class="notes">Not one big idea: a stack of small ones, each avoiding shared memory. Biased reference counting: every object remembers its creating thread; that thread bumps a plain counter, everyone else uses a second, atomic one. Immortal objects: None, True, small integers and interned strings are marked immortal and Py_INCREF becomes a no-op; the hottest objects are never contended. Deferred reference counting: functions, modules and code objects are pushed and popped constantly; the interpreter skips those counts and the cycle collector settles up. Per-object locks: a one-byte lock in every list and dict, reads mostly lock-free, writes take that object's lock only. Underneath, mimalloc replaces pymalloc as the thread-safe allocator, and its heaps let the GC find objects without a linked list. Together: a few percent single-thread cost, under Guido's bar.</aside>
 </section>
 
 <!-- 06 · WHAT LANDED -->
@@ -353,10 +434,10 @@
     <div class="rows big" style="margin-top:70px; gap:44px;">
       <div class="row"><span class="sq b"></span><span><strong>PEP 703 → PEP 779:</strong> supported, not experimental</span></div>
       <div class="row"><span class="sq y"></span><span><span class="mono">python3.14t</span> — the <strong>t</strong> is for threads</span></div>
-      <div class="row"><span class="sq ok"></span><span><strong>~1–8%</strong> single-thread cost</span></div>
+      <div class="row"><span class="sq ok"></span><span>Separate wheels: <span class="mono">cp314t</span></span></div>
     </div>
   </div>
-  <aside class="notes">Deliberately one slide. PEP 703 made the GIL optional in 3.13 as an experiment; PEP 779 made it supported in 3.14. It is a separate interpreter, python3.14t, and a separate wheel tag. The single-thread penalty came down from roughly 40 percent in 3.13t to a few percent. That made it usable. Most of the top compiled packages now ship free-threaded wheels. Under the hood: biased refcounting, immortal objects, per-object locks. That is why it is fast. It is also why a borrowed reference that was harmless for thirty years can now be a use-after-free when another thread mutates the container.</aside>
+  <aside class="notes">Deliberately one slide. PEP 703 made the GIL optional in 3.13 as an experiment; PEP 779 made it supported in 3.14. It is a separate interpreter, python3.14t, and a separate wheel tag. The single-thread penalty came down from roughly 40 percent in 3.13t to the few percent you just saw. Most of the top compiled packages now ship free-threaded wheels. Under the hood: biased refcounting, immortal objects, per-object locks. That is why it is fast. It is also why a borrowed reference that was harmless for thirty years can now be a use-after-free when another thread mutates the container.</aside>
 </section>
 
 <!-- 07 · NOTHING FOR FREE -->
