@@ -329,7 +329,7 @@ sess.query("""
       <text x="580" y="308" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="24" fill="#14161a">1, 8 or 32 engine threads → <tspan fill="#d4342c">~0.85 s, flat</tspan></text>
     </svg>
   </div>
-  <aside class="notes">Here is the mechanism. ClickHouse's query engine is multi-threaded: N worker threads, each processing its own block of rows, in parallel. The moment the SQL calls a Python function, every one of those threads has to call into Python, and every call has to take the GIL. So N parallel engine threads collapse into a queue at one lock. This is structural, not a bug: the function is Python, so it cannot release the GIL the way NumPy's C loops do. We measured a scalar UDF over four million rows on a 16-core box: about 0.85 seconds with one engine thread, with eight, with thirty-two. Flat. The engine scaled; the lock did not.</aside>
+  <aside class="notes">Here is the mechanism. ClickHouse's query engine is multi-threaded: N worker threads, each processing its own block of rows, in parallel. The moment the SQL calls a Python function, every one of those threads has to call into Python, and every call has to take the GIL. So N parallel engine threads collapse into a queue at one lock. This is structural: the function is Python, so it cannot release the GIL the way NumPy's C loops do. We measured a scalar UDF over four million rows on a 16-core box: about 0.85 seconds with one engine thread, with eight, with thirty-two. Flat. The engine scaled; the lock did not.</aside>
 </section>
 
 <!-- 06 · BOTTLENECK 2 -->
@@ -353,7 +353,7 @@ sess.query("""
       <text x="580" y="340" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#14161a">Adding threads did not help. Same for any object-dtype DataFrame.</text>
     </svg>
   </div>
-  <aside class="notes">Second place, same mechanism. Agent memory is text all the way down: chat logs, tool output, JSON. In pandas an object column is one Python object per cell, and reading a Python object means taking the lock. So the engine threads on the left queue at the same padlock to read cells on the right. Our scan of five million such strings with 16 engine threads: 0.22 seconds on stock 3.14. On stock, adding threads to this scan made it slower; we do not have a clean per-thread-count series to show, so I will only compare like for like later. Everything I said about strings applies to any object-dtype DataFrame crossing into or out of the engine.</aside>
+  <aside class="notes">Second place, same mechanism. Agent memory is text all the way down: chat logs, tool output, JSON. In pandas an object column is one Python object per cell, and reading a Python object means taking the lock. So the engine threads on the left queue at the same padlock to read cells on the right. Our scan of five million such strings with 16 engine threads: 0.22 seconds on stock 3.14. On stock, adding threads to this scan made it slower. Everything I said about strings applies to any object-dtype DataFrame crossing into or out of the engine.</aside>
 </section>
 
 <!-- 07 · WORKAROUNDS -->
@@ -394,7 +394,7 @@ sess.query("""
       </div>
     </div>
   </div>
-  <aside class="notes">Hold the table against our two problems. The function per row: release the GIL inside the loop? The loop calls back into Python per row; the work is Python. Compile it away? It is the user's function, written this morning. Batch? SQL calls a scalar function per row. A process pool? Every block copied out of the engine, the user's model loaded again in every worker. Strings: a Python string is an object, not a buffer; reading it is a lock operation, and pickling five million of them costs more than the scan. The table works when Python coordinates from the edge. In chDB the engine coordinates and Python is in the middle of the hot loop.</aside>
+  <aside class="notes">Hold the table against our two problems. The function per row: release the GIL inside the loop? The loop calls back into Python per row; the work is Python. Compile it away? It is the user's function, written this morning. Batch? SQL calls it per row. A process pool? Every block copied out, the model loaded again in every worker. Strings: a Python string is an object, not a buffer; reading it is a lock operation, and pickling five million of them costs more than the scan. The table works when Python coordinates from the edge. In chDB the engine coordinates and Python is in the middle of the hot loop.</aside>
 </section>
 
 <!-- 09 · AGENT LOOP -->
@@ -421,7 +421,7 @@ sess.query("""
       </g>
     </svg>
   </div>
-  <aside class="notes">This is any Python agent, one loop iteration. The turn fans out: call an external API, read the session history, load context from files or a vector store, run a tool function, compute an embedding or rerank, write the result back to memory. The shape everyone builds: asyncio handles the waiting, threads were supposed to handle the rest. The I/O steps do release the GIL while blocked. The CPU steps do not, and every step still takes the lock to touch the dicts, lists and strings it passes to the next one. So "the rest" runs sequentially: a concurrent tool loop executes one step at a time. Our chDB tool call was just one of these steps.</aside>
+  <aside class="notes">This is any Python agent, one loop iteration. The turn fans out: call an external API, read the session history, load context from files or a vector store, run a tool function, compute an embedding or rerank, write the result back to memory. asyncio handles the waiting; threads were supposed to handle the rest. The I/O steps do release the GIL while blocked. The CPU steps do not, and every step still takes the lock to touch the dicts, lists and strings it passes to the next one. So "the rest" runs sequentially: a concurrent tool loop executes one step at a time. Our chDB tool call was just one of these steps.</aside>
 </section>
 
 <!-- 10 · AGENT DIAGNOSIS -->
@@ -435,7 +435,7 @@ sess.query("""
       <div class="row"><span class="sq x"></span><span>Logic <strong>out of Python</strong> <span class="m" style="font-size:26px;">— Rust or Go sidecars</span></span></div>
     </div>
   </div>
-  <aside class="notes">Look at how agent stacks are built and you see the lock in the architecture. Three escape routes. Tools run in a process pool: every dict pickled across, a model per worker. Memory and retrieval move to a remote service: a network hop per step. One data point, with its conditions: the same recall query, p95 of 1.7 milliseconds in-process versus 93 milliseconds over a network with half a percent packet loss, on our test rig. Or the logic leaves Python for a Rust or Go sidecar. None of these are wrong; they are what you do when one interpreter runs one thread. A diagnosis, not a complaint.</aside>
+  <aside class="notes">Look at how agent stacks are built and you see the lock in the architecture. Three escape routes. Tools run in a process pool: every dict pickled across, a model per worker. Memory and retrieval move to a remote service: a network hop per step. One data point: the same recall query, p95 of 1.7 milliseconds in-process versus 93 over a network with half a percent packet loss, on our test rig. Or the logic leaves Python for a Rust or Go sidecar. None of these are wrong; they are what you do when one interpreter runs one thread. A diagnosis, not a complaint.</aside>
 </section>
 
 <!-- 11 · DIVIDER 02 -->
@@ -505,7 +505,7 @@ sess.query("""
       </div>
     </div>
   </div>
-  <aside class="notes">Thirty seconds of history, because it explains the tax. The yardstick is Guido's, from 2007: he would take GIL removal only if single-threaded programs did not get slower. Every attempt here was measured against that sentence. 1996: Greg Stein removed the GIL from Python 1.4 with fine-grained locks. It worked, and single-threaded code ran nearly twice as slow, so it died. 2009: Antoine Pitrou rewrote the GIL for 3.2: fairer scheduling, same lock. 2016: Larry Hastings' Gilectomy; every refcount became an atomic operation, the interpreter crawled, abandoned. 2017 on: Eric Snow gave each sub-interpreter its own GIL in 3.12. A sidestep, not a removal. 2021: Sam Gross's nogil branch solved the refcount problem with biased reference counting and immortal objects, kept single-thread speed within a few percent, and became PEP 703. Every failure was the same failure: single-thread speed. Next: how the last one got under the bar.</aside>
+  <aside class="notes">Thirty seconds of history, because it explains the tax. The yardstick is Guido's, from 2007: GIL removal only if single-threaded programs did not get slower. 1996: Greg Stein removed the GIL from Python 1.4 with fine-grained locks. It worked, and single-threaded code ran nearly twice as slow, so it died. 2009: Antoine Pitrou rewrote the GIL for 3.2: fairer scheduling, same lock. 2016: Larry Hastings' Gilectomy; every refcount became atomic, the interpreter crawled. 2017 on: Eric Snow gave each sub-interpreter its own GIL, a sidestep. 2021: Sam Gross's nogil branch solved the refcount problem, kept single-thread speed within a few percent, and became PEP 703. Every failure was the same failure: single-thread speed.</aside>
 </section>
 
 <!-- 13 · WHY NOGIL PASSED -->
@@ -572,36 +572,166 @@ sess.query("""
     </div>
     <p style="margin-top:18px; font-size:27px; color:var(--ink);"><strong>Result: ~1–8% single-thread cost.</strong> Guido's rule, met.</p>
   </div>
-  <aside class="notes">Not one big idea: a stack of small ones, each avoiding shared memory. Biased reference counting: every object remembers its creating thread; that thread bumps a plain counter, everyone else uses a second, atomic one. Immortal objects: None, True, small integers and interned strings are never counted at all, so the hottest objects are never contended. Deferred reference counting: functions, modules and code objects are pushed and popped constantly; the interpreter skips those counts and the cycle collector settles up. Per-object locks: a one-byte lock in every list and dict, reads mostly lock-free, writes take that object's lock only. Together: a few percent single-thread cost, under Guido's bar. And that is the tool we picked up.</aside>
+  <aside class="notes">Not one big idea: a stack of small ones, each avoiding shared memory. Biased reference counting: every object remembers its creating thread; that thread bumps a plain counter, everyone else uses a second, atomic one. Immortal objects: None, True, small integers and interned strings are never counted at all, so the hottest objects are never contended. Deferred reference counting: functions, modules and code objects are pushed and popped constantly; the interpreter skips those counts and the cycle collector settles up. Per-object locks: a one-byte lock in every list and dict, reads mostly lock-free, writes take that object's lock only. Together: a few percent single-thread cost, under Guido's bar.</aside>
 </section>
 
-<!-- 14 · CHANGE 2a · ONE LINE -->
+<!-- 14 · STEP 1 · THE SWITCH AND THE MAP -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 1 · Flip the switch</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:50px;">One line, one promise: nothing here needs the GIL</h2>
-    <pre style="margin-top:70px;"><code class="language-cpp" style="font-size:32px; padding:34px 40px; line-height:1.5;">// pybind11 ≥ 2.13
-PYBIND11_MODULE(_chdb, m,
-    py::mod_gil_not_used())</code></pre>
+    <h2 style="font-size:46px;">One line, one promise: nothing here needs the GIL</h2>
+    <pre style="margin-top:14px;"><code class="language-cpp" style="font-size:22px; padding:12px 22px;">PYBIND11_MODULE(_chdb, m, py::mod_gil_not_used())   // pybind11 ≥ 2.13</code></pre>
+    <svg viewBox="0 0 1160 310" width="1160" height="310" style="display:block; margin-top:18px;" role="img" aria-label="The chDB module has three kinds of state the GIL used to guard: shared state needs real locks, object access needs owned references, engine threads calling Python need to attach first">
+      <rect x="0" y="0" width="1160" height="310" fill="#fff" stroke="#14161a" stroke-width="3"/>
+      <text x="24" y="38" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#14161a">_chdb · three places the GIL used to stand guard</text>
+      <g>
+        <rect x="24" y="60" width="352" height="150" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/><rect x="24" y="60" width="352" height="10" fill="#f5c518"/>
+        <text x="200" y="106" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="25" fill="#14161a">Shared state</text>
+        <text x="200" y="142" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#4e535b">type cache · UDF registry</text>
+        <text x="200" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#4e535b">engine singleton</text>
+        <line x1="200" y1="210" x2="200" y2="236" stroke="#14161a" stroke-width="3"/><path d="M190 230 L200 244 L210 230 Z" fill="#14161a"/>
+        <rect x="24" y="246" width="352" height="46" fill="#14161a"/>
+        <text x="200" y="277" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#f5c518">real locks</text>
+      </g>
+      <g>
+        <rect x="404" y="60" width="352" height="150" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/><rect x="404" y="60" width="352" height="10" fill="#1b4fd8"/>
+        <text x="580" y="106" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="25" fill="#14161a">Object access</text>
+        <text x="580" y="142" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#4e535b">borrowed references</text>
+        <text x="580" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#4e535b">pointers into containers</text>
+        <line x1="580" y1="210" x2="580" y2="236" stroke="#14161a" stroke-width="3"/><path d="M570 230 L580 244 L590 230 Z" fill="#14161a"/>
+        <rect x="404" y="246" width="352" height="46" fill="#14161a"/>
+        <text x="580" y="277" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#f5c518">own what you read</text>
+      </g>
+      <g>
+        <rect x="784" y="60" width="352" height="150" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/><rect x="784" y="60" width="352" height="10" fill="#d4342c"/>
+        <text x="960" y="106" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="25" fill="#14161a">Engine threads → Python</text>
+        <text x="960" y="142" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#4e535b">N worker threads</text>
+        <text x="960" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#4e535b">each calls your function</text>
+        <line x1="960" y1="210" x2="960" y2="236" stroke="#14161a" stroke-width="3"/><path d="M950 230 L960 244 L970 230 Z" fill="#14161a"/>
+        <rect x="784" y="246" width="352" height="46" fill="#14161a"/>
+        <text x="960" y="277" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#f5c518">attach first, every thread</text>
+      </g>
+    </svg>
   </div>
-  <aside class="notes">Step one is one line; the raw C API has the same slot, Py_mod_gil. The line is a promise: nothing in this module relies on the GIL for correctness. Keeping it meant auditing every global: the type cache, the UDF registry, the engine singleton. Each needed a real lock. Borrowed references, pointers you do not own, became strong ones wherever another thread could mutate the container underneath us. And the engine threads call your Python callable directly, each taking its own acquire. None of it is clever. The GIL had just been hiding the to-do list.</aside>
+  <aside class="notes">Step one is one line; the raw C API has the same slot. It is a promise: nothing in this module relies on the GIL for correctness. This map is what the promise covers. Three kinds of state the GIL used to guard for free. Shared state, anything global: real locks. Object access, the pointers we borrow into Python containers: own what you read. And the engine's own worker threads, which call your Python function: each attaches to the interpreter first. The next three slides take these one at a time.</aside>
 </section>
 
-<!-- 15 · CHANGE 2b · THE RACE AND THE BUG -->
+<!-- 15 · STEP 1 · OBJECT ACCESS -->
 <section>
-  <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 1 · Flip the switch</span></span><span class="pg"></span></div>
+  <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 1 · Object access</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:50px;">Our import cache raced for years. <span class="oranje">The GIL was its alibi.</span></h2>
-    <div class="rows big" style="margin-top:70px; gap:44px;">
-      <div class="row"><span class="sq y"></span><span><strong>First <span class="mono">NULL</span></strong> → a lazy import</span></div>
-      <div class="row"><span class="sq x"></span><span><strong>Segfault</strong>, far from the bug</span></div>
-      <div class="row"><span class="sq" style="background:var(--ink);"></span><span>Then a <strong>hang</strong>. No traceback.</span></div>
+    <h2 style="font-size:46px;">Touching an object used to be free. Not anymore.</h2>
+    <svg viewBox="0 0 1160 330" width="1160" height="330" style="display:block; margin-top:22px;" role="img" aria-label="Thread A borrows item 0 of a list; thread B clears the list and frees it; thread A then uses freed memory. With the GIL this interleaving was impossible.">
+      <rect x="0" y="0" width="1160" height="330" fill="#fff" stroke="#14161a" stroke-width="3"/>
+      <text x="24" y="70" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#1b4fd8">Thread A</text>
+      <line x1="150" y1="62" x2="1140" y2="62" stroke="#a9bff0" stroke-width="4"/>
+      <text x="24" y="185" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#d4342c">Thread B</text>
+      <line x1="150" y1="177" x2="1140" y2="177" stroke="#f1a2a2" stroke-width="4"/>
+      <rect x="170" y="28" width="340" height="68" fill="#eef3fd" stroke="#1b4fd8" stroke-width="3"/>
+      <text x="340" y="57" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#1b4fd8">item = PyList_GetItem(L, 0)</text>
+      <text x="340" y="84" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">borrowed: refcount not taken</text>
+      <rect x="540" y="143" width="250" height="68" fill="#fbe3e0" stroke="#d4342c" stroke-width="3"/>
+      <text x="665" y="172" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#d4342c">L.clear()</text>
+      <text x="665" y="199" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#d4342c">refcount → 0, object freed</text>
+      <rect x="810" y="28" width="330" height="68" fill="#fbe3e0" stroke="#d4342c" stroke-width="4"/>
+      <text x="975" y="57" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#d4342c">use(item) → freed memory</text>
+      <text x="975" y="84" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#d4342c">use-after-free, random crash</text>
+      <path d="M510 61 L810 61" stroke="#4e535b" stroke-width="3" stroke-dasharray="8 7"/>
+      <rect x="170" y="238" width="970" height="72" fill="#14161a"/>
+      <text x="655" y="268" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="22" fill="#fff">With the GIL this interleaving was <tspan fill="#7ee787">impossible</tspan>: B could not run while A held the lock.</text>
+      <text x="655" y="298" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="22" fill="#fff">On 3.14t it is <tspan fill="#ee6c1b">Tuesday</tspan>.</text>
+    </svg>
+    <div style="display:flex; align-items:center; gap:18px; margin-top:22px; font-size:20px; font-weight:800;">
+      <span class="mono" style="border:3px solid var(--ink); background:#fbe3e0; padding:6px 16px; color:var(--red);">PyList_GetItem · borrowed</span>
+      <span style="font-size:28px;">→</span>
+      <span class="mono" style="border:3px solid var(--ink); background:#e6f1e6; padding:6px 16px; color:var(--green);">PyList_GetItemRef · strong</span>
+      <span style="color:var(--muted); font-weight:700;">Whole C-API families changed with it.</span>
     </div>
   </div>
-  <aside class="notes">The human beat. Our import cache, the thing that resolves pandas and numpy types, had a lock-free fast path that had been a race for years. The GIL was its alibi. We fixed the race with a one-shot initialiser, and that exposed the bug it had been hiding. First NULL in a string column, and a scan thread lazily imports pandas.NaT from a thread that was not attached to the interpreter. Segfault inside the allocator, nowhere near the cause. Then the crash handler deadlocks: no traceback, no exit, the query just hangs. The fix was two lines, resolve those attributes eagerly at module init. Finding it took days. Free-threading bugs do not crash loudly. They go quiet.</aside>
+  <aside class="notes">Why the audit exists, in one picture. Thread A asks a list for item zero and gets a borrowed pointer: no refcount taken, because the caller was assumed to hold the GIL. Thread B clears the list; the object's count hits zero and it is freed. Thread A now uses freed memory. With the GIL this could not happen: B could not run while A held the lock. Without it, this is an ordinary Tuesday. The fix is the strong variant, GetItemRef, a reference you own. That rule, own what you read, is what we applied everywhere we borrow from Python.</aside>
 </section>
 
-<!-- 16 · CHANGE 1c · LANES -->
+<!-- 16 · STEP 1 · SHARED STATE -->
+<section>
+  <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 1 · Shared state</span></span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:46px;">Shared state: every "safe because GIL" spot got a real lock</h2>
+    <svg viewBox="0 0 1160 340" width="1160" height="340" style="display:block; margin-top:26px;" role="img" aria-label="Three shared structures, each with a padlock and its C++ primitive: type cache with call_once, UDF registry with shared_mutex, engine singleton with mutex">
+      <rect x="0" y="0" width="1160" height="340" fill="#fff" stroke="#14161a" stroke-width="3"/>
+      <g>
+        <rect x="24" y="24" width="352" height="236" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+        <use href="#lock" x="172" y="40" width="56" height="68" color="#ee6c1b"/>
+        <text x="200" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="26" fill="#14161a">type cache</text>
+        <text x="200" y="182" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="19" fill="#4e535b" text-decoration="line-through">was: safe because GIL</text>
+        <rect x="80" y="202" width="240" height="40" fill="#fff" stroke="#14161a" stroke-width="3"/>
+        <text x="200" y="230" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#14161a">std::call_once</text>
+      </g>
+      <g>
+        <rect x="404" y="24" width="352" height="236" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+        <use href="#lock" x="552" y="40" width="56" height="68" color="#ee6c1b"/>
+        <text x="580" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="26" fill="#14161a">UDF registry</text>
+        <text x="580" y="182" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="19" fill="#4e535b" text-decoration="line-through">was: safe because GIL</text>
+        <rect x="450" y="202" width="260" height="40" fill="#fff" stroke="#14161a" stroke-width="3"/>
+        <text x="580" y="230" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#14161a">std::shared_mutex</text>
+      </g>
+      <g>
+        <rect x="784" y="24" width="352" height="236" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+        <use href="#lock" x="932" y="40" width="56" height="68" color="#ee6c1b"/>
+        <text x="960" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="26" fill="#14161a">engine singleton</text>
+        <text x="960" y="182" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="19" fill="#4e535b" text-decoration="line-through">was: safe because GIL</text>
+        <rect x="840" y="202" width="240" height="40" fill="#fff" stroke="#14161a" stroke-width="3"/>
+        <text x="960" y="230" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#14161a">std::mutex</text>
+      </g>
+      <text x="580" y="310" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="24" fill="#14161a">Textbook C++. The hard part is <tspan fill="#ee6c1b">finding them</tspan>.</text>
+    </svg>
+  </div>
+  <aside class="notes">Shared state next. Three globals in chDB had been thread-safe by accident: the cache of imported Python types, the registry of user functions, and the engine singleton. Each was written once and read by many threads, and the GIL made that fine. Each now has an ordinary C++ primitive: a one-shot initialiser, a reader-writer lock, a plain mutex around engine start-up. Nothing exotic. The work was not the locks. It was reading the code with the GIL mentally deleted and noticing every place where it had been doing a job nobody assigned to it.</aside>
+</section>
+
+<!-- 17 · STEP 1 · ENGINE THREADS -->
+<section>
+  <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 1 · Engine threads</span></span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:44px;">Engine threads call your Python function, <span class="green">each on its own attached thread</span></h2>
+    <div style="display:grid; grid-template-columns: 620px 1fr; gap:26px; margin-top:22px; align-items:start;">
+      <svg viewBox="0 0 620 380" width="620" height="380" style="display:block;" role="img" aria-label="Eight engine threads, each attached to the interpreter, call score(text, q) in parallel; Python runs eight calls at once">
+        <rect x="0" y="0" width="620" height="380" fill="#fff" stroke="#14161a" stroke-width="3"/>
+        <text x="16" y="34" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#2e7d32">engine threads · 3.14t</text>
+        <g font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#14161a">
+          <rect x="16" y="54" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="73" text-anchor="middle">attach</text>
+          <rect x="16" y="92" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="111" text-anchor="middle">attach</text>
+          <rect x="16" y="130" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="149" text-anchor="middle">attach</text>
+          <rect x="16" y="168" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="187" text-anchor="middle">attach</text>
+          <rect x="16" y="206" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="225" text-anchor="middle">attach</text>
+          <rect x="16" y="244" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="263" text-anchor="middle">attach</text>
+          <rect x="16" y="282" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="301" text-anchor="middle">attach</text>
+          <rect x="16" y="320" width="82" height="26" fill="#f5c518" stroke="#14161a" stroke-width="2.5"/><text x="57" y="339" text-anchor="middle">attach</text>
+        </g>
+        <g stroke="#2e7d32" stroke-width="10" stroke-linecap="round"><line x1="108" y1="67" x2="230" y2="67"/><line x1="108" y1="105" x2="230" y2="105"/><line x1="108" y1="143" x2="230" y2="143"/><line x1="108" y1="181" x2="230" y2="181"/><line x1="108" y1="219" x2="230" y2="219"/><line x1="108" y1="257" x2="230" y2="257"/><line x1="108" y1="295" x2="230" y2="295"/><line x1="108" y1="333" x2="230" y2="333"/></g>
+        <g stroke="#2e7d32" stroke-width="3" fill="none"><path d="M236 67 L380 120"/><path d="M236 105 L380 140"/><path d="M236 143 L380 160"/><path d="M236 181 L380 180"/><path d="M236 219 L380 200"/><path d="M236 257 L380 220"/><path d="M236 295 L380 240"/><path d="M236 333 L380 260"/></g>
+        <rect x="384" y="100" width="220" height="180" fill="#f7f4ec" stroke="#2e7d32" stroke-width="3"/>
+        <text x="494" y="140" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="24" fill="#14161a">Python</text>
+        <text x="494" y="180" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="21" fill="#14161a">score(text, q)</text>
+        <text x="494" y="222" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#2e7d32">8 calls at once</text>
+        <text x="494" y="252" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">no shared lock</text>
+      </svg>
+      <div>
+        <pre><code class="language-cpp">// PythonScalarUDF::executeImpl
+// runs on every engine worker thread
+py::gil_scoped_acquire acquire;
+for (row = 0; row &lt; rows; ++row) {
+    args = box(arguments, row);
+    out  = func(*args);   // your Python
+    insert(result, out);
+}</code></pre>
+        <div class="card y" style="margin-top:16px; padding:14px 18px;"><p style="font-size:20px; color:var(--ink);"><strong>Same code.</strong> On stock Python this <span class="mono">acquire</span> is one shared lock. On 3.14t it is per-thread bookkeeping.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Third zone, and this answers the padlock from the problem slide. The engine's worker threads are C++ threads Python has never heard of. Before one may call your function it attaches: gets its own interpreter thread state. That is the yellow tag. Then each thread runs the loop on the right: box the row, call your function, store the result. The code did not change. On stock Python that acquire line is the one global lock, and eight threads queue on it. On 3.14t the same line only registers this thread, so eight threads run eight calls at once.</aside>
+</section>
+
+<!-- 18 · STEP 1 · RESULT · LANES -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 1 · Result</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -629,26 +759,49 @@ PYBIND11_MODULE(_chdb, m,
       </g>
     </svg>
   </div>
-  <aside class="notes">And the number, after the switch. Stock 3.14 is one bike lane: many engine threads, one of them runs Python at a time, so the number does not move with thread count, about 0.85 seconds. 3.14t gives every thread its own lane: one thread 0.72 seconds, eight threads 0.15, flat to 32. Same C++, same acquire; on 3.14t that acquire is per-thread bookkeeping, not a global lock. One reading caveat: 0.85 is the contended number, so do not read 0.85 against 0.72 as the single-thread tax; that is a different measurement. One obligation: your UDF now runs concurrently, so it has to be thread-safe. A dict used as a cache still races on "if key not in cache, compute and store".</aside>
+  <aside class="notes">And the number. Stock 3.14 is one bike lane: many engine threads, one runs Python at a time, so the time does not move with thread count, about 0.85 seconds. 3.14t gives every thread its own lane: one thread 0.72 seconds, eight threads 0.15, flat to 32. A caveat: 0.85 is the contended number, so do not read 0.85 against 0.72 as the single-thread tax. One obligation: your function now runs concurrently, so it has to be thread-safe. A dict used as a cache still races on "if key not in cache, compute and store".</aside>
 </section>
 
-<!-- 17 · CHANGE 3a · STRINGS -->
+<!-- 19 · STEP 2 · STRINGS -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 2 · Strings</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:50px;">Strings: go straight to the bytes</h2>
-    <pre style="margin-top:44px;"><code class="language-cpp" style="font-size:25px; padding:26px 30px;">// FillColumnString, free-threaded build
-if (PyUnicode_IS_COMPACT_ASCII(obj)) {         // logs, ids, keys
-    data = (const char *) PyUnicode_1BYTE_DATA(obj);  // no copy
+    <h2 style="font-size:46px;">Strings: stop asking Python for a copy</h2>
+    <svg viewBox="0 0 1160 250" width="1160" height="250" style="display:block; margin-top:18px;" role="img" aria-label="Before: each str goes through a friendly Unicode API, a lock and a copy per value, into the engine. After: the compact ASCII buffer is read in place, no lock, no copy.">
+      <rect x="0" y="0" width="1160" height="250" fill="#fff" stroke="#14161a" stroke-width="3"/>
+      <rect x="16" y="85" width="200" height="80" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+      <text x="116" y="120" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="800" font-size="26" fill="#14161a">str</text>
+      <text x="116" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">one PyObject per cell</text>
+      <g stroke="#14161a" stroke-width="3" fill="none"><path d="M216 105 L250 53"/><path d="M216 145 L250 173"/></g>
+      <text x="250" y="22" font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#d4342c">BEFORE</text>
+      <rect x="250" y="28" width="270" height="50" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+      <text x="385" y="61" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#14161a">friendly Unicode API</text>
+      <line x1="520" y1="53" x2="556" y2="53" stroke="#14161a" stroke-width="3"/><path d="M548 45 L564 53 L548 61 Z" fill="#14161a"/>
+      <use href="#lock" x="572" y="36" width="30" height="36" color="#d4342c"/>
+      <rect x="612" y="28" width="280" height="50" fill="#fbe3e0" stroke="#d4342c" stroke-width="3"/>
+      <text x="752" y="61" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#d4342c">lock + copy, per value</text>
+      <line x1="892" y1="53" x2="928" y2="53" stroke="#14161a" stroke-width="3"/><path d="M920 45 L936 53 L920 61 Z" fill="#14161a"/>
+      <text x="250" y="142" font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#2e7d32">AFTER</text>
+      <rect x="250" y="148" width="320" height="50" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+      <text x="410" y="181" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#14161a">read the ASCII buffer in place</text>
+      <line x1="570" y1="173" x2="606" y2="173" stroke="#14161a" stroke-width="3"/><path d="M598 165 L614 173 L598 181 Z" fill="#14161a"/>
+      <rect x="622" y="148" width="270" height="50" fill="#e6f1e6" stroke="#2e7d32" stroke-width="3"/>
+      <text x="757" y="181" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="20" fill="#2e7d32">no lock · no copy</text>
+      <line x1="892" y1="173" x2="928" y2="173" stroke="#14161a" stroke-width="3"/><path d="M920 165 L936 173 L920 181 Z" fill="#14161a"/>
+      <text x="571" y="228" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">immutable bytes: any thread may read · non-ASCII falls back to <tspan font-family="JetBrains Mono, monospace">PyUnicode_AsUTF8AndSize</tspan></text>
+      <rect x="944" y="28" width="196" height="170" fill="#f7f4ec" stroke="#14161a" stroke-width="3"/>
+      <text x="1042" y="104" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="24" fill="#14161a">engine</text>
+      <text x="1042" y="134" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#4e535b">ColumnString</text>
+    </svg>
+    <pre style="margin-top:18px;"><code class="language-cpp" style="font-size:20px; padding:14px 22px;">if (PyUnicode_IS_COMPACT_ASCII(obj)) {               // logs, ids, keys
+    data = PyUnicode_1BYTE_DATA(obj);                // pointer, no copy
     len  = PyUnicode_GET_LENGTH(obj);
-} else {
-    data = PyUnicode_AsUTF8AndSize(obj, &amp;len);  // thread-safe
-}</code></pre>
+} else data = PyUnicode_AsUTF8AndSize(obj, &amp;len);  // everything else</code></pre>
   </div>
-  <aside class="notes">Step two, the string path. Millions of strings cross the border per query, and each went through a pybind11 shim and a friendly Unicode API, one call per value. The free-threaded build cannot use the stable ABI anyway, so nothing was lost by going low-level: direct CPython calls. Compact ASCII, which most logs, identifiers and JSON keys are, is a pointer and a length, no copy, and that buffer is immutable, so any engine thread may read it. Everything else goes through PyUnicode_AsUTF8AndSize, the public call. We first read CPython's cached UTF-8 field directly; that field is filled lazily and reading it from another thread is a data race on 3.14t. The public call handles that.</aside>
+  <aside class="notes">Step two, the string path. Millions of strings cross the border per query. Before, each went through a pybind11 shim and a friendly Unicode API: take the lock, make a copy, hand it to the engine, per value. After: most analytical strings, logs, identifiers, JSON keys, are compact ASCII, and CPython stores those as one immutable byte buffer inside the object. So we read that buffer where it sits: a pointer and a length, no lock, no copy, and immutable means any thread may read it. Anything not plain ASCII takes the public call, PyUnicode_AsUTF8AndSize.</aside>
 </section>
 
-<!-- 18 · BENCHMARK (Part 5, merged divider) -->
+<!-- 20 · STEP 2 · RESULT · STRINGS -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 2 · Result</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -670,7 +823,43 @@ if (PyUnicode_IS_COMPACT_ASCII(obj)) {         // logs, ids, keys
   <aside class="notes">The result for object strings, like for like: the same five-million-string scan from the problem slide, 16 engine threads on both builds. Stock 3.14, 0.22 seconds. 3.14t, 0.08. 2.6 times. On stock, adding threads to this scan had made it slower; on 3.14t the same threads help. Setup: 56-vCPU Xeon, CPython 3.14.6 against 3.14.6t, minimum of six runs.</aside>
 </section>
 
-<!-- 19 · CHANGE 3b · SKIP PYOBJECT -->
+<!-- 21 · STEP 2 · SKIP PYOBJECT -->
+<section>
+  <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 2 · Arrow</span></span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:46px;">Or skip Python objects entirely</h2>
+    <svg viewBox="0 0 1160 390" width="1160" height="390" style="display:block; margin-top:22px;" role="img" aria-label="Left: an object-dtype column, one PyObject per cell, each read behind a lock. Right: an Arrow-backed column, three plain buffers read zero-copy by every engine thread.">
+      <rect x="0" y="0" width="1160" height="390" fill="#fff" stroke="#14161a" stroke-width="3"/>
+      <text x="24" y="38" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#d4342c">object dtype · one PyObject per cell</text>
+      <g font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#14161a" text-anchor="middle">
+        <rect x="24" y="58" width="190" height="36" fill="#f7f4ec" stroke="#14161a" stroke-width="2.5"/><text x="119" y="83">PyObject</text><use href="#lock" x="224" y="60" width="26" height="32" color="#d4342c"/>
+        <rect x="24" y="102" width="190" height="36" fill="#f7f4ec" stroke="#14161a" stroke-width="2.5"/><text x="119" y="127">PyObject</text><use href="#lock" x="224" y="104" width="26" height="32" color="#d4342c"/>
+        <rect x="24" y="146" width="190" height="36" fill="#f7f4ec" stroke="#14161a" stroke-width="2.5"/><text x="119" y="171">PyObject</text><use href="#lock" x="224" y="148" width="26" height="32" color="#d4342c"/>
+        <rect x="24" y="190" width="190" height="36" fill="#f7f4ec" stroke="#14161a" stroke-width="2.5"/><text x="119" y="215">PyObject</text><use href="#lock" x="224" y="192" width="26" height="32" color="#d4342c"/>
+        <rect x="24" y="234" width="190" height="36" fill="#f7f4ec" stroke="#14161a" stroke-width="2.5"/><text x="119" y="259">PyObject</text><use href="#lock" x="224" y="236" width="26" height="32" color="#d4342c"/>
+        <rect x="24" y="278" width="190" height="36" fill="#f7f4ec" stroke="#14161a" stroke-width="2.5"/><text x="119" y="303">PyObject</text><use href="#lock" x="224" y="280" width="26" height="32" color="#d4342c"/>
+      </g>
+      <text x="290" y="170" font-family="Inter, sans-serif" font-weight="800" font-size="21" fill="#d4342c">a lock per read</text>
+      <text x="290" y="200" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">a refcount per touch</text>
+      <line x1="540" y1="20" x2="540" y2="370" stroke="#d9d4c6" stroke-width="3"/>
+      <text x="580" y="38" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#2e7d32">Arrow-backed · three plain buffers</text>
+      <g font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#14161a">
+        <rect x="580" y="66" width="380" height="44" fill="#f7f4ec" stroke="#2e7d32" stroke-width="3"/><text x="596" y="95" fill="#2e7d32">validity</text><text x="720" y="95">1 1 0 1 1 1 1 …</text>
+        <rect x="580" y="130" width="380" height="44" fill="#f7f4ec" stroke="#2e7d32" stroke-width="3"/><text x="596" y="159" fill="#2e7d32">offsets</text><text x="720" y="159">0 5 10 10 14 …</text>
+        <rect x="580" y="194" width="380" height="44" fill="#f7f4ec" stroke="#2e7d32" stroke-width="3"/><text x="596" y="223" fill="#2e7d32">data</text><text x="720" y="223">hello world …</text>
+      </g>
+      <g stroke="#2e7d32" stroke-width="10" stroke-linecap="round"><line x1="1030" y1="80" x2="1130" y2="80"/><line x1="1030" y1="130" x2="1130" y2="130"/><line x1="1030" y1="180" x2="1130" y2="180"/><line x1="1030" y1="230" x2="1130" y2="230"/></g>
+      <g stroke="#2e7d32" stroke-width="3" fill="none"><path d="M1024 80 L966 88"/><path d="M1024 130 L966 150"/><path d="M1024 180 L966 160"/><path d="M1024 230 L966 216"/></g>
+      <text x="1080" y="56" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="18" fill="#2e7d32">engine threads</text>
+      <text x="580" y="290" font-family="Inter, sans-serif" font-weight="800" font-size="21" fill="#2e7d32">zero-copy · every thread reads at once</text>
+      <text x="580" y="320" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#4e535b">no Python object touched, no lock to take</text>
+      <text x="580" y="366" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="24" fill="#14161a">Works on <tspan fill="#ee6c1b">stock Python</tspan> too.</text>
+    </svg>
+  </div>
+  <aside class="notes">The bigger move: do not touch Python objects at all. Left, an object-dtype column: every cell is a separate Python object, and reading one means a refcount and, without free-threading, the lock. Right, the same column Arrow-backed, the way pandas 3 with PyArrow stores strings: a validity bitmap, an offsets array, one contiguous data buffer. Plain memory, the Parquet layout. Every engine thread reads those buffers directly: no copy, no Python object, no lock. This needs no free-threading at all. The ranking on a hot path: avoid Python objects if the layout lets you; free-threading is for the ones you cannot avoid.</aside>
+</section>
+
+<!-- 22 · STEP 2 · RESULT · ARROW -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Step 2 · Result</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -689,10 +878,10 @@ if (PyUnicode_IS_COMPACT_ASCII(obj)) {         // logs, ids, keys
     </div>
     <p style="margin-top:54px; font-size:27px; color:var(--ink);">Works on <strong>stock Python</strong> today.</p>
   </div>
-  <aside class="notes">And then the biggest single win, which was not the lock. pandas 3 with PyArrow stores string columns the way Parquet does: a validity bitmap, an offsets array, one contiguous buffer. Every engine thread reads that directly, zero-copy, and no thread touches a Python object. ClickBench on a 50-million-row DataFrame, 43 queries: 219 seconds down to 20, 10.9 times less total time; geometric mean 4.5, string-heavy queries up to 64 times. This needs no free-threading. It works on the Python you have today. The ranking on a hot path: avoid Python objects if the layout lets you; free-threading is for the ones you cannot avoid.</aside>
+  <aside class="notes">And the number for that. ClickBench on a 50-million-row DataFrame, all 43 queries: 219 seconds with object strings, 20 with Arrow-backed. 10.9 times less total time; geometric mean 4.5; string-heavy queries up to 64 times. Same engine, same threads; no thread asks Python for anything. It works on the Python you have today.</aside>
 </section>
 
-<!-- 20 · SCORECARD -->
+<!-- 23 · SCORECARD -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p3"></span><span class="txt">Scorecard</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -701,22 +890,27 @@ if (PyUnicode_IS_COMPACT_ASCII(obj)) {         // logs, ids, keys
       <rect x="0" y="0" width="1160" height="330" fill="#fff" stroke="#14161a" stroke-width="3"/>
       <text x="24" y="40" font-family="JetBrains Mono, monospace" font-weight="700" font-size="20" fill="#14161a">ONE PYTHON PROCESS · 3.14t</text>
       <text x="24" y="86" font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#2e7d32">engine threads</text>
-      <g stroke="#2e7d32" stroke-width="12" stroke-linecap="round"><line x1="24" y1="112" x2="420" y2="112"/><line x1="24" y1="140" x2="420" y2="140"/><line x1="24" y1="168" x2="420" y2="168"/><line x1="24" y1="196" x2="420" y2="196"/><line x1="24" y1="224" x2="420" y2="224"/><line x1="24" y1="252" x2="420" y2="252"/><line x1="24" y1="280" x2="420" y2="280"/><line x1="24" y1="308" x2="420" y2="308"/></g><g stroke="#14161a" stroke-width="3" fill="none"><path d="M420 112 L560 120"/><path d="M420 140 L560 196"/><path d="M420 168 L560 272"/><path d="M420 196 L560 120"/><path d="M420 224 L560 196"/><path d="M420 252 L560 272"/><path d="M420 280 L560 120"/><path d="M420 308 L560 196"/></g>
+      <g stroke="#2e7d32" stroke-width="12" stroke-linecap="round"><line x1="24" y1="112" x2="330" y2="112"/><line x1="24" y1="140" x2="330" y2="140"/><line x1="24" y1="168" x2="330" y2="168"/><line x1="24" y1="196" x2="330" y2="196"/><line x1="24" y1="224" x2="330" y2="224"/><line x1="24" y1="252" x2="330" y2="252"/><line x1="24" y1="280" x2="330" y2="280"/><line x1="24" y1="308" x2="330" y2="308"/></g><g stroke="#14161a" stroke-width="3" fill="none"><path d="M330 112 L470 120"/><path d="M330 140 L470 196"/><path d="M330 168 L470 272"/><path d="M330 196 L470 120"/><path d="M330 224 L470 196"/><path d="M330 252 L470 272"/><path d="M330 280 L470 120"/><path d="M330 308 L470 196"/></g>
       <g fill="#f7f4ec" stroke="#2e7d32" stroke-width="3">
-        <rect x="560" y="96" width="576" height="48"/><rect x="560" y="172" width="576" height="48"/><rect x="560" y="248" width="576" height="48"/>
+        <rect x="470" y="96" width="666" height="48"/><rect x="470" y="172" width="666" height="48"/><rect x="470" y="248" width="666" height="48"/>
       </g>
-      <g color="#2e7d32"><use href="#bike" x="576" y="100" width="60" height="40"/><use href="#bike" x="640" y="100" width="60" height="40"/></g><g color="#2e7d32"><use href="#bike" x="576" y="176" width="60" height="40"/><use href="#bike" x="640" y="176" width="60" height="40"/></g><g color="#2e7d32"><use href="#bike" x="576" y="252" width="60" height="40"/><use href="#bike" x="640" y="252" width="60" height="40"/></g>
-      <g font-family="JetBrains Mono, monospace" font-weight="800" font-size="24" fill="#14161a" text-anchor="end">
-        <text x="1120" y="129">Python UDF, 8 threads   <tspan fill="#d4342c">0.85</tspan> → <tspan fill="#2e7d32">0.15 s</tspan></text>
-        <text x="1120" y="205">object strings, 16 threads   <tspan fill="#d4342c">0.22</tspan> → <tspan fill="#2e7d32">0.08 s</tspan></text>
-        <text x="1120" y="281">Arrow columns, stock too   <tspan fill="#d4342c">219</tspan> → <tspan fill="#2e7d32">20 s</tspan></text>
+      <g color="#2e7d32"><use href="#bike" x="486" y="100" width="60" height="40"/><use href="#bike" x="486" y="176" width="60" height="40"/><use href="#bike" x="486" y="252" width="60" height="40"/></g>
+      <g font-family="Inter, sans-serif" font-weight="800" font-size="22" fill="#14161a">
+        <text x="566" y="128">Python UDF · 8 threads</text>
+        <text x="566" y="204">object strings · 16 threads</text>
+        <text x="566" y="280">Arrow columns · stock too</text>
+      </g>
+      <g font-family="JetBrains Mono, monospace" font-weight="800" font-size="22" fill="#14161a" text-anchor="end">
+        <text x="1120" y="128"><tspan fill="#d4342c">0.85</tspan> → <tspan fill="#2e7d32">0.15 s</tspan></text>
+        <text x="1120" y="204"><tspan fill="#d4342c">0.22</tspan> → <tspan fill="#2e7d32">0.08 s</tspan></text>
+        <text x="1120" y="280"><tspan fill="#d4342c">219</tspan> → <tspan fill="#2e7d32">20 s</tspan></text>
       </g>
     </svg>
   </div>
-  <aside class="notes">The picture from the start, fully open. Same engine threads on the left; on the right, a lane per thread. Three numbers, three stories. The Python UDF: 0.85 to 0.15 at eight threads, pure free-threading. Object strings: 0.22 to 0.08 at 16 threads, free-threading plus the lighter string path. Arrow columns: 219 to 20 seconds, and that one is zero-copy, not the lock; it works on the Python you have today. For the record: our pure-engine query, no Python objects, ran 0.161 seconds on both builds. Same engine, same speed; only the Python touchpoints moved.</aside>
+  <aside class="notes">The picture from the start, fully open. Same engine threads on the left; on the right, a lane per thread. Three numbers. The Python UDF: 0.85 to 0.15 at eight threads, pure free-threading. Object strings: 0.22 to 0.08 at 16 threads, free-threading plus the lighter string path. Arrow columns: 219 to 20 seconds, zero-copy, not the lock; that one works on stock Python. For the record: our pure-engine query, no Python objects, ran 0.161 seconds on both builds. Only the Python touchpoints moved.</aside>
 </section>
 
-<!-- 21 · WHAT THIS BUYS -->
+<!-- 24 · WHAT THIS BUYS -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Looking back</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -741,10 +935,10 @@ if (PyUnicode_IS_COMPACT_ASCII(obj)) {         // logs, ids, keys
       <text x="1008" y="218" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="20" fill="#14161a">loaded once, in memory</text>
     </svg>
   </div>
-  <aside class="notes">Looking back, this is what the port bought. One process. Agent tool calls come in on the left, a recall query with a Python reranker inside it. pandas jobs come in next to them, a Parquet aggregation over S3. The engine serves them on its own threads, and the Python parts run in parallel too. One copy of the model, loaded once. No worker pool, no pickling, no remote memory service on the hot path. Sketch, for the notes reader: a @func score(text, q); recall(user, q) runs one SQL with score inside; report(day) is a chdb.datastore chain over Parquet; both go to one ThreadPoolExecutor. A sketch, not a benchmark.</aside>
+  <aside class="notes">Looking back, this is what the port bought. One process. Agent tool calls come in on the left, a recall query with a Python reranker inside it. pandas jobs come in next to them, a Parquet aggregation over S3. The engine serves them on its own threads, and the Python parts run in parallel too. One copy of the model, loaded once. No worker pool, no pickling, no remote memory service on the hot path. A sketch of the shape, not a benchmark.</aside>
 </section>
 
-<!-- 22 · PANDAS LAYER A -->
+<!-- 25 · PANDAS LAYER A -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Looking back</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -772,17 +966,17 @@ LIMIT 10</code></pre>
   <aside class="notes">The pandas side of the same story. chdb.datastore is a pandas-compatible layer that ships with chDB: change the import, keep the code. Every call is recorded into a lazy chain; when you ask for a result, a compiler rewrites the whole chain into one SQL statement for the engine, and anything it cannot translate falls back to real pandas mid-pipeline. Three reasons that is faster. One plan instead of one materialized copy per step. Every core instead of one. And streaming: a top-10 over ten million rows keeps a ten-row heap instead of sorting the table, which is why sorts are the blowout on the next slide.</aside>
 </section>
 
-<!-- 23 · PANDAS LAYER B -->
+<!-- 26 · PANDAS LAYER B -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Looking back</span></span><span class="pg"></span></div>
   <div class="frame">
-    <h2 style="font-size:36px;">Measured: 10M rows, 20 everyday ops. Faster on 14; <span class="red">pandas wins bulk replace and simple groupbys</span></h2>
+    <h2 style="font-size:40px;">Measured: 10M rows, 16 everyday ops. <span class="green">Faster on 14 of 16</span>; <span class="red">bulk value-replace stays with pandas</span></h2>
     <div style="display:grid; grid-template-columns: 690px 1fr; gap:30px; margin-top:16px; align-items:start;">
-      <div style="display:grid; gap:2px;"><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Sort (single col)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:83.9%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(83.9% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×51.7</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Sort (multi col)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:78.0%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(78.0% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×39.0</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mixed Filter+Sort</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:75.8%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(75.8% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×35.2</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter+Select+Sort</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:65.4%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(65.4% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×21.7</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Chain 5 filters</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:54.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(54.3% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×12.9</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Head / limit</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:40.6%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(40.6% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×6.8</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter+Sort+Head</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:40.2%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(40.2% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×6.6</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Multi-filter (4x)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:33.8%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(33.8% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.9</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter+Sort+Select</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:30.6%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(30.6% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.2</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter (multi AND)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:30.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(30.3% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.2</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Ultra-complex chain</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:29.7%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(29.7% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.0</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Complex pipeline</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:29.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(29.3% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.0</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter (single)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:25.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(25.3% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×3.3</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">GroupBy agg x3</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:21.5%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(21.5% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×2.8</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter+GroupBy+Sort</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:12.0%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(12.0% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.57</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter+GroupBy+mean</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:16.1%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(16.1% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.47</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Filter+Where</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:17.5%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(17.5% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.44</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">GroupBy count</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:34.2%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(34.2% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.20</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Where (replace)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:40.4%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(40.4% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.15</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:21px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mask (replace)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:3px; bottom:3px; width:45.1%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(45.1% + 8px); top:0; line-height:22px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.12</span></div></div>
-        <div style="font-size:18px; font-weight:600; color:var(--muted); margin-top:6px;">log scale · read parquet → answer · best of 2 · outputs identical · one laptop</div>
+      <div style="display:grid; gap:2px;"><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Sort (single col)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:83.9%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(83.9% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×51.7</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Sort (multi col)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:77.9%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(77.9% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×39.0</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Mixed Filter+Sort</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:75.7%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(75.7% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×35.2</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Filter+Select+Sort</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:65.4%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(65.4% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×21.7</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Chain 5 filters</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:54.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(54.3% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×12.9</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Head / limit</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:40.6%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(40.6% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×6.8</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Filter+Sort+Head</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:40.2%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(40.2% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×6.6</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Multi-filter (4x)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:33.8%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(33.8% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.9</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Filter+Sort+Select</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:30.6%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(30.6% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.2</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Filter (multi AND)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:30.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(30.3% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.2</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Ultra-complex chain</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:29.6%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(29.6% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.0</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Complex pipeline</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:29.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(29.3% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×4.0</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Filter (single)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:25.3%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(25.3% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×3.3</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">GroupBy agg ×3</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:21.5%; background:var(--green); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(21.5% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--green);">×2.8</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Where (replace)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:40.3%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(40.3% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.15</span></div></div><div style="display:grid; grid-template-columns: 250px 1fr; align-items:center; height:24px;"><div style="font-size:18px; font-weight:700; color:var(--ink); white-space:nowrap;">Mask (replace)</div><div style="position:relative; height:100%;"><div style="position:absolute; left:0; top:4px; bottom:4px; width:45.1%; background:var(--red); border:2px solid var(--ink);"></div><span style="position:absolute; left:calc(45.1% + 8px); top:0; line-height:24px; font-family:JetBrains Mono, monospace; font-weight:900; font-size:18px; color:var(--red);">×0.12</span></div></div>
+        <div style="font-size:18px; font-weight:600; color:var(--muted); margin-top:6px;">log scale · parquet → answer · best of 2 · 16/16 outputs identical · one laptop</div>
       </div>
       <div style="display:grid; gap:14px;">
-        <div class="stat" style="padding:12px 16px;"><div class="num" style="font-size:40px;"><span class="red">1,059</span> → <span class="green">440 MB</span></div><div class="lab">peak RSS, median over ops</div></div>
+        <div class="stat" style="padding:12px 16px;"><div class="num" style="font-size:40px;"><span class="red">1,059</span> → <span class="green">440 MB</span></div><div class="lab">peak RSS, median over the 16 ops · ⅓–½ the RAM on every op we win</div></div>
         <div class="card" style="padding:12px 18px;">
           <h3 style="font-size:20px;">Same filter+sort, growing data</h3>
           <div class="mono" style="font-size:19px; font-weight:800; margin-top:8px; line-height:1.6; color:var(--ink);">100K rows <span class="red">×0.5</span> · 1M <span class="green">×1.4</span><br>10M <span class="green">×28</span> · 100M ClickBench <span class="green">×52.7</span></div>
@@ -795,10 +989,10 @@ LIMIT 10</code></pre>
       </div>
     </div>
   </div>
-  <aside class="notes">Measured on one laptop for PyCon JP: a 10-million-row Parquet, read to answer, best of two, outputs identical on every op. Log scale. Sorts are the blowout, 35 to 52 times, because of that heap. Filters and chains, 3 to 22 times. Where pandas wins: bulk value replace, which pandas does in place and we round-trip through the engine, and simple groupby-count shapes. Keep pandas there. Peak RSS median: 1,059 megabytes down to 440. The crossover: pandas faster at a hundred thousand rows, even near a million, 28 times at ten million, 52.7 on the published 100-million-row ClickBench total. The orange card is the tie to this talk, a design argument, not a measurement: with the GIL off, a Python .map inside that chain runs as an in-process UDF on every engine thread.</aside>
+  <aside class="notes">Measured on one laptop for PyCon JP: a 10-million-row Parquet, read to answer, best of two, outputs identical on all 16 ops. Log scale. Sorts are the blowout, 35 to 52 times, because of that heap. Filters and chains, 3 to 22 times. The two red rows are one family: bulk value replace, mask and where. pandas rewrites the column in place; we round-trip it through the engine. Keep pandas there. Peak RSS median: 1,059 megabytes down to 440, a third to a half on every op we win. The crossover: pandas faster below a million rows, 28 times at ten million, 52.7 on the 100-million-row ClickBench total. The orange card is a design argument, not a measurement.</aside>
 </section>
 
-<!-- 24 · ADOPTION A -->
+<!-- 27 · ADOPTION A -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Ecosystem</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -818,10 +1012,10 @@ LIMIT 10</code></pre>
       </div>
     </div>
   </div>
-  <aside class="notes">Where the ecosystem is, checked this morning against the free-threaded-wheels tracker: 216 of the 360 most-downloaded compiled packages ship cp314t wheels, 60 percent. The data stack is in: NumPy, pandas, PyArrow, SciPy, scikit-learn, PyTorch, numba, Pillow, matplotlib, plus the plumbing, cryptography, pydantic-core, SQLAlchemy, tiktoken. Not yet: Polars, whose abi3 wheels do not load on the free-threaded build, DuckDB, grpcio and protobuf, which block much of the AI tooling tree, tokenizers, safetensors, orjson, TensorFlow. The build tools are ready, Cython, pybind11, nanobind, cibuildwheel. One structural gap: there is no stable ABI on 3.14t, so every extension needs its own cp314t wheel, one more build per release.</aside>
+  <aside class="notes">Where the ecosystem is, checked this morning against the free-threaded-wheels tracker: 216 of the 360 most-downloaded compiled packages ship cp314t wheels, 60 percent. The data stack is in: NumPy, pandas, PyArrow, SciPy, scikit-learn, PyTorch, numba, Pillow, matplotlib, plus the plumbing, cryptography, pydantic-core, SQLAlchemy, tiktoken. Not yet: Polars, whose abi3 wheels do not load on the free-threaded build, DuckDB, grpcio and protobuf, which block much of the AI tooling tree, and TensorFlow. The build tools are ready, Cython, pybind11, nanobind, cibuildwheel. One structural gap: there is no stable ABI on 3.14t, so every extension needs its own cp314t wheel, one more build per release.</aside>
 </section>
 
-<!-- 25 · ADOPTION B -->
+<!-- 28 · ADOPTION B -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Ecosystem</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -836,10 +1030,10 @@ RuntimeWarning: The global interpreter lock (GIL) has been enabled
       <div class="card o" style="padding:14px 18px;"><h3 style="font-size:21px;">Why your report matters</h3><p style="font-size:18px; margin-top:6px;">Free-threading is a per-process property decided by the weakest dependency. One issue on that package unblocks everyone above it.</p></div>
     </div>
   </div>
-  <aside class="notes">Why the holdouts matter more than the percentage. Import one extension that has not declared itself safe and CPython turns the GIL back on for the whole process, with this warning. Your other forty packages did the work and get nothing. PEP 779 made 3.14t supported rather than experimental: an official build on the normal release cadence, but not the default; you install it on purpose. The warning names the package that re-locked you. PYTHON_GIL=0 forces the GIL off anyway, which is useful for testing and dangerous in production because it silences the warning. So: check first, force second. And this is why one issue filed against that one package matters: free-threading is a per-process property decided by your weakest dependency.</aside>
+  <aside class="notes">Why the holdouts matter more than the percentage. Import one extension that has not declared itself safe and CPython turns the GIL back on for the whole process, with this warning. Your other forty packages did the work and get nothing. PEP 779 made 3.14t supported rather than experimental: an official build on the normal release cadence, but not the default; you install it on purpose. The warning names the package that re-locked you. PYTHON_GIL=0 forces the GIL off anyway: useful for testing, dangerous in production because it silences the warning. Check first, force second. And this is why one issue filed against that one package matters: free-threading is a per-process property decided by your weakest dependency.</aside>
 </section>
 
-<!-- 26 · TRY IT YOURSELF -->
+<!-- 29 · TRY IT YOURSELF -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Try it</span></span><span class="pg"></span></div>
   <div class="frame">
@@ -859,7 +1053,7 @@ chdb.query("SELECT sum(slow(number)) FROM numbers_mt(2e6) "
   <aside class="notes">The slide to photograph. Install: uv fetches the free-threaded build if you ask for 3.14t; the python.org installer has a checkbox. Check: import your whole stack, then print the flag. False means the GIL is off. If you see the RuntimeWarning from two slides ago instead, one package dragged the GIL back for the whole process, and the message names it. PYTHON_GIL=0 forces it off but hides the warning: check first, force second. The tracker at py-free-threading.github.io/tracking lists which packages are ready. Try: pip install chdb, import INT64 from chdb.sqltypes, call a small Python function from SQL with eight engine threads, and time it on both builds.</aside>
 </section>
 
-<!-- 27 · CLOSE -->
+<!-- 30 · CLOSE -->
 <section>
   <div class="topbar"><span class="sec"><span class="chip p5"></span><span class="txt">Close</span></span><span class="pg"></span></div>
   <div class="frame">
