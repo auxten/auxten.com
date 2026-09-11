@@ -122,6 +122,10 @@
     font-family: "JetBrains Mono", Menlo, monospace; font-size: 22px; line-height: 1.45; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
   .reveal pre code .hljs-comment { color: #6b7280; font-style: normal; }
 
+  .run-live { display:flex; flex-direction:column; align-items:flex-start; gap:4px; margin-top:14px; padding:12px 18px; background: var(--oranje); color:#fff; border: 3px solid var(--ink); font-family: "Inter", sans-serif; font-weight: 900; font-size: 22px; cursor: pointer; text-align:left; box-shadow: 5px 5px 0 var(--ink); }
+  .run-live:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--ink); }
+  .run-live .hint { font-size: 18px; font-weight: 700; color: #ffe8d6; }
+  .run-live.done .hint { color: #fff; }
   .stat { box-sizing: border-box; background: #fff; border: 3px solid var(--ink); padding: 16px 18px; text-align: center; }
   .stat .num { font-size: 52px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
   .stat .lab { font-size: 18px; font-weight: 700; color: var(--muted); margin-top: 8px; line-height: 1.3; }
@@ -330,19 +334,25 @@
   <div class="frame">
     <h2>Local like SQLite. <span class="oranje">Analytical like ClickHouse.</span></h2>
     <p class="lede">chDB is the ClickHouse engine as a pip install, running inside your Python process.</p>
-    <div style="display:grid; grid-template-columns: 640px 1fr; gap:40px; margin-top:24px; align-items:start;">
-      <pre><code class="language-python">pip install chdb
+    <div style="display:grid; grid-template-columns: 700px 1fr; gap:32px; margin-top:24px; align-items:start;">
+      <div>
+        <pre style="margin:0;"><code class="language-python">pip install chdb
 
 import chdb
-chdb.query(
-  "SELECT count() FROM file('hits.parquet')")</code></pre>
+chdb.query("""
+  SELECT * FROM url('https://datasets-documentation
+      .s3.eu-west-3.amazonaws.com
+      /house_parquet/house_0.parquet')
+  LIMIT 10 """)</code></pre>
+        <button type="button" class="run-live" data-sql="SELECT * FROM url('https://datasets-documentation.s3.eu-west-3.amazonaws.com/house_parquet/house_0.parquet') LIMIT 10">▶ Run this live · wasm.chdb.io <span class="hint">same engine in the browser · SQL copied, paste and Enter</span></button>
+      </div>
       <div class="rows">
         <div class="row"><span class="sq g"></span><span><strong>In-process.</strong> <span class="m">No server, no ports. Just a module.</span></span></div>
         <div class="row"><span class="sq b"></span><span><strong>Same engine.</strong> <span class="m">ClickHouse SQL, JOINs, 70+ formats (Parquet, CSV, JSON, Arrow), S3 or Postgres as tables.</span></span></div>
         <div class="row"><span class="sq x"></span><span><strong>Multi-threaded C++ inside.</strong> <span class="m">Remember this one.</span></span></div>
       </div>
     </div>
-    <div style="position:absolute; left:60px; bottom:56px; display:flex; gap:24px; align-items:center;">
+    <div style="position:absolute; left:60px; bottom:40px; display:flex; gap:24px; align-items:center;">
       <img class="logo" src="logos/python-logo.svg" alt="Python" style="width:56px;height:56px;">
       <span style="font-size:30px; font-weight:900; color:var(--muted);">+</span>
       <img class="logo" src="logos/chdb-light.png" alt="chDB" style="width:56px;height:56px;">
@@ -351,7 +361,7 @@ chdb.query(
       <span style="font-size:22px; font-weight:700; color:var(--muted);">in your process</span>
     </div>
   </div>
-  <aside class="notes">This is chDB. For those who do not know ClickHouse: the open-source columnar database built for analytics. chDB is that whole engine as a pip install. Three lines: install, import, query a Parquet file. No server, no ports, no connection string. It is a module. It is the same engine: ClickHouse SQL, JOINs, seventy-plus formats, S3 or Postgres as tables. And the line to remember: inside it is heavily multi-threaded C++. That one sets up everything that follows.</aside>
+  <aside class="notes">This is chDB. For those who do not know ClickHouse: the open-source columnar database built for analytics. chDB is that whole engine as a pip install. Three lines: install, import, query a Parquet file. No server, no ports, no connection string. It is a module. It is the same engine: ClickHouse SQL, JOINs, seventy-plus formats, S3 or Postgres as tables. The orange button copies this query and opens wasm dot chdb dot io, the same engine compiled to WebAssembly, in a new tab: paste, Enter, ten rows of UK house prices straight from S3, nothing installed. And the line to remember: inside it is heavily multi-threaded C++. That one sets up everything that follows.</aside>
 </section>
 
 <!-- 05 · THE PATIENT · HOW IT TOUCHES PYTHON -->
@@ -1563,6 +1573,18 @@ chdb.query("SELECT sum(slow(number)) FROM numbers_mt(2e6) "
       if (pg) pg.textContent = String(i + 1).padStart(2, '0') + ' / ' + secs.length;
     });
   })();
+
+  // "Run this live": copy the SQL, open the in-browser chDB shell in a new tab.
+  document.querySelectorAll('.run-live').forEach((btn) => {
+    btn.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      const sql = btn.dataset.sql;
+      const hint = btn.querySelector('.hint');
+      try { await navigator.clipboard.writeText(sql); btn.classList.add('done'); if (hint) hint.textContent = 'SQL copied · paste with ⌘V, press Enter'; }
+      catch (e) { if (hint) hint.textContent = 'clipboard blocked · type the query by hand'; }
+      window.open('https://wasm.chdb.io/', '_blank', 'noopener');
+    });
+  });
 
   Reveal.initialize({
     hash: true,
