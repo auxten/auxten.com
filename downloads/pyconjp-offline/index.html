@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rediscovering DataFrames: 100× Analytics Without Leaving Pandas - PyCon JP 2026</title>
+<link href="assets/fonts.css" rel="stylesheet">
+<link rel="stylesheet" href="assets/reveal.css">
+
+
+
+<style>
+  :root {
+    --paper: #fdfdf6;
+    --ink: #161616;
+    --yellow: #fadb14;
+    --orange: #e65100;
+    --blue: #1565c0;
+    --green: #2e7d32;
+    --red: #c62828;
+    --vermillion: #d7263d;
+    --gold: #c9a227;
+  }
+
+  html, body, .reveal, .reveal .slides, .reveal .slides section { background: var(--paper); }
+
+  .reveal {
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-size: 30px;
+  }
+  .reveal .slides section {
+    box-sizing: border-box; height: 720px; padding: 0; text-align: left; overflow: hidden;
+  }
+  .reveal .slides section::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(#00000012 1.5px, transparent 1.5px);
+    background-size: 26px 26px; pointer-events: none;
+  }
+  .frame { position: absolute; inset: 0; box-sizing: border-box; padding: 60px 70px; }
+
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: 104px; font-weight: 900; line-height: 0.98; letter-spacing: -3px; color: var(--ink); }
+  h2 { font-size: 54px; font-weight: 900; line-height: 1.02; letter-spacing: -1.5px; color: var(--ink); }
+  h3 { font-size: 26px; font-weight: 900; color: var(--ink); }
+  p  { font-size: 25px; font-weight: 600; line-height: 1.35; color: #3c3c38; }
+  .mono { font-family: "JetBrains Mono", Menlo, monospace; }
+  .muted { color: #6d6d66; }
+  .jp { font-family: "Noto Sans JP", sans-serif; }
+
+  .topbar { position: absolute; top: 30px; left: 70px; right: 70px; display: flex; justify-content: space-between; align-items: center; z-index: 5; }
+  .topbar .sec { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
+    background: var(--ink); color: #fff; padding: 6px 14px; letter-spacing: 1px; }
+  .topbar .sec .k { font-family: "Noto Sans JP", sans-serif; color: var(--yellow); }
+  .rj { font-family: "JetBrains Mono", monospace; font-weight: 700; color: #8a8a80; text-transform: none; }
+  .topbar .sec .rj { color: #b8b8ad; font-size: 13px; }
+  .topbar .pg { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
+    background: #fff; border: 3px solid var(--ink); padding: 3px 12px; }
+
+  .sticker { display: inline-block; background: var(--yellow); border: 4px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink); padding: 12px 24px; font-weight: 900; }
+  .sticker.white { background: #fff; }
+  .box { background: var(--ink); color: var(--yellow); padding: 0 18px; display: inline-block; }
+
+  .card { box-sizing: border-box; background: #fff; border: 4px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink); padding: 20px 24px; }
+  .card.b { border-color: var(--blue);   box-shadow: 7px 7px 0 var(--blue); }
+  .card.o { border-color: var(--orange); box-shadow: 7px 7px 0 var(--orange); }
+  .card.g { border-color: var(--green);  box-shadow: 7px 7px 0 var(--green); }
+  .card.r { border-color: var(--red);    box-shadow: 7px 7px 0 var(--red); }
+  .card.dark { background: var(--ink); color: #fff; box-shadow: 8px 8px 0 var(--yellow); }
+  .card h3 { font-size: 24px; letter-spacing: 0.5px; }
+  .card.b h3 { color: var(--blue); } .card.o h3 { color: var(--orange); } .card.g h3 { color: var(--green); } .card.r h3 { color: var(--red); }
+  .card .m { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; color: #3c3c38; margin-top: 6px; }
+  .card.dark .m { color: #cfcfc6; }
+
+  .code { box-sizing: border-box; background: var(--ink); border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--yellow); padding: 22px 28px;
+    font-family: "JetBrains Mono", monospace; font-weight: 500; color: #f6f6f0; }
+  .code .kw { color: var(--yellow); font-weight: 700; }
+  .code .st { color: #8be28b; }
+  .code .cm { color: #8a8a7f; }
+  .code .fn { color: #7db8ff; }
+  .code .line { display: block; }
+  .code .l-del { background: #4a1f1f; display: block; }
+  .code .l-add { background: #1f3d1f; display: block; }
+  .code .l-lake { border-left: 7px solid #4d94ff;      padding-left: 12px; margin-left: -19px; }
+  .code .l-tar  { border-left: 7px solid var(--orange); padding-left: 12px; margin-left: -19px; }
+  .code .l-db   { border-left: 7px solid var(--green);  padding-left: 12px; margin-left: -19px; }
+
+  .foot { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 70px; font-size: 23px; font-weight: 800; z-index: 4; }
+  .foot .y { color: var(--yellow); }
+
+  .punchbar { position: absolute; left: 70px; right: 70px; bottom: 54px; background: var(--ink); color: #fff;
+    border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--yellow);
+    padding: 18px 26px; font-size: 30px; font-weight: 900; z-index: 4; }
+  .punchbar .y { color: var(--yellow); }
+
+  .frame-img { background: #fff; border: 4px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); padding: 12px; }
+  .frame-img img { display: block; width: 100%; height: auto; }
+
+  .rows { display: grid; gap: 14px; }
+  .rows .row { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start;
+    font-size: 23px; font-weight: 700; line-height: 1.3; }
+  .rows .sq { width: 16px; height: 16px; background: var(--orange); border: 3px solid var(--ink); margin-top: 6px; }
+  .rows .sq.x { background: var(--red); }
+  .rows .sq.ok { background: var(--green); }
+
+  .stat { box-sizing: border-box; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    padding: 18px 20px; text-align: center; }
+  .stat .num { font-size: 62px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+  .stat .lab { font-size: 18px; font-weight: 700; color: #55554f; margin-top: 10px; line-height: 1.3; }
+  .stat.red .num { color: var(--red); } .stat.green .num { color: var(--green); } .stat.ylw .num { color: var(--orange); }
+
+  .tk { display: grid; grid-template-columns: 92px 1fr; gap: 20px; align-items: center;
+    background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 18px 24px; }
+  .tk .no { font-family: "JetBrains Mono", monospace; font-size: 44px; font-weight: 900; color: var(--orange); }
+  .tk p { font-size: 24px; }
+
+  .logo-pol { background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center; }
+  .reveal img { margin: 0; border: 0; box-shadow: none; max-width: none; max-height: none; }
+
+  .svgwrap { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .z2 { position: relative; z-index: 2; }
+
+  /* hanko seal: stamps a measured, real number */
+  .hanko { position: absolute; width: 84px; height: 84px; border: 4px solid var(--vermillion); border-radius: 50%;
+    color: var(--vermillion); font-family: "Noto Sans JP", sans-serif; font-weight: 900; font-size: 24px;
+    display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1;
+    background: rgba(253,253,246,0.82); transform: rotate(-10deg); z-index: 6; }
+
+  /* brutalist relative-runtime bars */
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 130px; gap: 16px; align-items: center; }
+  .bar-row .nm { font-family: "JetBrains Mono", monospace; font-size: 21px; font-weight: 700; text-align: right; }
+  .bar-row .tr { height: 40px; border: 3px solid var(--ink); background: #fff; }
+  .bar-row .fl { height: 100%; border-right: 3px solid var(--ink); }
+  .bar-row .vx { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 900; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- 01 · TITLE -->
+<section>
+  <div class="frame">
+    <span class="sticker" style="position:absolute; top:64px; left:70px; transform:rotate(-2deg); font-size:26px;">PyCon JP 2026 · <span class="jp">広島</span> Hiroshima</span>
+    <div class="logo-pol" style="position:absolute; top:64px; right:70px; width:140px; height:140px; transform:rotate(2deg);">
+      <img src="logos/chdb-light.png" alt="chDB" style="width:104px;">
+    </div>
+    <h1 style="position:absolute; top:190px; left:70px;">Rediscovering<br><span class="box">DataFrames</span></h1>
+    <div class="sticker white mono" style="position:absolute; top:462px; left:70px; font-size:27px; box-shadow:8px 8px 0 var(--orange);">
+      100× Analytics Without Leaving Pandas
+    </div>
+    <!-- hinomaru: rising-sun circle with vertical kanji -->
+    <div style="position:absolute; top:250px; right:96px; width:250px; height:250px; background:var(--vermillion);
+      border:4px solid var(--ink); border-radius:50%; box-shadow:10px 10px 0 var(--ink); transform:rotate(2deg);
+      display:flex; align-items:center; justify-content:center;">
+      <span class="jp" style="writing-mode:vertical-rl; color:#fff; font-size:52px; font-weight:900; letter-spacing:8px;">再発見</span>
+    </div>
+    <div class="rj" style="position:absolute; top:522px; right:96px; width:250px; text-align:center; font-size:17px;">sai·hak·ken — rediscovery</div>
+  </div>
+  <div class="foot"><span>Auxten Wang · <span class="y">ClickHouse</span> · Creator of chDB</span><span>@auxten</span></div>
+  <aside class="notes">One idea in 45 minutes: your pandas code is worth keeping — it's the engine underneath that hit the ceiling. 再発見 = rediscovery. Swap the engine, keep everything else.</aside>
+</section>
+
+<!-- 02 · ABOUT -->
+<section>
+  <div class="topbar"><span class="sec">ABOUT · <span class="k">自己紹介</span> <span class="rj">jikoshōkai</span></span><span class="pg">02 / 19</span></div>
+  <div class="frame">
+    <div style="display:flex; gap:70px; align-items:center; margin-top:80px;">
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:24px; margin-bottom:30px;">
+          <div class="logo-pol" style="width:120px; height:120px; transform:rotate(-2deg); overflow:hidden; padding:0;">
+            <img src="logos/head.jpg" alt="Auxten Wang" style="width:112px; height:112px; object-fit:cover;">
+          </div>
+          <div>
+            <h2 style="font-size:46px;">Auxten Wang</h2>
+            <p class="mono" style="font-size:21px; margin-top:6px;"><strong>@auxten</strong> · auxten.com</p>
+          </div>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="sq"></span><span><strong>Technical Director</strong> @ ClickHouse</span></div>
+          <div class="row"><span class="sq"></span><span>Creator of <strong>chDB</strong> — acquired by ClickHouse in 2024</span></div>
+          <div class="row"><span class="sq"></span><span>Builds embedded databases &amp; data tooling for Python</span></div>
+          <div class="row"><span class="sq"></span><span class="muted">ex Shopee principal engineer</span></div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:34px; align-items:center;">
+        <div class="logo-pol" style="width:230px; height:230px; transform:rotate(2deg);">
+          <img src="logos/chdb-light.png" alt="chDB" style="width:180px;">
+        </div>
+        <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="width:230px;">
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Twenty seconds. The relevant credential: I created chDB, and my day job is putting the ClickHouse engine inside Python processes — which is exactly what this talk is about.</aside>
+</section>
+
+<!-- 03 · THE LOVE -->
+<section>
+  <div class="topbar"><span class="sec">PANDAS · <span class="k">愛</span> <span class="rj">ai</span></span><span class="pg">03 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:40px;">Everyone's first data tool</h2>
+    <div style="display:flex; gap:56px; margin-top:44px; align-items:flex-start;">
+      <div class="code" style="flex:0 0 620px; font-size:22px; line-height:1.75;">
+<span class="kw">import</span> pandas <span class="kw">as</span> pd<br>
+df = pd.<span class="fn">read_csv</span>(<span class="st">"sales.csv"</span>)<br>
+df[df.amount &gt; 100] \<br>
+&nbsp;&nbsp;.groupby(<span class="st">"region"</span>).amount.sum()
+      </div>
+      <div style="flex:1;">
+        <div class="rows">
+          <div class="row"><span class="sq ok"></span><span>In every tutorial, every notebook, every team</span></div>
+          <div class="row"><span class="sq ok"></span><span>Muscle memory for <strong>millions of engineers</strong></span></div>
+          <div class="row"><span class="sq ok"></span><span>The DataFrame dialect <strong>LLMs write best</strong></span></div>
+        </div>
+        <div class="sticker" style="margin-top:38px; transform:rotate(1.5deg); font-size:26px; line-height:1.3;">
+          This API took 15 years<br>to learn everywhere.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="punchbar">The pandas API is an asset. <span class="y">The engine underneath is the problem.</span></div>
+  <aside class="notes">Set up the thesis: nobody in this room needs to be sold on pandas — the API is the accumulated muscle memory of the whole ecosystem, including the LLMs writing our code now. Separate the API (keep) from the engine (replace).</aside>
+</section>
+
+<!-- 04 · THE CEILING -->
+<section>
+  <div class="topbar"><span class="sec">THE CEILING · <span class="k">限界</span> <span class="rj">genkai</span></span><span class="pg">04 / 19</span></div>
+  <div class="frame">
+    <span class="jp" style="position:absolute; top:20px; right:60px; font-size:210px; font-weight:900; color:#00000010; z-index:0;">限界</span>
+    <h2 style="margin-top:40px;" class="z2">Then your data grew.</h2>
+    <div style="display:flex; gap:44px; margin-top:56px;" class="z2">
+      <div class="stat red" style="flex:1;"><div class="num" style="font-size:48px; line-height:1.2;">Memory<br>Error</div><div class="lab">a 10 GB DataFrame chokes a 16 GB laptop</div></div>
+      <div class="stat red" style="flex:1;"><div class="num">1 / 16</div><div class="lab">cores doing the work while fifteen watch</div></div>
+      <div class="stat red" style="flex:1;"><div class="num">&gt; query</div><div class="lab">reading from S3 takes longer than the analysis itself</div></div>
+    </div>
+  </div>
+  <div class="punchbar">Your code didn't hit the ceiling. <span class="y">The execution model did.</span></div>
+  <aside class="notes">The three pains straight from the abstract — everyone has met at least one. Emphasize: the notebook that failed at 10 GB contains correct, well-written pandas. The code is fine.</aside>
+</section>
+
+<!-- 05 · WHY -->
+<section>
+  <div class="topbar"><span class="sec">WHY · <span class="k">原因</span> <span class="rj">gen'in</span></span><span class="pg">05 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:36px;">The ceiling has three walls</h2>
+    <div style="display:flex; gap:40px; margin-top:44px;">
+      <div class="card r" style="flex:1;"><h3>EAGER</h3><div class="m" style="font-size:19px;">every step in the chain materializes a full intermediate copy</div></div>
+      <div class="card r" style="flex:1;"><h3>SINGLE-CORE</h3><div class="m" style="font-size:19px;">the GIL-era design: one thread computes, the rest idle</div></div>
+      <div class="card r" style="flex:1;"><h3>ALL-IN-RAM</h3><div class="m" style="font-size:19px;">the whole table decompresses into memory before row one is read</div></div>
+    </div>
+    <div style="position:absolute; top:400px; left:70px; right:70px; display:flex; align-items:center; gap:30px;">
+      <div class="card" style="padding:14px 22px; text-align:center;"><span class="mono" style="font-size:26px; font-weight:900;">33 MB</span><div class="m">Parquet on disk</div></div>
+      <span style="font-size:44px; font-weight:900;">→</span>
+      <div class="card r" style="padding:14px 22px; text-align:center;"><span class="mono" style="font-size:26px; font-weight:900; color:var(--red);">1.5 GB</span><div class="m">as a pandas DataFrame</div></div>
+      <div class="sticker" style="transform:rotate(1.5deg); font-size:23px; line-height:1.3; margin-left:26px;">×45 blow-up,<br>measured on my laptop.</div>
+    </div>
+  </div>
+  <div class="punchbar">Not fixable with another <span class="mono">.apply()</span> trick. <span class="y">It's the engine.</span></div>
+  <aside class="notes">Three structural walls — eager, single-core, all-in-RAM. The 33 MB → 1.5 GB blow-up is real, measured on my machine: columnar compressed Parquet becomes uncompressed row-oriented objects. No amount of clever pandas fixes this; it's the execution model.</aside>
+</section>
+
+<!-- 06 · THE EXITS -->
+<section>
+  <div class="topbar"><span class="sec">THE EXITS · <span class="k">出口</span> <span class="rj">deguchi</span></span><span class="pg">06 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:36px;">The usual exits all cost the same thing</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:40px; width:820px;">
+      <div class="card"><h3>Spark</h3><div class="m" style="font-size:18px;">a cluster to babysit, for one notebook</div></div>
+      <div class="card"><h3>Polars</h3><div class="m" style="font-size:18px;">fast — but a new API for the whole team</div></div>
+      <div class="card"><h3>DuckDB</h3><div class="m" style="font-size:18px;">great engine — but now you write SQL</div></div>
+      <div class="card"><h3>Rewrite</h3><div class="m" style="font-size:18px;">months of migration, retraining, re-testing</div></div>
+    </div>
+    <!-- 非常口 exit sign -->
+    <div style="position:absolute; top:200px; right:70px; width:290px;">
+      <svg width="290" height="180" viewBox="0 0 290 180">
+        <rect x="10" y="10" width="270" height="160" rx="10" fill="#2e7d32" stroke="#161616" stroke-width="6"/>
+        <rect x="196" y="40" width="56" height="104" fill="#fff"/>
+        <g stroke="#fff" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <path d="M 96 104 L 120 66"/>
+          <path d="M 118 70 L 148 78 L 170 62"/>
+          <path d="M 118 70 L 92 86 L 70 74"/>
+          <path d="M 96 104 L 130 116 L 124 148"/>
+          <path d="M 96 104 L 72 126 L 46 136"/>
+        </g>
+        <circle cx="131" cy="44" r="16" fill="#fff"/>
+      </svg>
+      <div class="sticker white jp" style="margin-top:8px; font-size:23px; transform:rotate(1.5deg);">非常口 <span class="rj" style="font-size:15px;">hijōguchi</span> — emergency exit</div>
+    </div>
+  </div>
+  <div class="punchbar">Every exit asks you to leave the API. <span class="y">What if you didn't have to?</span></div>
+  <aside class="notes">Be fair to each: Spark is right at petabyte scale, Polars is genuinely fast, DuckDB is excellent. But each one is an emergency exit — you abandon the building. The pandas code, the team's muscle memory, the LLM fluency: all left behind.</aside>
+</section>
+
+<!-- 07 · THE FLIP -->
+<section>
+  <div class="topbar"><span class="sec">THE FLIP · <span class="k">転換</span> <span class="rj">tenkan</span></span><span class="pg">07 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">Change <span style="background:var(--yellow); padding:0 12px;">one line</span></h2>
+    <div class="code" style="position:absolute; top:180px; left:70px; width:780px; font-size:23px; line-height:1.7;">
+<span class="l-del">- <span class="kw">import</span> pandas <span class="kw">as</span> pd</span>
+<span class="l-add">+ <span class="kw">import</span> chdb.datastore <span class="kw">as</span> pd</span>
+<br>
+df&nbsp;&nbsp;= pd.<span class="fn">read_parquet</span>(<span class="st">"events.parquet"</span>)<br>
+top = (df[df.status == 200]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.groupby(<span class="st">"user_id"</span>).amount.sum()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.sort_values(ascending=<span class="kw">False</span>).head(10))
+    </div>
+    <div class="sticker" style="position:absolute; top:220px; right:70px; width:280px; transform:rotate(2deg); font-size:26px; line-height:1.35;">
+      <span class="jp">同じコード。<br>違うエンジン。</span><br>
+      <span style="font-size:20px; font-weight:700;">Same code.<br>Different engine.</span>
+    </div>
+  </div>
+  <div class="punchbar">The rest of the file doesn't know. <span class="y jp">一行だけ</span> — one line.</div>
+  <aside class="notes">The whole talk on one slide. chdb.datastore is the pandas-compatible API that ships with chDB: same calls, same semantics, but underneath every chain compiles to SQL and runs on the ClickHouse engine. The next 30 minutes is me proving this line is worth it — and being honest about where it isn't.</aside>
+</section>
+
+<!-- 08 · CHDB -->
+<section>
+  <div class="topbar"><span class="sec">CHDB</span><span class="pg">08 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:36px;">chDB: a rocket engine on a bicycle</h2>
+    <div class="frame-img" style="position:absolute; top:180px; left:70px; width:520px; transform:rotate(-1deg);">
+      <img src="logos/rocket-bike.png" alt="A rocket engine strapped to a bicycle">
+    </div>
+    <div style="position:absolute; top:190px; left:680px; width:530px;">
+      <div class="code" style="font-size:21px; line-height:1.6;">
+<span class="cm"># pip install chdb</span><br>
+<span class="kw">import</span> chdb<br>
+chdb.query(<span class="st">"SELECT count()</span><br>
+<span class="st">&nbsp;&nbsp;FROM file('orders.parquet')"</span>)<br>
+<span class="cm"># schema inferred · nothing loaded</span>
+      </div>
+      <div class="rows" style="margin-top:30px;">
+        <div class="row"><span class="sq ok"></span><span>The <strong>ClickHouse engine</strong>, in-process — like SQLite</span></div>
+        <div class="row"><span class="sq ok"></span><span><strong>No server, no config</strong>, no connection string</span></div>
+        <div class="row"><span class="sq ok"></span><span>Columnar · vectorized · <strong>every core</strong></span></div>
+      </div>
+    </div>
+    <p class="muted" style="position:absolute; bottom:40px; left:70px; font-size:20px;">Same engine that runs analytics at Anthropic, Cursor, Vercel, Cloudflare.</p>
+  </div>
+  <aside class="notes">For the majority who don't know ClickHouse: it's the open-source columnar database built for analytics — and chDB is that entire engine as a pip install, living inside your Python process. No Docker, no server. The pandas API from the previous slide sits on top of this.</aside>
+</section>
+
+<!-- 09 · HOW IT WORKS · OKONOMIYAKI -->
+<section>
+  <div class="topbar"><span class="sec">HOW · <span class="k">仕組み</span> <span class="rj">shikumi</span></span><span class="pg">09 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:28px;">Layered, not mixed — <span class="jp" style="background:var(--yellow); padding:0 12px;">お好み焼き</span> <span class="rj" style="font-size:20px;">o-ko-no-mi-ya-ki</span></h2>
+    <svg style="position:absolute; top:150px; left:40px;" width="640" height="440" viewBox="0 0 640 440">
+      <!-- teppan -->
+      <rect x="30" y="368" width="580" height="30" fill="#161616"/>
+      <rect x="12" y="378" width="40" height="12" fill="#161616"/>
+      <rect x="588" y="378" width="40" height="12" fill="#161616"/>
+      <!-- batter: thin pale crepe, lightly toasted -->
+      <rect x="80" y="332" width="480" height="32" rx="16" fill="#f2e0b0" stroke="#161616" stroke-width="5"/>
+      <path d="M 130 348 q 12 -6 24 0 M 240 350 q 12 -6 24 0 M 360 347 q 12 -6 24 0 M 460 350 q 12 -6 24 0" stroke="#c9913e" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <!-- cabbage -->
+      <rect x="92" y="276" width="456" height="52" rx="22" fill="#8bc34a" stroke="#161616" stroke-width="5"/>
+      <path d="M 120 296 q 14 -12 28 0 M 180 308 q 14 -12 28 0 M 250 292 q 14 -12 28 0 M 330 306 q 14 -12 28 0 M 410 292 q 14 -12 28 0 M 480 304 q 14 -12 28 0" stroke="#33691e" stroke-width="4" fill="none"/>
+      <!-- noodles -->
+      <rect x="86" y="220" width="468" height="52" rx="22" fill="#fadb14" stroke="#161616" stroke-width="5"/>
+      <path d="M 110 246 q 20 -16 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0 t 40 0" stroke="#c79a00" stroke-width="5" fill="none"/>
+      <!-- sauce -->
+      <rect x="100" y="166" width="440" height="50" rx="24" fill="#8d3b1b" stroke="#161616" stroke-width="5"/>
+      <path d="M 150 216 q 4 16 -2 24 M 300 216 q 4 18 -2 26 M 450 216 q 4 14 -2 22" stroke="#8d3b1b" stroke-width="10" stroke-linecap="round" fill="none"/>
+      <!-- kote spatula -->
+      <g transform="rotate(-16 512 112)">
+        <path d="M 446 96 L 566 100 L 566 126 L 446 130 Z" fill="#c9c6b8" stroke="#161616" stroke-width="5"/>
+        <rect x="562" y="106" width="62" height="14" rx="7" fill="#161616"/>
+      </g>
+    </svg>
+    <div class="sticker white jp" style="position:absolute; top:172px; left:468px; font-size:19px; transform:rotate(-3deg); padding:2px 12px;">コテ <span class="mono" style="font-size:15px;">kote</span></div>
+    <div style="position:absolute; top:158px; left:706px; width:520px; display:grid; gap:11px;">
+      <div class="card" style="border-color:#8d3b1b; box-shadow:6px 6px 0 #8d3b1b; padding:10px 18px;"><h3 style="color:#8d3b1b; font-size:20px;"><span class="jp">ソース</span> <span class="rj" style="font-size:14px;">sōsu</span> · sauce — your pandas calls</h3><div class="m" style="font-size:15.5px;">df[df.x &gt; 1].groupby(…).sum() — untouched</div></div>
+      <div class="card" style="border-color:#c79a00; box-shadow:6px 6px 0 #c79a00; padding:10px 18px;"><h3 style="color:#c79a00; font-size:20px;"><span class="jp">麺</span> <span class="rj" style="font-size:14px;">men</span> · noodles — the lazy op chain</h3><div class="m" style="font-size:15.5px;">every call recorded, nothing executed</div></div>
+      <div class="card g" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">キャベツ</span> <span class="rj" style="font-size:14px;">kyabetsu</span> · cabbage — one SQL plan</h3><div class="m" style="font-size:15.5px;">the whole chain compiles to a single query</div></div>
+      <div class="card" style="border-color:#a8641f; box-shadow:6px 6px 0 #a8641f; padding:10px 18px;"><h3 style="color:#a8641f; font-size:20px;"><span class="jp">生地</span> <span class="rj" style="font-size:14px;">kiji</span> · batter — the chDB engine</h3><div class="m" style="font-size:15.5px;">columnar · vectorized · all cores</div></div>
+      <div class="card" style="padding:10px 18px;"><h3 style="font-size:20px;"><span class="jp">鉄板</span> <span class="rj" style="font-size:14px;">teppan</span> · teppan — your Python process</h3><div class="m" style="font-size:15.5px;">everything cooks in-process, no server</div></div>
+    </div>
+  </div>
+  <div class="punchbar"><span class="mono">len()</span> · <span class="mono">print()</span> · <span class="mono">for</span> — the <span class="jp y">コテ</span> <span class="rj" style="font-size:16px; color:#b8b8ad;">kote</span> flip: <span class="y">everything cooks at once.</span></div>
+  <aside class="notes">Hiroshima okonomiyaki is layered, never mixed — and so is this. Your pandas calls are the sauce on top; underneath, each call is recorded into a lazy chain, compiled into ONE SQL plan, and executed by the columnar engine only when you actually look at the result — len, print, iteration. That's why chained pandas ops stop costing a copy each: the layers cook as one. (Architecture diagram with the full detail: auxten.com slides repo.)</aside>
+</section>
+
+<!-- 10 · WHY SO FAST -->
+<section>
+  <div class="topbar"><span class="sec">ENGINE · <span class="k">秘密</span> <span class="rj">himitsu</span></span><span class="pg">10 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:30px;">The engine knocks down <span style="background:var(--yellow); padding:0 10px;">all three walls</span></h2>
+    <style>
+      .wf-card h3 { font-size: 23px; }
+      .wf-tag { font-family:"JetBrains Mono",monospace; font-size:15px; font-weight:900; margin-top:14px;
+                display:inline-block; background:var(--ink); color:var(--yellow); padding:3px 10px; }
+      .wf-lanes { display:flex; gap:4px; margin-top:14px; }
+      .wf-lanes i { display:block; flex:1; height:30px; background:var(--yellow); border:2.5px solid var(--ink); }
+      .wf-lanes.p i { background:#eceade; }
+      .wf-lanes.p i:first-child { background:#e8a598; }
+      .wf-simd { display:flex; align-items:center; gap:14px; }
+      .wf-simd .cells { display:flex; gap:4px; }
+      .wf-simd .cells i { display:block; width:34px; height:34px; background:var(--yellow); border:2.5px solid var(--ink); }
+    </style>
+    <div style="display:flex; gap:34px; margin-top:30px;">
+      <div class="card g wf-card" style="flex:1;"><h3>A SQL COMPILER</h3>
+        <div class="m" style="font-size:17.5px;">an internal compiler rewrites your whole pandas chain into <b>one SQL query</b> for the ClickHouse engine</div>
+        <div class="wf-tag">pandas → SQL → ClickHouse</div>
+      </div>
+      <div class="card g wf-card" style="flex:1;"><h3>EVERY CORE</h3>
+        <div class="m" style="font-size:17.5px;">pandas computes on 1 of 14 cores — the engine fills them all</div>
+        <div class="wf-lanes p"><i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i></div>
+        <div class="wf-lanes"><i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i></div>
+      </div>
+      <div class="card g wf-card" style="flex:1;"><h3>STREAMING</h3>
+        <div class="m" style="font-size:17.5px;">top-10 of 10M rows keeps a 10-row heap — never the sorted table</div>
+        <div class="wf-tag">RAM: 100% → 33%</div>
+      </div>
+    </div>
+    <div style="position:absolute; top:440px; left:70px; right:70px; display:flex; align-items:center; gap:26px;">
+      <div class="card" style="padding:14px 22px;"><span class="mono" style="font-size:20px; font-weight:900;">…and each core is vectorized</span><div class="m" style="font-size:16px;">one SIMD instruction processes a whole block of values</div></div>
+      <div class="wf-simd">
+        <span class="mono" style="font-size:17px; font-weight:900; border:3px solid var(--ink); background:#fff; padding:8px 12px;">1 instruction</span>
+        <span style="font-size:34px; font-weight:900;">→</span>
+        <div class="cells"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span class="mono" style="font-size:16px; font-weight:700; color:#55554f;">per tick</span>
+      </div>
+      <div class="sticker" style="transform:rotate(1.5deg); font-size:19px; line-height:1.3; margin-left:auto; width:210px; flex-shrink:0;">that's the ×51.7 sort<br>and the 33% RAM.</div>
+    </div>
+  </div>
+  <div class="punchbar">Not a faster pandas — <span class="y">a different machine underneath.</span></div>
+  <aside class="notes">Mirror of the three walls from slide 5, one by one. First wall: inside datastore sits a compiler — it records your pandas calls and rewrites as much of the chain as it can into a single SQL statement, handed to the embedded ClickHouse engine. Ten chained ops cost one execution, not ten copies; anything it cannot translate falls back to real pandas mid-pipeline, so you never lose. Single-core becomes every core: this laptop has 14; pandas computes on one, the engine's pipeline saturates all of them. All-in-RAM becomes streaming: data flows through in blocks — a top-10 sort keeps a 10-row heap instead of materializing 10 million sorted rows, which is exactly why sort is ×51.7 and why RAM sits at a third. And inside each core, execution is vectorized — SIMD processes blocks of values per instruction instead of one Python-object at a time. This is 15 years of ClickHouse engine engineering, compiled into your import line.</aside>
+</section>
+
+<!-- 10 · WHERE 100× LIVES -->
+<section>
+  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">11 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">Where the 100× lives</h2>
+    <div style="position:absolute; top:160px; left:70px; right:70px; display:grid; gap:16px;">
+      <div class="bar-row"><span class="nm"><b>chDB</b></span><div class="tr"><div class="fl" style="width:1.9%; min-width:10px; background:var(--yellow);"></div></div><span class="vx" style="color:var(--green);">×1.35</span></div>
+      <div class="bar-row"><span class="nm" style="color:#55554f;">DuckDB</span><div class="tr"><div class="fl" style="width:2%; min-width:10px; background:#c9c6b8;"></div></div><span class="vx" style="color:#55554f;">×1.40</span></div>
+      <div class="bar-row"><span class="nm" style="color:#55554f;">Polars</span><div class="tr"><div class="fl" style="width:14%; background:#c9c6b8;"></div></div><span class="vx" style="color:#55554f;">×9.99</span></div>
+      <div class="bar-row"><span class="nm" style="color:#55554f;">pandas</span><div class="tr"><div class="fl" style="width:100%; background:#e8a598; border-right:0;"></div></div><span class="vx" style="color:var(--red);">×71.18</span></div>
+    </div>
+    <div class="sticker" style="position:absolute; top:440px; left:70px; transform:rotate(-1deg); font-size:24px; line-height:1.35;">
+      Worst single query: pandas <b>94.3 s</b> vs chDB <b>0.037 s</b> — <span style="color:var(--red);">×2,550</span>
+    </div>
+    <div class="sticker white jp" style="position:absolute; top:452px; right:70px; transform:rotate(1.5deg); font-size:24px;">各駅停車 → のぞみ</div>
+    <p class="mono muted" style="position:absolute; bottom:128px; left:70px; font-size:16px;">ClickBench · DataFrame category · 43.77 GiB · same c6a.metal machine · relative runtime, lower is better</p>
+  </div>
+  <div class="punchbar">Same DataFrame workload. <span class="y">×71 less waiting</span> — before any tuning.</div>
+  <aside class="notes">ClickBench's DataFrame category: the same DataFrame workload on 43.77 GiB, identical hardware. pandas ×71 overall; individual queries reach ×2,550. That's the honest home of "100×" — not a marketing round-up. The train sticker: local train (kakueki-teisha) versus the Nozomi express — same tracks, same destination, very different clock. Hiroshima audience rides the San'yō Shinkansen; they know. DuckDB being neck-and-neck here is real, and I'll come back to it on the honesty slide.</aside>
+</section>
+
+<!-- 11 · 20 OPS AT 10M -->
+<section>
+  <div class="topbar"><span class="sec">BENCHMARK · <span class="k">勝負</span> <span class="rj">shōbu</span></span><span class="pg">12 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:30px; font-size:38px;">10M rows, 16 everyday ops — <span style="background:var(--yellow); padding:0 10px;">faster on 14 of 16</span></h2>
+    <style>
+      .bx-chart { position:absolute; top:180px; left:70px; width:1080px; display:grid; gap:1px; }
+      .bx-row { display:grid; grid-template-columns:175px 175px 730px; align-items:center; height:24px; }
+      .bx-op { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:700; text-align:right; padding-right:8px; white-space:nowrap; }
+      .bx-l { display:flex; justify-content:flex-end; align-items:center; gap:6px; height:100%; }
+      .bx-r { border-left:4px solid var(--ink); display:flex; align-items:center; gap:6px; height:100%; }
+      .bx-row .bars { display:flex; flex-direction:column; gap:1px; }
+      .bx-l .bars { align-items:flex-end; }
+      .bx-row i.sp { display:block; height:10px; border:2.5px solid var(--ink); }
+      .bx-row i.rm { display:block; height:2px; border:2px solid var(--ink); background:var(--blue); }
+      .bx-r i.sp { background:var(--yellow); }
+      .bx-l i.sp { background:#e8a598; }
+      .bx-row b { font-family:"JetBrains Mono",monospace; font-size:14px; font-weight:900; white-space:nowrap; }
+      .bx-row b.rmx { font-size:12.5px; color:var(--blue); }
+      .bx-legend { position:absolute; top:146px; left:70px; white-space:nowrap; font-family:"JetBrains Mono",monospace; font-size:13px; font-weight:700; color:#6d6d66; line-height:1.3; }
+      .bx-legend .sw { display:inline-block; width:13px; height:13px; border:2.5px solid var(--ink); vertical-align:-2px; }
+      .bx-legend .swm { display:inline-block; width:13px; height:2px; border:2px solid var(--ink); background:var(--blue); vertical-align:2px; }
+    </style>
+    <div class="bx-legend">
+      <span class="sw" style="background:var(--yellow);"></span> DataStore faster (14) &nbsp;&nbsp;<span class="sw" style="background:#e8a598;"></span> pandas faster (2) &nbsp;&nbsp;<span class="swm"></span> thin bar + <b style="color:var(--blue);">blue %</b> = the RAM we use vs pandas (33% = ⅓) &nbsp;&nbsp;·&nbsp;&nbsp; linear scale<br>
+      read parquet → answer · best of 2 · outputs identical 16/16 &nbsp;&nbsp;·&nbsp;&nbsp; peak RSS median: pandas <b style="color:#161616;">1,059 MB</b> → DataStore <b style="color:#161616;">440 MB (42%)</b>
+    </div>
+    <div class="bx-chart">
+      <div class="bx-row"><span class="bx-op">Sort (single col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:569px"></i><i class="rm" style="width:33px"></i></span><b>&times;51.7</b><b class="rmx">33%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Sort (multi col)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:429px"></i><i class="rm" style="width:32px"></i></span><b>&times;39.0</b><b class="rmx">34%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mixed Filter+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:387px"></i><i class="rm" style="width:35px"></i></span><b>&times;35.2</b><b class="rmx">31%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Select+Sort</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:238px"></i><i class="rm" style="width:30px"></i></span><b>&times;21.7</b><b class="rmx">36%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Chain 5 filters</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:141px"></i><i class="rm" style="width:36px"></i></span><b>&times;12.9</b><b class="rmx">31%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Head / limit</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:74px"></i><i class="rm" style="width:23px"></i></span><b>&times;6.8</b><b class="rmx">47%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Head</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:73px"></i><i class="rm" style="width:24px"></i></span><b>&times;6.6</b><b class="rmx">47%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Multi-filter (4x)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:54px"></i><i class="rm" style="width:30px"></i></span><b>&times;4.9</b><b class="rmx">37%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter+Sort+Select</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:46px"></i><i class="rm" style="width:27px"></i></span><b>&times;4.2</b><b class="rmx">41%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (multi AND)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:46px"></i><i class="rm" style="width:33px"></i></span><b>&times;4.2</b><b class="rmx">33%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Ultra-complex chain</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:44px"></i><i class="rm" style="width:30px"></i></span><b>&times;4.0</b><b class="rmx">36%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Complex pipeline</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:44px"></i><i class="rm" style="width:38px"></i></span><b>&times;4.0</b><b class="rmx">29%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Filter (single)</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:36px"></i><i class="rm" style="width:30px"></i></span><b>&times;3.3</b><b class="rmx">37%</b></span></div>
+      <div class="bx-row"><span class="bx-op">GroupBy agg &times;3</span><span class="bx-l"></span><span class="bx-r"><span class="bars"><i class="sp" style="width:30px"></i><i class="rm" style="width:27px"></i></span><b>&times;2.8</b><b class="rmx">40%</b></span></div>
+      <div class="bx-row"><span class="bx-op">Mask (replace)</span><span class="bx-l"><b class="rmx">196%</b><b>&times;8.5</b><span class="bars"><i class="sp" style="width:93px"></i><i class="rm" style="width:22px"></i></span></span><span class="bx-r"></span></div>
+      <div class="bx-row"><span class="bx-op">Where (replace)</span><span class="bx-l"><b class="rmx">199%</b><b>&times;6.7</b><span class="bars"><i class="sp" style="width:73px"></i><i class="rm" style="width:22px"></i></span></span><span class="bx-r"></span></div>
+    </div>
+    <div class="hanko" style="top:436px; right:96px;">実測</div>
+    <div class="sticker" style="position:absolute; top:310px; right:110px; width:250px; transform:rotate(2deg); font-size:22px; line-height:1.35;">
+      thin blue bars:<br>⅓–½ the RAM<br>on <u>every op we win</u>.
+    </div>
+  </div>
+  <div class="punchbar">Faster on 14 of 16 — <span class="y">bulk value-replace stays with pandas.</span></div>
+  <aside class="notes">Measured on this laptop for this deck: 10M-row parquet, read-to-answer, best of 2 runs, outputs verified identical between engines on every op shown. Linear scale, no log tricks: fat bars are speed, thin blue bars are peak RAM (fresh process per op, ru_maxrss), labeled with the share of pandas' RAM we use — 33% means one third. Sorts are the blowout — top-k over 10M rows is ×35–×52 because the engine never materializes the full sorted frame. Filters and chains ×3–×13. The two red rows are one family: bulk value-replace (mask/where). pandas rewrites the column in place; we round-trip it through the engine — pandas wins those on speed and RAM, and the honest advice is: keep using pandas there. One clean concession, easy to say out loud. Full 20-op run in the repo (bench20_results.json) for anyone who checks.</aside>
+</section>
+
+<!-- 12 · REACH -->
+<section>
+  <div class="topbar"><span class="sec">REACH · <span class="k">到達</span> <span class="rj">tōtatsu</span></span><span class="pg">13 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">Your data lives on many islands</h2>
+    <div class="code" style="position:absolute; top:166px; left:70px; width:800px; font-size:20px; line-height:1.7;">
+<span class="line l-lake">pd.<span class="fn">read_parquet</span>(<span class="st">"https://…/house_0.parquet"</span>)&nbsp;<span class="cm"># the lake</span></span>
+<span class="line l-tar">pd.<span class="fn">read_csv</span>(<span class="st">"crm_exports.tar :: users_*.csv"</span>)&nbsp;<span class="cm"># archives</span></span>
+<span class="line l-db">pd.<span class="fn">read_sql</span>(<span class="st">"SELECT …"</span>, <span class="st">"postgresql://prod"</span>)&nbsp;&nbsp;<span class="cm"># live DBs</span></span>
+    </div>
+    <div class="card" style="position:absolute; top:352px; left:70px; width:560px;">
+      <h3 style="font-size:21px;">measured this week, this laptop</h3>
+      <div class="m" style="font-size:18px; line-height:1.6;">2,772,030 rows on S3 — counted in <b>3.3 s</b>, no download<br>parquet ⋈ CSVs-inside-a-tar ⋈ groupby — one chain</div>
+    </div>
+    <div class="hanko" style="top:340px; left:600px;">実測</div>
+    <div class="sticker white mono" style="position:absolute; top:520px; left:70px; font-size:20px; padding:10px 18px; box-shadow:6px 6px 0 var(--ink);">
+      <b style="color:var(--orange);">70</b> table functions · <b style="color:var(--orange);">72</b> input formats — counted from the engine
+    </div>
+    <!-- Miyajima floating torii on seigaiha waves -->
+    <svg style="position:absolute; top:170px; right:26px;" width="360" height="400" viewBox="0 0 360 400">
+      <defs>
+        <g id="fan">
+          <path d="M -44 0 A 44 44 0 0 1 44 0" fill="none" stroke="#1565c0" stroke-width="4"/>
+          <path d="M -30 0 A 30 30 0 0 1 30 0" fill="none" stroke="#1565c0" stroke-width="4"/>
+          <path d="M -16 0 A 16 16 0 0 1 16 0" fill="none" stroke="#1565c0" stroke-width="4"/>
+        </g>
+      </defs>
+      <g opacity="0.35">
+        <use href="#fan" x="40" y="330"/><use href="#fan" x="128" y="330"/><use href="#fan" x="216" y="330"/><use href="#fan" x="304" y="330"/>
+        <use href="#fan" x="84" y="364"/><use href="#fan" x="172" y="364"/><use href="#fan" x="260" y="364"/><use href="#fan" x="348" y="364"/>
+        <use href="#fan" x="40" y="398"/><use href="#fan" x="128" y="398"/><use href="#fan" x="216" y="398"/><use href="#fan" x="304" y="398"/>
+      </g>
+      <g>
+        <path d="M 30 96 Q 180 62 330 96 L 330 122 Q 180 90 30 122 Z" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+        <rect x="66" y="140" width="228" height="20" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+        <path d="M 96 140 L 88 330 L 118 330 L 122 140 Z" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+        <path d="M 264 140 L 272 330 L 242 330 L 238 140 Z" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+        <rect x="170" y="104" width="20" height="36" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+      </g>
+    </svg>
+  </div>
+  <div class="punchbar">Like the Miyajima torii: <span class="y">a gateway standing in the water.</span> The data never moves.</div>
+  <aside class="notes">Same read_* calls, but the path can be S3, a URL, an archive with CSVs inside — even a tar, no unpacking — or a live Postgres. Underneath these are ClickHouse table functions: 70 of them, 72 input formats, counted from the engine itself. The S3 count and the tar join ran this week on this laptop. Miyajima's floating torii is 20 minutes from this room: a gate you pass through, standing where the water lives. That's the model — query through the gate, leave the data where it is.</aside>
+</section>
+
+<!-- 13 · RANGED READS -->
+<section>
+  <div class="topbar"><span class="sec">PERFORMANCE · <span class="k">性能</span> <span class="rj">seinō</span></span><span class="pg">14 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">It reads what the query needs — <span style="background:var(--yellow); padding:0 10px;">not the file</span></h2>
+    <div style="position:absolute; top:170px; left:70px; right:70px;">
+      <div class="mono" style="font-size:17px; font-weight:700; color:#6d6d66; margin-bottom:8px;">house_0.parquet · 33 MB · 2.77M rows · 14 columns &nbsp;&nbsp;&nbsp;<span style="color:var(--blue);">▼ HTTP Range reads</span></div>
+      <div style="display:flex; height:74px; border:4px solid var(--ink); box-shadow:8px 8px 0 var(--ink); background:#fff;">
+        <div style="flex:1.2; background:var(--yellow); border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center;" class="mono"><b>type</b></div>
+        <div style="flex:1.2; background:var(--yellow); border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center;" class="mono"><b>price</b></div>
+        <div style="flex:1; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">date</div>
+        <div style="flex:1; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">town</div>
+        <div style="flex:1; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">street</div>
+        <div style="flex:2.2; background:#eceade; border-right:3px solid var(--ink); display:flex; align-items:center; justify-content:center; color:#9a9a8f;" class="mono">…9 more columns</div>
+        <div style="flex:0.9; background:var(--ink); color:var(--yellow); display:flex; align-items:center; justify-content:center;" class="mono"><b>footer</b></div>
+      </div>
+      <div class="mono" style="font-size:17px; font-weight:700; margin-top:10px;"><span style="color:var(--yellow); text-shadow:0 0 1px #161616;">■</span> fetched for <span style="color:var(--ink);">avg(price) by type</span> &nbsp;&nbsp;<span style="color:#9a9a8f;">■ skipped</span> &nbsp;&nbsp;<span style="color:var(--ink);">■ footer</span> = schema + stats, read first</div>
+    </div>
+    <div style="display:flex; gap:40px; position:absolute; top:352px; left:70px; right:70px;">
+      <div class="stat green" style="flex:1;"><div class="num">3.3 s</div><div class="lab">len() on the remote file — footer + counts only, no download</div></div>
+      <div class="stat ylw" style="flex:1;"><div class="num">2 / 14</div><div class="lab">columns fetched for the aggregation — ranged reads, no full scan</div></div>
+      <div class="stat" style="flex:1.15;"><div class="num" style="font-size:44px; line-height:1.15;">344 <span style="font-size:26px;">vs</span> 975 MB</div><div class="lab">peak RAM, chDB streaming vs pandas on the same file</div></div>
+    </div>
+  </div>
+  <div class="punchbar">Ranged reads: <span class="y">you pay for the columns you touch</span> — not the file.</div>
+  <aside class="notes">Why "reading from S3 takes longer than the query" stops being true: the engine reads the Parquet footer first — schema plus statistics — then fetches only the column chunks the query touches, via HTTP Range requests. len() on 2.77M remote rows in 3.3 s without downloading. And streaming execution never materializes the full table: 344 MB peak versus pandas' 975 MB on the same file. Fair caveat for the notes: on very high-latency links, many small range requests can lose to one big download.</aside>
+</section>
+
+<!-- 14 · AGENT MEMORY · THREE DATABASES -->
+<section>
+  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">15 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">Agent memory today: <span style="background:var(--yellow); padding:0 10px;">three databases</span></h2>
+    <div class="card dark" style="position:absolute; top:280px; left:70px; width:250px; text-align:center; padding:26px 20px;">
+      <div class="mono" style="font-size:26px; font-weight:900;">YOUR<br>AGENT</div>
+      <div class="mono" style="font-size:17px; color:var(--yellow); margin-top:10px;">"what do I<br>remember?"</div>
+    </div>
+    <svg style="position:absolute; top:150px; left:320px;" width="316" height="480" viewBox="0 0 316 480">
+      <g stroke="#161616" stroke-width="5" fill="none">
+        <path d="M 8 208 C 120 208 170 66 296 66"/>
+        <path d="M 8 208 C 120 208 170 180 296 180"/>
+        <path d="M 8 208 C 120 208 170 294 296 294"/>
+      </g>
+      <g fill="#161616">
+        <path d="M 312 66 l -24 -10 l 2 20 Z"/>
+        <path d="M 312 180 l -24 -10 l 2 20 Z"/>
+        <path d="M 312 294 l -24 -10 l 2 20 Z"/>
+      </g>
+    </svg>
+    <div style="position:absolute; top:172px; left:640px; width:560px; display:grid; gap:26px;">
+      <div class="card" style="border-color:#4d94ff; box-shadow:7px 7px 0 #4d94ff; padding:16px 22px;"><h3 style="color:#1565c0; font-size:24px;">Vector DB</h3><div class="m" style="font-size:18px;">semantic recall — "which memories <em>mean</em> this?"</div></div>
+      <div class="card" style="border-color:var(--orange); box-shadow:7px 7px 0 var(--orange); padding:16px 22px;"><h3 style="color:var(--orange); font-size:24px;">Metadata store</h3><div class="m" style="font-size:18px;">filters — "whose memory? which project?"</div></div>
+      <div class="card" style="border-color:var(--green); box-shadow:7px 7px 0 var(--green); padding:16px 22px;"><h3 style="color:var(--green); font-size:24px;">Recency cache</h3><div class="m" style="font-size:18px;">freshness — "what still matters today?"</div></div>
+    </div>
+    <div class="sticker" style="position:absolute; top:492px; left:70px; transform:rotate(-1.5deg); font-size:21px;">3 systems · 3 hops · 3 bills</div>
+  </div>
+  <div class="punchbar">Every recall pays <span class="y">three round-trips</span> — before the LLM starts.</div>
+  <aside class="notes">The pattern everyone builds for agent memory: a vector database for semantic similarity, a metadata store for who/what filters, and a recency layer so stale facts do not dominate. Three systems to deploy, secure, and pay for — and every single recall fans out across all three before the model sees a token. Hiroshima note for later: Mori Motonari's three-arrows lesson is from this region — we are about to bundle these three into one.</aside>
+</section>
+
+<!-- 15 · AGENT MEMORY · ONE QUERY -->
+<section>
+  <div class="topbar"><span class="sec">MEMORY · <span class="k">記憶</span> <span class="rj">kioku</span></span><span class="pg">16 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:32px;">One query does all three</h2>
+    <div class="code" style="position:absolute; top:166px; left:70px; width:760px; font-size:22px; line-height:1.75;">
+<span class="kw">SELECT</span> text <span class="kw">FROM</span> memory<br>
+<span class="line l-tar"><span class="kw">WHERE</span> user_id = <span class="st">'u1'</span>&nbsp;&nbsp;<span class="cm">-- metadata</span></span>
+<span class="line l-db">&nbsp;&nbsp;<span class="kw">AND</span> ts &gt; <span class="fn">now</span>() - <span class="kw">INTERVAL</span> 30 <span class="kw">DAY</span>&nbsp;&nbsp;<span class="cm">-- recency</span></span>
+<span class="line l-lake"><span class="kw">ORDER BY</span> <span class="fn">cosineDistance</span>(emb, q_vec)&nbsp;&nbsp;<span class="cm">-- vector</span></span>
+<span class="kw">LIMIT</span> 3
+    </div>
+    <div class="card" style="position:absolute; top:420px; left:70px; width:600px;">
+      <h3 style="font-size:20px;">top-3, measured — 10.6 ms</h3>
+      <div class="m mono" style="font-size:18px; line-height:1.7;">prefers dark mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>0.001</b><br>okonomiyaki: hiroshima-style&nbsp;&nbsp;<b>0.896</b><br>python 3.13 user&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>1.103</b></div>
+    </div>
+    <div class="hanko" style="top:408px; left:638px;">実測</div>
+    <div style="position:absolute; top:190px; right:70px; width:340px;">
+      <div class="rows">
+        <div class="row"><span class="sq ok"></span><span><strong>One table</strong> — embeddings next to their rows</span></div>
+        <div class="row"><span class="sq ok"></span><span><strong>In-process</strong> — zero network hops</span></div>
+        <div class="row"><span class="sq ok"></span><span><strong>No servers</strong> — nothing to deploy or babysit</span></div>
+      </div>
+      <div class="sticker jp" style="margin-top:40px; transform:rotate(1.5deg); font-size:24px; line-height:1.4;">三本の矢 → 一本<br><span class="rj" style="font-size:14px;">sanbon-no-ya → ippon</span><br><span class="mono" style="font-size:14px;">three arrows, one query</span></div>
+    </div>
+  </div>
+  <div class="punchbar">One table, in-process. <span class="y">No servers.</span></div>
+  <aside class="notes">The same three jobs, one SQL statement — the WHERE line is the metadata store, the interval is the recency cache, the ORDER BY is the vector database. Runs in-process in 10.6 ms on the demo table, and the output is asserted in the repo script: the planted nearest memory comes back first at distance ~0, and an 80-day-old semantically-close decoy is correctly dropped by the recency filter. Local color: Mori Motonari, lord of this region, taught his sons that three arrows bundled together cannot be snapped — Sanfrecce Hiroshima is named after the story. Same idea, inverted: bundle the three databases into one arrow. From pandas land it is one chdb.query() away from your DataFrame — same file, same process.</aside>
+</section>
+
+<!-- 16 · TRENDS · THE GAP GROWS -->
+<section>
+  <div class="topbar"><span class="sec">TRENDS · <span class="k">傾向</span> <span class="rj">keikō</span></span><span class="pg">17 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:30px;">The gap grows — <span style="background:var(--yellow); padding:0 10px;">with size, and with depth</span></h2>
+    <style>
+      .tr-panel { position:absolute; top:160px; width:520px; }
+      .tr-title { font-family:"JetBrains Mono",monospace; font-size:19px; font-weight:900; }
+      .tr-bars { display:flex; align-items:flex-end; gap:26px; height:290px; margin-top:14px; border-bottom:5px solid var(--ink); padding:0 8px; }
+      .tr-bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+      .tr-bar i { display:block; width:100%; background:var(--yellow); border:3px solid var(--ink); border-bottom:none; }
+      .tr-bar.lose i { background:#e8a598; }
+      .tr-bar b { font-family:"JetBrains Mono",monospace; font-size:17px; font-weight:900; margin-bottom:4px; }
+      .tr-lab { font-family:"JetBrains Mono",monospace; font-size:14.5px; font-weight:700; text-align:center; margin-top:8px; line-height:1.25; color:#55554f; }
+      .tr-x { display:flex; gap:26px; padding:0 8px; }
+      .tr-x span { flex:1; }
+    </style>
+    <div class="tr-panel" style="left:70px;">
+      <div class="tr-title">DATA SIZE ↑ <span style="color:#6d6d66;">— same op</span></div>
+      <div class="tr-bars">
+        <div class="tr-bar lose"><b>×0.5</b><i style="height:6px;"></i></div>
+        <div class="tr-bar"><b>×1.4</b><i style="height:8px;"></i></div>
+        <div class="tr-bar"><b>×28</b><i style="height:140px;"></i></div>
+        <div class="tr-bar"><b>×52.7</b><i style="height:263px;"></i></div>
+      </div>
+      <div class="tr-x"><span class="tr-lab">100K rows</span><span class="tr-lab">1M</span><span class="tr-lab">10M</span><span class="tr-lab">100M<br>ClickBench*</span></div>
+    </div>
+    <div class="tr-panel" style="left:660px;">
+      <div class="tr-title">CHAIN DEPTH ↑ <span style="color:#6d6d66;">— 10M rows</span></div>
+      <div class="tr-bars">
+        <div class="tr-bar"><b>×3.3</b><i style="height:17px;"></i></div>
+        <div class="tr-bar"><b>×4.9</b><i style="height:25px;"></i></div>
+        <div class="tr-bar"><b>×12.9</b><i style="height:64px;"></i></div>
+        <div class="tr-bar"><b>×21.7</b><i style="height:108px;"></i></div>
+        <div class="tr-bar"><b>×35.2</b><i style="height:176px;"></i></div>
+      </div>
+      <div class="tr-x"><span class="tr-lab">1 op</span><span class="tr-lab">4 filters</span><span class="tr-lab">5 chained</span><span class="tr-lab">+select<br>+sort</span><span class="tr-lab">+multi-<br>sort</span></div>
+    </div>
+    <div class="hanko" style="top:150px; right:56px;">実測</div>
+    <p class="mono muted" style="position:absolute; top:556px; left:70px; font-size:15px;">same laptop, shared linear scale · *100M point: published ClickBench DataFrame total (100M rows / 43.77 GiB), benchmark.clickhouse.com</p>
+  </div>
+  <div class="punchbar">Below ~1M rows keep pandas. <span class="y">Beyond it, the gap only widens.</span></div>
+  <aside class="notes">Both panels, one linear scale. Left: the identical filter-and-sort pipeline as the file grows — at 100K rows pandas is actually faster, they cross around a million, ×28 at 10M, and the published 43.77 GiB ClickBench DataFrame total has the engine ×52.7 ahead overall. Right: fixed 10M rows, growing chain depth — one filter ×3.3, and every op you add compounds, up to ×35 — because the whole chain compiles into ONE plan instead of materializing after every step. Say the left edge honestly: small data is pandas country. Everything to the right of a million rows is ours, and it keeps going where pandas ends in a MemoryError.</aside>
+</section>
+
+<!-- 17 · TAKEAWAYS -->
+<section>
+  <div class="topbar"><span class="sec">CLOSE · <span class="k">まとめ</span> <span class="rj">matome</span></span><span class="pg">18 / 19</span></div>
+  <div class="frame">
+    <h2 style="margin-top:30px;">Three takeaways</h2>
+    <div style="display:grid; gap:22px; margin-top:30px;">
+      <div class="tk"><span class="no">01</span><p><strong>The pandas API is the asset.</strong> Fifteen years of muscle memory — keep it, swap the engine.</p></div>
+      <div class="tk"><span class="no">02</span><p><strong>The gap grows with your data.</strong> More rows, deeper chains — the advantage compounds where pandas ends.</p></div>
+      <div class="tk"><span class="no">03</span><p><strong>Your agent's memory is one query.</strong> Vector + metadata + recency — one table, in-process, no servers.</p></div>
+    </div>
+    <div class="card dark" style="margin-top:34px; font-size:27px; font-weight:900; line-height:1.5; padding:22px 28px;">
+      pandas is the language. <span style="color:var(--yellow);">chDB is the engine.</span> You never had to leave.
+    </div>
+  </div>
+  <aside class="notes">If they remember one sentence: you don't have to leave pandas to get columnar-engine performance. The API is the language; the engine is swappable; the migration is one import line plus honesty about the edges.</aside>
+</section>
+
+<!-- 18 · THANKS -->
+<section>
+  <div class="frame">
+    <span class="sticker jp" style="position:absolute; top:64px; left:70px; transform:rotate(-2deg); font-size:28px;">ありがとうございました！</span>
+    <div class="rj" style="position:absolute; top:82px; left:510px; font-size:17px;">← arigatō gozaimashita</div>
+    <h1 style="position:absolute; top:150px; left:70px; font-size:92px;">Thank you.</h1>
+    <div class="sticker white mono" style="position:absolute; top:296px; left:70px; font-size:30px; box-shadow:8px 8px 0 var(--orange);">pip install chdb</div>
+    <div style="position:absolute; top:412px; left:70px;" class="rows">
+      <div class="row"><span class="sq"></span><span class="mono" style="font-size:22px;">github.com/chdb-io/chdb</span></div>
+      <div class="row"><span class="sq"></span><span class="mono" style="font-size:22px;">clickhouse.com/docs/chdb</span></div>
+      <div class="row"><span class="sq"></span><span class="mono" style="font-size:22px;">auxten.com — slides &amp; verified demos</span></div>
+    </div>
+    <svg style="position:absolute; top:120px; right:90px;" width="240" height="230" viewBox="0 0 360 340">
+      <path d="M 30 96 Q 180 62 330 96 L 330 122 Q 180 90 30 122 Z" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+      <rect x="66" y="140" width="228" height="20" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+      <path d="M 96 140 L 88 330 L 118 330 L 122 140 Z" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+      <path d="M 264 140 L 272 330 L 242 330 L 238 140 Z" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+      <rect x="170" y="104" width="20" height="36" fill="#d7263d" stroke="#161616" stroke-width="6"/>
+    </svg>
+    <div class="sticker" style="position:absolute; bottom:130px; right:70px; transform:rotate(1.5deg); font-size:44px;">Q&amp;A</div>
+  </div>
+  <div class="foot"><span>Auxten Wang · <span class="y">ClickHouse</span> · Creator of chDB</span><span>@auxten</span></div>
+  <aside class="notes">Leave this up during Q&A. The demo scripts and every measured number in this deck are in the repo linked from auxten.com.</aside>
+</section>
+
+</div>
+</div>
+
+<script src="assets/reveal.js"></script>
+<script src="assets/notes.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: false,
+  transition: 'none',
+  controlsTutorial: false,
+  progress: true,
+  center: false,
+  width: 1280,
+  height: 720,
+  margin: 0,
+  plugins: [ RevealNotes ]
+});
+</script>
+</body>
+</html>

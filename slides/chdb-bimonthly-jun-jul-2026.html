@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>chDB Update — Jun–Jul 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --r-background-color: #111113;
+    --r-main-color: #e8e8e8;
+    --r-heading-color: #f5f5f5;
+    --r-link-color: #ff9d4d;
+    --c-ch-yellow: #fadb14;
+    --c-ch-orange: #ff8f3c;
+    --c-blue: #64b5f6;
+    --c-green: #81c784;
+    --c-muted: #9a9a9a;
+  }
+
+  .reveal { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; font-size: 34px; color: var(--r-main-color); }
+  .reveal h2 { font-size: 1.4em; font-weight: 800; letter-spacing: -0.02em; color: var(--c-ch-orange); margin-bottom: 0.6em; }
+  .reveal section { text-align: center; }
+  .reveal section ul { display: inline-block; text-align: left; margin-left: 0.5em; }
+  .reveal li { margin-bottom: 0.45em; font-size: 0.74em; line-height: 1.5; }
+  .reveal li strong { font-weight: 700; color: #ffffff; }
+  .reveal code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: rgba(255,255,255,0.10); padding: 0 0.2em; border-radius: 4px; }
+  .reveal .hl-green { color: var(--c-green); font-weight: 700; }
+  .reveal .hl-blue { color: var(--c-blue); font-weight: 700; }
+  .reveal .highlight { color: var(--c-ch-orange); font-weight: 700; }
+  .reveal .dim { color: var(--c-muted); font-size: 0.55em; letter-spacing: 0.01em; line-height: 1.4; margin-top: 0.8em; }
+  .reveal .dim a { color: var(--c-muted); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section>
+  <h2>chDB Update &mdash; Jun&ndash;Jul 2026</h2>
+  <ul>
+    <li>🏆 <strong>AWS Lambda MicroVMs</strong> &mdash; named launch partner, the <span class="highlight">only data infrastructure</span> product featured</li>
+    <li>🤖 <strong>Agent ecosystem</strong> &mdash; <code>chdb.durable</code>: <span class="highlight">the durable layer for serverless agents</span> (Lambda / Workers), state on user-owned object storage; sandbox contract v0.3; listed in official <a class="hl-blue" href="https://docs.langchain.com/oss/python/integrations/providers/all_providers">LangChain</a> &amp; <a class="hl-blue" href="https://pydantic.dev/docs/ai/capabilities/third-party/">Pydantic AI</a> docs</li>
+    <li>🌍 <strong>Runs everywhere</strong> &mdash; chDB-Wasm launched (<a href="https://wasm.chdb.io">wasm.chdb.io</a> &middot; Cloudflare Workers &middot; Iceberg); ADBC driver; Node.js SDK; <code>chdb://</code> in clickhouse-connect</li>
+    <li>⚡ <strong>Engine &amp; perf</strong> &mdash; ClickHouse 26.5 sync (v4.1.9 &rarr; v4.2.1); <span class="hl-green">first ClickBench win over Polars</span>; pandas strings 90% faster; streaming INSERT; zero-copy Arrow</li>
+    <li>🎤 <strong>Community</strong> &mdash; talks at PyCon SG / MY / VN, AgentCon Perth, PyData Yerevan; chDB-Wasm on Show HN</li>
+  </ul>
+  <p class="dim">
+    <a href="https://github.com/chdb-io/chdb">github.com/chdb-io/chdb</a> &middot;
+    <a href="https://x.com/chdb_io">@chdb_io</a> &middot;
+    <a href="https://wasm.chdb.io">wasm.chdb.io</a>
+  </p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: false,
+  transition: 'fade',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: false,
+  center: true,
+  width: 1280,
+  height: 720
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Style Lab — PyCon ID 2026 · 6 种风格试衣间</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #ececec; font-family: Inter, sans-serif; color: #1a1a1a; padding: 40px 0 100px; }
+  .page { max-width: 1220px; margin: 0 auto; }
+  .page > h1 { font-size: 30px; font-weight: 900; margin-bottom: 6px; }
+  .page > p.lead { color: #555; font-size: 15px; margin-bottom: 34px; }
+
+  .style-block { margin-bottom: 56px; }
+  .style-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; }
+  .style-head .no { font-size: 26px; font-weight: 900; color: #e65100; font-family: 'JetBrains Mono', monospace; }
+  .style-head h2 { font-size: 21px; font-weight: 900; }
+  .style-head p { color: #666; font-size: 13.5px; }
+
+  .pair { display: flex; gap: 20px; }
+  @media (max-width: 1230px) { .pair { flex-direction: column; } .page { max-width: 600px; } }
+  .stage { width: 576px; height: 324px; overflow: hidden; border-radius: 6px;
+           box-shadow: 0 10px 30px rgba(0,0,0,0.18); flex: 0 0 auto; background: #fff; }
+  .slide { width: 1280px; height: 720px; transform: scale(0.45); transform-origin: top left; position: relative; overflow: hidden; }
+
+  /* ============ S1 · NEO-BRUTALIST ============ */
+  .s1 .slide { background: #fdfdf6; font-family: Inter, sans-serif; }
+  .s1 .slide::before { content:""; position:absolute; inset:0;
+      background-image: radial-gradient(#00000012 1.5px, transparent 1.5px); background-size: 26px 26px; }
+  .s1 .sticker { position:absolute; display:inline-block; background:#fadb14; border:4px solid #161616;
+      box-shadow: 8px 8px 0 #161616; padding: 12px 26px; font-weight: 900; font-size: 26px; }
+  .s1 .t-kicker { top: 64px; left: 80px; transform: rotate(-2deg); }
+  .s1 .t-h1 { position:absolute; top: 160px; left: 80px; width: 1000px;
+      font-size: 118px; font-weight: 900; line-height: 0.98; letter-spacing: -3px; color:#161616; }
+  .s1 .t-h1 .box { background:#161616; color:#fadb14; padding: 0 18px; display:inline-block; }
+  .s1 .t-sub { position:absolute; top: 438px; left: 84px; font-family:'JetBrains Mono',monospace;
+      font-size: 30px; font-weight: 700; color:#161616; background:#fff; border:4px solid #161616;
+      box-shadow: 8px 8px 0 #e65100; padding: 12px 20px; }
+  .s1 .t-foot { position:absolute; left:0; right:0; bottom:0; background:#161616; color:#fff;
+      display:flex; justify-content:space-between; align-items:center; padding: 20px 80px;
+      font-size: 24px; font-weight: 800; }
+  .s1 .t-foot .y { color:#fadb14; }
+  .s1 .t-logo { position:absolute; right: 84px; top: 74px; width: 150px; height:150px; background:#fff;
+      border: 4px solid #161616; box-shadow: 8px 8px 0 #161616; display:flex; align-items:center; justify-content:center; transform: rotate(2deg); }
+  .s1 .t-logo img { width: 110px; }
+
+  .s1 .q-h2 { position:absolute; top: 46px; left: 80px; font-size: 60px; font-weight: 900; letter-spacing:-1.5px; }
+  .s1 .q-h2 mark { background: #fadb14; padding: 0 10px; }
+  .s1 .srcrow { position:absolute; top: 150px; left: 80px; right: 80px; display:flex; gap: 22px; }
+  .s1 .srcbox { flex:1; border: 4px solid #161616; background:#fff; padding: 14px 18px; font-weight: 900;
+      font-size: 22px; box-shadow: 6px 6px 0 #161616; }
+  .s1 .srcbox small { display:block; font-family:'JetBrains Mono',monospace; font-weight: 600; font-size: 16px; margin-top: 5px; color:#444; }
+  .s1 .srcbox.c1 { border-color:#1565c0; box-shadow: 6px 6px 0 #1565c0; color:#1565c0; }
+  .s1 .srcbox.c2 { border-color:#e65100; box-shadow: 6px 6px 0 #e65100; color:#e65100; }
+  .s1 .srcbox.c3 { border-color:#2e7d32; box-shadow: 6px 6px 0 #2e7d32; color:#2e7d32; }
+  .s1 .code { position:absolute; top: 300px; left: 80px; width: 680px; background:#161616; color:#f6f6f0;
+      border: 4px solid #161616; box-shadow: 10px 10px 0 #fadb14; padding: 22px 26px;
+      font-family: 'JetBrains Mono', monospace; font-size: 18.5px; line-height: 1.55; font-weight: 500; }
+  .s1 .code .kw { color:#fadb14; font-weight: 700; }
+  .s1 .code .l1 { border-left: 6px solid #2e7d32; padding-left: 10px; margin-left: -16px; }
+  .s1 .code .l2 { border-left: 6px solid #e65100; padding-left: 10px; margin-left: -16px; }
+  .s1 .code .l3 { border-left: 6px solid #1565c0; padding-left: 10px; margin-left: -16px; }
+  .s1 .punch { position:absolute; right: 80px; top: 330px; width: 300px; background:#fadb14;
+      border:4px solid #161616; box-shadow: 8px 8px 0 #161616; padding: 20px 22px;
+      font-size: 27px; font-weight: 900; line-height: 1.25; transform: rotate(1.5deg); }
+  .s1 .result { position:absolute; left: 80px; bottom: 44px; font-family:'JetBrains Mono',monospace;
+      font-size: 19px; font-weight:600; background:#fff; border: 3px solid #161616; padding: 10px 16px; }
+  .s1 .result b { color:#e65100; }
+
+  /* ============ S2 · TERMINAL ============ */
+  .s2 .slide { background: #0d1117; font-family: 'JetBrains Mono', monospace; color: #e6edf3; }
+  .s2 .slide::before { content:""; position:absolute; inset:0;
+      background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.012) 3px 4px); }
+  .s2 .chrome { position:absolute; top: 40px; left: 70px; right: 70px; bottom: 40px;
+      background: #161b22; border: 1px solid #30363d; border-radius: 14px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.55); }
+  .s2 .bar { display:flex; align-items:center; gap:8px; padding: 14px 18px; border-bottom: 1px solid #30363d;
+      color:#8b949e; font-size: 16px; }
+  .s2 .bar i { width:13px; height:13px; border-radius:50%; display:inline-block; }
+  .s2 .bar i:nth-child(1){background:#ff5f57}.s2 .bar i:nth-child(2){background:#febc2e}.s2 .bar i:nth-child(3){background:#28c840}
+  .s2 .bar span { margin-left: 12px; }
+  .s2 .term { padding: 30px 38px; font-size: 22px; line-height: 1.7; }
+  .s2 .p { color:#8b949e; }
+  .s2 .g { color:#3fb950; } .s2 .y { color:#d29922; } .s2 .b { color:#58a6ff; } .s2 .o { color:#f0883e; } .s2 .pk { color:#ff7b72; }
+  .s2 .t-big { font-size: 64px; font-weight: 700; color:#e6edf3; line-height: 1.1; margin: 18px 0 8px; letter-spacing: -1px;}
+  .s2 .t-big .g2 { color:#3fb950; }
+  .s2 .cursor { display:inline-block; width: 13px; height: 26px; background:#3fb950; vertical-align: -3px; }
+  .s2 .dim { color:#8b949e; }
+  .s2 .tbl { color:#8b949e; }
+  .s2 .tbl b { color:#e6edf3; font-weight: 600; }
+
+  /* ============ S3 · EDITORIAL ============ */
+  .s3 .slide { background: #faf9f6; color: #191919; }
+  .s3 .folio { position:absolute; top: 48px; left: 90px; right: 90px; display:flex; justify-content:space-between;
+      font-size: 17px; letter-spacing: 3.5px; text-transform: uppercase; color:#8a8a84; font-weight: 600; }
+  .s3 .rule { position:absolute; top: 86px; left: 90px; right: 90px; height: 1px; background: #d8d6cf; }
+  .s3 .t-h1 { position:absolute; top: 170px; left: 90px; width: 1080px; font-family: 'Fraunces', serif;
+      font-size: 130px; font-weight: 620; line-height: 1.0; letter-spacing: -2px; }
+  .s3 .t-h1 em { font-style: italic; color: #c25400; font-weight: 480; }
+  .s3 .t-sub { position:absolute; top: 470px; left: 90px; font-size: 27px; color:#43423e; font-weight: 500;
+      width: 760px; line-height: 1.5; }
+  .s3 .t-by { position:absolute; bottom: 60px; left: 90px; font-size: 18px; letter-spacing: 2.5px;
+      text-transform: uppercase; color:#8a8a84; font-weight: 600; }
+  .s3 .t-no { position:absolute; bottom: 46px; right: 90px; font-family:'Fraunces',serif; font-size: 60px; font-style: italic; color:#c25400; }
+
+  .s3 .q-h2 { position:absolute; top: 120px; left: 90px; font-family:'Fraunces',serif; font-size: 76px;
+      font-weight: 560; letter-spacing: -1px; }
+  .s3 .q-kick { position:absolute; top: 100px; left: 90px; font-size: 15px; letter-spacing: 3.5px;
+      text-transform: uppercase; color:#c25400; font-weight: 700; }
+  .s3 .srcline { position:absolute; top: 244px; left: 90px; right: 90px; display: flex; gap: 0; border-top: 1px solid #d8d6cf; border-bottom: 1px solid #d8d6cf; }
+  .s3 .srccell { flex: 1; padding: 18px 22px; border-right: 1px solid #d8d6cf; }
+  .s3 .srccell:last-child { border-right: 0; }
+  .s3 .srccell b { display:block; font-size: 15px; letter-spacing: 2.5px; text-transform: uppercase; color:#8a8a84; margin-bottom: 6px; font-weight: 700;}
+  .s3 .srccell span { font-family:'JetBrains Mono',monospace; font-size: 17px; color:#191919; }
+  .s3 .srccell .num { font-family:'Fraunces',serif; font-style: italic; font-size: 26px; color:#c25400; margin-right: 8px; }
+  .s3 .code { position:absolute; top: 380px; left: 90px; width: 740px;
+      font-family:'JetBrains Mono',monospace; font-size: 21px; line-height: 1.75; color:#191919; }
+  .s3 .code .kw { color:#c25400; font-weight: 700; }
+  .s3 .code .cm { color:#a3a29b; }
+  .s3 .punch { position:absolute; top: 420px; right: 90px; width: 320px; font-family:'Fraunces',serif;
+      font-style: italic; font-size: 36px; line-height: 1.3; color:#191919; }
+  .s3 .punch::before { content:""; display:block; width: 60px; height: 3px; background:#c25400; margin-bottom: 18px; }
+
+  /* ============ S4 · BLUEPRINT ============ */
+  .s4 .slide { background: #0c2f52; color: #dbeafe; font-family: Inter, sans-serif; }
+  .s4 .slide::before { content:""; position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(147,197,253,0.10) 1px, transparent 1px),
+                  linear-gradient(rgba(147,197,253,0.10) 1px, transparent 1px);
+      background-size: 40px 40px; }
+  .s4 .slide::after { content:""; position:absolute; inset: 26px; border: 1.5px solid rgba(147,197,253,0.45); pointer-events:none; }
+  .s4 .corner { position:absolute; font-family:'JetBrains Mono',monospace; font-size: 15px; color:#7dd3fc; letter-spacing: 1.5px; }
+  .s4 .tl { top: 44px; left: 50px; } .s4 .tr { top: 44px; right: 50px; } .s4 .bl { bottom: 40px; left: 50px; } .s4 .br { bottom: 40px; right: 50px; }
+  .s4 .t-h1 { position:absolute; top: 200px; left: 90px; width: 1050px; font-size: 100px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 2px; line-height: 1.04; color:#f0f9ff; }
+  .s4 .t-h1 .cy { color:#7dd3fc; }
+  .s4 .t-sub { position:absolute; top: 470px; left: 94px; font-family:'JetBrains Mono',monospace; font-size: 24px; color:#93c5fd; }
+  .s4 .t-fig { position:absolute; top: 120px; left: 94px; font-family:'JetBrains Mono',monospace; font-size: 17px;
+      color:#7dd3fc; border: 1px dashed #7dd3fc; display:inline-block; padding: 6px 14px; letter-spacing: 2px; }
+  .s4 .t-by { position:absolute; bottom: 76px; left: 94px; font-size: 19px; color:#93c5fd; }
+
+  .s4 .q-h2 { position:absolute; top: 70px; left: 94px; font-size: 52px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1.5px; color:#f0f9ff; }
+  .s4 .schema { position:absolute; top: 170px; left: 94px; right: 94px; display:flex; gap: 40px; }
+  .s4 .node { flex:1; border: 1.5px solid #7dd3fc; padding: 14px 16px; position: relative; background: rgba(12,47,82,0.85); }
+  .s4 .node::before { content:""; position:absolute; left:-5px; top:-5px; width:8px; height:8px; background:#7dd3fc; border-radius:50%; }
+  .s4 .node b { display:block; font-family:'JetBrains Mono',monospace; font-size: 16px; letter-spacing: 2px; color:#7dd3fc; margin-bottom: 5px; }
+  .s4 .node span { font-family:'JetBrains Mono',monospace; font-size: 16px; color:#dbeafe; }
+  .s4 .lines { position:absolute; top: 268px; left: 94px; right: 94px; height: 60px; }
+  .s4 .code { position:absolute; top: 330px; left: 94px; width: 680px; border: 1.5px solid rgba(147,197,253,0.55);
+      background: rgba(3,20,38,0.75); padding: 20px 26px; font-family:'JetBrains Mono',monospace;
+      font-size: 18.5px; line-height: 1.6; color:#e0f2fe; }
+  .s4 .code .kw { color:#7dd3fc; font-weight: 700; }
+  .s4 .punch { position:absolute; right: 94px; top: 380px; width: 300px; font-family:'JetBrains Mono',monospace;
+      font-size: 22px; line-height: 1.55; color:#7dd3fc; border-left: 2px dashed #7dd3fc; padding-left: 20px; }
+  .s4 .dim-note { position:absolute; bottom: 60px; left: 94px; font-family:'JetBrains Mono',monospace; font-size: 16px; color:#60a5fa; }
+
+  /* ============ S5 · SKETCHNOTE ============ */
+  .s5 .slide { background: #fbf5e9; color: #2b2b2b; }
+  .s5 .slide::before { content:""; position:absolute; inset:0;
+      background-image: radial-gradient(#00000009 1.2px, transparent 1.2px); background-size: 22px 22px; }
+  .s5 .t-h1 { position:absolute; top: 180px; left: 90px; width: 1000px; font-size: 108px; font-weight: 900;
+      letter-spacing: -2.5px; line-height: 1.0; }
+  .s5 .hl { background: linear-gradient(180deg, transparent 55%, #ffe14d 55% 92%, transparent 92%); padding: 0 6px; }
+  .s5 .t-sub { position:absolute; top: 440px; left: 92px; font-family: 'Caveat', cursive; font-size: 46px;
+      color: #c25400; transform: rotate(-1.2deg); }
+  .s5 .t-card { position:absolute; right: 90px; top: 90px; width: 190px; background: #fff;
+      border: 3px solid #2b2b2b; border-radius: 235px 18px 225px 14px / 16px 220px 14px 250px;
+      padding: 20px; transform: rotate(2.4deg); box-shadow: 4px 6px 0 rgba(43,43,43,0.16); text-align:center; }
+  .s5 .t-card img { width: 120px; }
+  .s5 .tape { position:absolute; top:-14px; left: 50%; transform: translateX(-50%) rotate(-4deg); width: 110px; height: 30px;
+      background: rgba(255,225,77,0.75); border-left: 2px dashed rgba(0,0,0,0.08); border-right: 2px dashed rgba(0,0,0,0.08); }
+  .s5 .t-kick { position:absolute; top: 100px; left: 92px; font-family:'Caveat',cursive; font-size: 38px; color:#2b2b2b; transform: rotate(-1deg); }
+  .s5 .t-by { position:absolute; bottom: 66px; left: 92px; font-size: 22px; font-weight: 700; color:#6b6455; }
+
+  .s5 .q-h2 { position:absolute; top: 66px; left: 90px; font-size: 62px; font-weight: 900; letter-spacing: -1px; }
+  .s5 .srcrow { position:absolute; top: 170px; left: 90px; right: 90px; display:flex; gap: 26px; }
+  .s5 .srcbox { flex: 1; background: #fff; border: 3px solid #2b2b2b; padding: 14px 18px;
+      border-radius: 225px 16px 235px 14px / 14px 230px 12px 245px; font-weight: 800; font-size: 22px; }
+  .s5 .srcbox small { display:block; font-family:'JetBrains Mono',monospace; font-weight: 500; font-size: 15.5px; margin-top: 5px; color:#6b6455; }
+  .s5 .srcbox u { text-decoration: none; }
+  .s5 .srcbox.c1 u { background: linear-gradient(180deg, transparent 60%, #bcd8ff 60% 95%, transparent 95%); }
+  .s5 .srcbox.c2 u { background: linear-gradient(180deg, transparent 60%, #ffcf9e 60% 95%, transparent 95%); }
+  .s5 .srcbox.c3 u { background: linear-gradient(180deg, transparent 60%, #bfe8bf 60% 95%, transparent 95%); }
+  .s5 .code { position:absolute; top: 316px; left: 90px; width: 690px; background:#fff; border: 3px solid #2b2b2b;
+      border-radius: 14px 240px 16px 235px / 245px 14px 240px 12px;
+      padding: 22px 28px; font-family:'JetBrains Mono',monospace; font-size: 18.5px; line-height: 1.6; transform: rotate(-0.5deg);
+      box-shadow: 5px 7px 0 rgba(43,43,43,0.14); }
+  .s5 .code .kw { font-weight: 700; color: #c25400; }
+  .s5 .punch { position:absolute; right: 84px; top: 350px; width: 310px; font-family:'Caveat',cursive;
+      font-size: 46px; line-height: 1.15; color:#2b2b2b; transform: rotate(1.6deg); }
+  .s5 .punch b { color:#c25400; }
+  .s5 .arrow-svg { position:absolute; right: 300px; top: 300px; }
+
+  /* ============ S6 · LAUNCH KEYNOTE ============ */
+  .s6 .slide { background: #09090b; color: #fafafa; }
+  .s6 .slide::before { content:""; position:absolute; inset:0;
+      background: radial-gradient(900px 500px at 50% -10%, rgba(230,81,0,0.22), transparent 65%),
+                  radial-gradient(700px 400px at 85% 110%, rgba(250,219,20,0.10), transparent 60%); }
+  .s6 .t-badge { position:absolute; top: 120px; left: 50%; transform: translateX(-50%);
+      font-size: 17px; letter-spacing: 3px; text-transform: uppercase; color:#d4d4d8;
+      border: 1px solid rgba(255,255,255,0.18); border-radius: 999px; padding: 9px 24px;
+      background: rgba(255,255,255,0.04); }
+  .s6 .t-h1 { position:absolute; top: 210px; left: 0; right: 0; text-align:center;
+      font-size: 108px; font-weight: 800; letter-spacing: -3.5px; line-height: 1.02; }
+  .s6 .grad { background: linear-gradient(92deg, #fadb14 5%, #f0883e 45%, #e65100 90%);
+      -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .s6 .t-sub { position:absolute; top: 452px; left:0; right:0; text-align:center; font-size: 28px; color:#a1a1aa; font-weight: 500; }
+  .s6 .t-by { position:absolute; bottom: 78px; left:0; right:0; text-align:center; font-size: 19px; color:#71717a; }
+  .s6 .hairline { position:absolute; bottom: 130px; left: 34%; right: 34%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); }
+
+  .s6 .q-h2 { position:absolute; top: 84px; left:0; right:0; text-align:center; font-size: 56px; font-weight: 800; letter-spacing: -1.5px; }
+  .s6 .srcrow { position:absolute; top: 190px; left: 120px; right: 120px; display:flex; gap: 20px; }
+  .s6 .srcbox { flex:1; background: rgba(255,255,255,0.045); border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 14px; padding: 16px 20px; font-weight: 700; font-size: 21px; backdrop-filter: blur(6px); }
+  .s6 .srcbox small { display:block; font-family:'JetBrains Mono',monospace; font-weight: 500; font-size: 15px; margin-top: 6px; color:#a1a1aa; }
+  .s6 .srcbox.c1 { border-top: 2.5px solid #60a5fa; } .s6 .srcbox.c1 b { color:#93c5fd; }
+  .s6 .srcbox.c2 { border-top: 2.5px solid #f0883e; } .s6 .srcbox.c2 b { color:#fdba74; }
+  .s6 .srcbox.c3 { border-top: 2.5px solid #4ade80; } .s6 .srcbox.c3 b { color:#86efac; }
+  .s6 .code { position:absolute; top: 330px; left: 120px; width: 660px; background: rgba(20,20,23,0.92);
+      border: 1px solid rgba(255,255,255,0.13); border-radius: 16px; padding: 24px 28px;
+      font-family:'JetBrains Mono',monospace; font-size: 18px; line-height: 1.6; color:#e4e4e7;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+  .s6 .code .kw { color:#f0883e; font-weight: 600; }
+  .s6 .code .dots { display:flex; gap:7px; margin-bottom: 14px; }
+  .s6 .code .dots i { width: 11px; height: 11px; border-radius: 50%; background: #3f3f46; display:inline-block; }
+  .s6 .punch { position:absolute; right: 120px; top: 380px; width: 290px; font-size: 30px; font-weight: 700;
+      line-height: 1.35; letter-spacing: -0.5px; }
+  .s6 .punch .grad { font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>PyCon ID 2026 · 风格试衣间</h1>
+  <p class="lead">同样两页内容（Title 页 + "一条查询"核心页）× 6 套设计系统。挑一个，或者混搭（"这个的底 + 那个的字"）。</p>
+
+  <!-- ================= S1 ================= -->
+  <div class="style-block s1">
+    <div class="style-head"><span class="no">01</span><h2>Neo-Brutalist</h2><p>auxten.com 本站同款血统：粗黑边、硬阴影、黄黑撞色。个人品牌一致性最强，会场辨识度高。</p></div>
+    <div class="pair">
+      <div class="stage"><div class="slide">
+        <span class="sticker t-kicker">PyCon Indonesia 2026</span>
+        <div class="t-logo"><img src="/slides/logos/chdb-light.png" alt="chDB"></div>
+        <div class="t-h1">Federated<br>by <span class="box">Default</span></div>
+        <div class="t-sub">Building Agent Data Pipelines Without ETL</div>
+        <div class="t-foot"><span>Auxten Wang · <span class="y">ClickHouse</span> · Creator of chDB</span><span>@auxten</span></div>
+      </div></div>
+      <div class="stage"><div class="slide">
+        <div class="q-h2">The whole talk in <mark>one query</mark></div>
+        <div class="srcrow">
+          <div class="srcbox c1">CLOUD<small>url('…/orders.parquet')</small></div>
+          <div class="srcbox c2">ARCHIVE<small>crm_exports.tar :: *.csv</small></div>
+          <div class="srcbox c3">PROCESS RAM<small>Python(tickets)</small></div>
+        </div>
+        <div class="code">
+<span class="kw">SELECT</span> name, tier, subject, sum(amount) <span class="kw">AS</span> spend<br>
+<span class="l1"><span class="kw">FROM</span> Python(tickets)</span><br>
+<span class="l2"><span class="kw">JOIN</span> file('crm_exports.tar :: users_*.csv') …</span><br>
+<span class="l3"><span class="kw">JOIN</span> url('https://auxten.com/…/orders.parquet') …</span><br>
+<span class="kw">GROUP BY</span> name, tier, subject <span class="kw">ORDER BY</span> spend <span class="kw">DESC</span>
+        </div>
+        <div class="punch">No warehouse. No load step. The pipeline is the query.</div>
+        <div class="result">→ <b>user_58</b> · pro · api limits · <b>3,716</b></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ================= S2 ================= -->
+  <div class="style-block s2">
+    <div class="style-head"><span class="no">02</span><h2>Terminal</h2><p>整场就是一个终端窗口。PyCon 观众亲切感拉满，代码即页面，无需"排版"。</p></div>
+    <div class="pair">
+      <div class="stage"><div class="slide">
+        <div class="chrome">
+          <div class="bar"><i></i><i></i><i></i><span>auxten@pycon-id — chdb — 96×28</span></div>
+          <div class="term">
+            <div><span class="g">$</span> <span class="dim">pip install chdb</span>  <span class="g">✓</span></div>
+            <div><span class="g">$</span> python talk.py --title</div>
+            <div class="t-big">Federated by <span class="g2">Default</span></div>
+            <div class="dim"># Building Agent Data Pipelines Without ETL</div>
+            <br>
+            <div><span class="b">speaker</span>  = <span class="y">"Auxten Wang"</span>   <span class="dim"># Technical Director @ ClickHouse</span></div>
+            <div><span class="b">created</span>  = <span class="y">"chDB"</span>          <span class="dim"># acquired by ClickHouse, 2024</span></div>
+            <div><span class="b">runtime</span>  = <span class="y">"15 min"</span>        <span class="dim"># PyCon Indonesia 2026</span></div>
+            <br>
+            <div><span class="g">$</span> <span class="cursor"></span></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="stage"><div class="slide">
+        <div class="chrome">
+          <div class="bar"><i></i><i></i><i></i><span>the whole talk in one query</span></div>
+          <div class="term" style="font-size:21px;">
+            <div><span class="g">chdb></span> <span class="pk">SELECT</span> name, tier, subject, sum(amount) <span class="pk">AS</span> spend</div>
+            <div>&nbsp;&nbsp;<span class="pk">FROM</span> <span class="g">Python(tickets)</span>                       <span class="dim">-- RAM</span></div>
+            <div>&nbsp;&nbsp;<span class="pk">JOIN</span> <span class="o">file('crm_exports.tar :: users_*.csv')</span> <span class="dim">-- archive</span></div>
+            <div>&nbsp;&nbsp;<span class="pk">JOIN</span> <span class="b">url('https://auxten.com/…/orders.parquet')</span> <span class="dim">-- cloud</span></div>
+            <div>&nbsp;&nbsp;<span class="pk">GROUP BY</span> name, tier, subject <span class="pk">ORDER BY</span> spend <span class="pk">DESC</span>;</div>
+            <br>
+            <div class="tbl">┌─name────┬─tier───┬─subject────┬──spend─┐</div>
+            <div class="tbl">│ <b>user_58</b> │ pro    │ api limits │ <b>3,716</b>  │</div>
+            <div class="tbl">│ user_72 │ free   │ refund     │ 3,705  │</div>
+            <div class="tbl">└─────────┴────────┴────────────┴────────┘</div>
+            <br>
+            <div><span class="g">--</span> no warehouse. no load step. <span class="g2" style="color:#3fb950;font-weight:700;">the pipeline is the query.</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ================= S3 ================= -->
+  <div class="style-block s3">
+    <div class="style-head"><span class="no">03</span><h2>Editorial</h2><p>杂志专题排版：大号衬线标题、极多留白、细规则线、单一橘色点缀。最"高级感"，克制而不简陋。</p></div>
+    <div class="pair">
+      <div class="stage"><div class="slide">
+        <div class="folio"><span>PyCon Indonesia · 2026</span><span>15 minutes</span></div>
+        <div class="rule"></div>
+        <div class="t-h1">Federated<br>by <em>default.</em></div>
+        <div class="t-sub">Building agent data pipelines without ETL — one SQL surface over cloud files, archives, databases, and DataFrames.</div>
+        <div class="t-by">Auxten Wang — ClickHouse · Creator of chDB</div>
+        <div class="t-no">№ 01</div>
+      </div></div>
+      <div class="stage"><div class="slide">
+        <div class="q-kick">Thesis</div>
+        <div class="q-h2">The whole talk, in one query</div>
+        <div class="srcline">
+          <div class="srccell"><b>Cloud</b><span><span class="num">1</span>url('…orders.parquet')</span></div>
+          <div class="srccell"><b>Archive</b><span><span class="num">2</span>crm_exports.tar :: *.csv</span></div>
+          <div class="srccell"><b>Memory</b><span><span class="num">3</span>Python(tickets)</span></div>
+        </div>
+        <div class="code">
+<span class="kw">SELECT</span> name, tier, subject, sum(amount) <span class="kw">AS</span> spend<br>
+<span class="kw">FROM</span> Python(tickets) <span class="cm">— ³</span><br>
+<span class="kw">JOIN</span> file('crm_exports.tar :: users_*.csv') <span class="cm">— ²</span><br>
+<span class="kw">JOIN</span> url('https://auxten.com/…/orders.parquet') <span class="cm">— ¹</span><br>
+<span class="kw">GROUP BY</span> name, tier, subject <span class="kw">ORDER BY</span> spend <span class="kw">DESC</span>
+        </div>
+        <div class="punch">No warehouse. No load step. The pipeline <em>is</em> the query.</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ================= S4 ================= -->
+  <div class="style-block s4">
+    <div class="style-head"><span class="no">04</span><h2>Blueprint</h2><p>工程蓝图：深蓝底、白色线稿、虚线标注、FIG 编号。契合 "pipeline/架构" 主题，理工气质。</p></div>
+    <div class="pair">
+      <div class="stage"><div class="slide">
+        <div class="corner tl">DWG · PYCON-ID-2026</div>
+        <div class="corner tr">SHEET 01 / 14</div>
+        <div class="corner bl">AUXTEN WANG · CLICKHOUSE</div>
+        <div class="corner br">SCALE — ASK-TIME</div>
+        <div class="t-fig">FIG. 0 — PROPOSAL</div>
+        <div class="t-h1">Federated<br>by <span class="cy">Default</span></div>
+        <div class="t-sub">// building agent data pipelines without ETL</div>
+      </div></div>
+      <div class="stage"><div class="slide">
+        <div class="corner tl">DWG · PYCON-ID-2026</div>
+        <div class="corner tr">SHEET 09 / 14</div>
+        <div class="q-h2">One Query · Three Worlds</div>
+        <div class="schema">
+          <div class="node"><b>SRC-A · CLOUD</b><span>url('…orders.parquet')</span></div>
+          <div class="node"><b>SRC-B · ARCHIVE</b><span>crm_exports.tar::*.csv</span></div>
+          <div class="node"><b>SRC-C · RAM</b><span>Python(tickets)</span></div>
+        </div>
+        <svg class="lines" width="1092" height="60" viewBox="0 0 1092 60">
+          <path d="M 180 0 L 180 30 L 460 30 L 460 58" stroke="#7dd3fc" stroke-width="1.5" fill="none" stroke-dasharray="6 5"/>
+          <path d="M 546 0 L 546 58" stroke="#7dd3fc" stroke-width="1.5" fill="none" stroke-dasharray="6 5"/>
+          <path d="M 912 0 L 912 30 L 630 30 L 630 58" stroke="#7dd3fc" stroke-width="1.5" fill="none" stroke-dasharray="6 5"/>
+        </svg>
+        <div class="code">
+<span class="kw">SELECT</span> name, tier, subject, sum(amount) <span class="kw">AS</span> spend<br>
+<span class="kw">FROM</span> Python(tickets)<br>
+<span class="kw">JOIN</span> file('crm_exports.tar :: users_*.csv') …<br>
+<span class="kw">JOIN</span> url('https://auxten.com/…/orders.parquet') …<br>
+<span class="kw">GROUP BY</span> name, tier, subject <span class="kw">ORDER BY</span> spend <span class="kw">DESC</span>
+        </div>
+        <div class="punch">NOTE:<br>no warehouse.<br>no load step.<br>the pipeline is the query.</div>
+        <div class="dim-note">MEASURED OUTPUT → user_58 · pro · api limits · 3,716</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ================= S5 ================= -->
+  <div class="style-block s5">
+    <div class="style-head"><span class="no">05</span><h2>Sketchnote</h2><p>暖纸底 + 手绘边框 + 马克笔高亮 + 胶带贴纸。亲和、有温度，和 rocket-bike 插画天然搭。</p></div>
+    <div class="pair">
+      <div class="stage"><div class="slide">
+        <div class="t-kick">PyCon Indonesia 2026 ✳</div>
+        <div class="t-h1">Federated<br>by <span class="hl">Default</span></div>
+        <div class="t-sub">agent data pipelines, without the ETL part →</div>
+        <div class="t-card"><div class="tape"></div><img src="/slides/logos/chdb-light.png" alt="chDB"><div style="font-family:'Caveat',cursive;font-size:30px;margin-top:8px;">chDB!</div></div>
+        <div class="t-by">Auxten Wang · ClickHouse · creator of chDB</div>
+      </div></div>
+      <div class="stage"><div class="slide">
+        <div class="q-h2">The whole talk in <span class="hl">one query</span></div>
+        <div class="srcrow">
+          <div class="srcbox c1"><u>cloud</u><small>url('…orders.parquet')</small></div>
+          <div class="srcbox c2"><u>archive</u><small>crm_exports.tar :: *.csv</small></div>
+          <div class="srcbox c3"><u>RAM</u><small>Python(tickets)</small></div>
+        </div>
+        <div class="code">
+<span class="kw">SELECT</span> name, tier, subject, sum(amount) <span class="kw">AS</span> spend<br>
+<span class="kw">FROM</span> Python(tickets)<br>
+<span class="kw">JOIN</span> file('crm_exports.tar :: users_*.csv') …<br>
+<span class="kw">JOIN</span> url('https://auxten.com/…/orders.parquet') …<br>
+<span class="kw">GROUP BY</span> name, tier, subject <span class="kw">ORDER BY</span> spend <span class="kw">DESC</span>
+        </div>
+        <svg class="arrow-svg" width="90" height="70" viewBox="0 0 90 70"><path d="M82 8 C 60 30, 40 20, 12 52" stroke="#2b2b2b" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M24 44 L 12 52 L 26 58" stroke="#2b2b2b" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="punch">no warehouse!<br>no load step!<br><b>the pipeline IS the query</b></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ================= S6 ================= -->
+  <div class="style-block s6">
+    <div class="style-head"><span class="no">06</span><h2>Launch Keynote</h2><p>发布会风：近黑底 + 顶部光晕 + 玻璃卡片 + 渐变强调字。最"新品发布"的气场，居中构图。</p></div>
+    <div class="pair">
+      <div class="stage"><div class="slide">
+        <div class="t-badge">PyCon Indonesia 2026</div>
+        <div class="t-h1">Federated<br>by <span class="grad">Default</span></div>
+        <div class="t-sub">Building Agent Data Pipelines Without ETL</div>
+        <div class="hairline"></div>
+        <div class="t-by">Auxten Wang · Technical Director @ ClickHouse · Creator of chDB</div>
+      </div></div>
+      <div class="stage"><div class="slide">
+        <div class="q-h2">The whole talk in <span class="grad">one query</span></div>
+        <div class="srcrow">
+          <div class="srcbox c1"><b>Cloud</b><small>url('…orders.parquet')</small></div>
+          <div class="srcbox c2"><b>Archive</b><small>crm_exports.tar :: *.csv</small></div>
+          <div class="srcbox c3"><b>Memory</b><small>Python(tickets)</small></div>
+        </div>
+        <div class="code">
+          <div class="dots"><i></i><i></i><i></i></div>
+<span class="kw">SELECT</span> name, tier, subject, sum(amount) <span class="kw">AS</span> spend<br>
+<span class="kw">FROM</span> Python(tickets)<br>
+<span class="kw">JOIN</span> file('crm_exports.tar :: users_*.csv') …<br>
+<span class="kw">JOIN</span> url('https://auxten.com/…/orders.parquet') …<br>
+<span class="kw">GROUP BY</span> name, tier, subject <span class="kw">ORDER BY</span> spend <span class="kw">DESC</span>
+        </div>
+        <div class="punch">No warehouse.<br>No load step.<br><span class="grad">The pipeline is the query.</span></div>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+<script>
+  // ?only=s3 → show just that style block (used for per-style screenshots)
+  const only = new URLSearchParams(location.search).get('only');
+  if (only) {
+    document.querySelectorAll('.style-block').forEach(b => {
+      if (!b.classList.contains(only)) b.style.display = 'none';
+    });
+    document.querySelector('.page > h1').style.display = 'none';
+    document.querySelector('.page > p.lead').style.display = 'none';
+    document.body.style.padding = '16px 0 16px';
+  }
+</script>
+</body>
+</html>
