@@ -1520,8 +1520,9 @@ def slow(x): return sum(range(x % 500))
 chdb.query("SELECT sum(slow(number)) FROM numbers_mt(2e6) "
            "SETTINGS max_threads=8")</code></pre>
     </div>
+    <div class="cap">No install at all? The same engine runs in your browser at <span class="mono ink">wasm.chdb.io</span> — SQL only, no Python, single-threaded. Good for a first look, not for the threading test.</div>
   </div>
-  <aside class="notes">This is the slide to photograph. Install: uv fetches the free-threaded build if you ask for 3.14t. The python.org installer has a checkbox. Check: import your whole stack, then print the flag. False means the GIL is off. If you see the RuntimeWarning from two slides ago instead, one package turned the GIL back on for the whole process, and the message names it. PYTHON_GIL=0 forces it off but hides the warning: check first, force second. The tracker at py-free-threading.github.io/tracking lists which packages are ready. Try: pip install chdb, import INT64 from chdb.sqltypes, call a small Python function from SQL with eight engine threads, and time it on both builds.</aside>
+  <aside class="notes">This is the slide to photograph. If you do not want to install anything, wasm dot chdb dot io runs the same ClickHouse engine compiled to WebAssembly in the browser: SQL only, no Python, one thread, so it is for a first look, not for step three. Install: uv fetches the free-threaded build if you ask for 3.14t. The python.org installer has a checkbox. Check: import your whole stack, then print the flag. False means the GIL is off. If you see the RuntimeWarning from two slides ago instead, one package turned the GIL back on for the whole process, and the message names it. PYTHON_GIL=0 forces it off but hides the warning: check first, force second. The tracker at py-free-threading.github.io/tracking lists which packages are ready. Try: pip install chdb, import INT64 from chdb.sqltypes, call a small Python function from SQL with eight engine threads, and time it on both builds.</aside>
 </section>
 
 <!-- 31 · CLOSE -->
