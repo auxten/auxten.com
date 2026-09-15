@@ -80,6 +80,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 
 ## Conference Talks
 
+- **The AI-Native Workplace Summit 2026** (16 September 2026): From Vibe Coding to Verifiable Agents: Memory, Traces, and Feedback Loops (Slides: https://auxten.com/slides/verifiable-agents-ai-native-workplace-2026.html)
 - **PyData Amsterdam 2026** (11 September 2026): No GIL, Real Gains: Porting a C++ Python Extension to Free-Threaded Python 3.14 (Slides: https://auxten.com/slides/chdb-nogil-pydata-amsterdam-2026.html)
 - **PyCon JP 2026** (22 August 2026, Hiroshima): Rediscovering DataFrames: 100× Analytics Without Leaving Pandas (Slides: https://auxten.com/slides/chdb-rediscovering-dataframes-pycon-jp-2026.html)
 - **PyCon ID 2026**: Federated by Default: Building Agent Data Pipelines Without ETL (Slides: https://auxten.com/slides/chdb-federated-agent-pipelines-pycon-id-2026.html)

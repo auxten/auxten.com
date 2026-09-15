@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Vibe Coding to Verifiable Agents — The AI-Native Workplace Summit 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#fbfbf8; --ink:#151515; --muted:#515862; --faint:#eef1f4; --line:#dfe4ea;
+    --orange:#e65100; --blue:#0969da; --azure:#0078d4; --green:#267a3e; --red:#c62828;
+    --yellow:#fadb14; --dark:#20242a; --purple:#7257c5;
+  }
+  html,body,.reveal,.reveal .slides,.reveal .slides section { background:var(--paper); }
+  .reveal { color:var(--ink); font-family:"Inter",system-ui,sans-serif; font-size:30px; }
+  .reveal .slides section {
+    box-sizing:border-box; height:720px; padding:0; text-align:left; overflow:hidden;
+  }
+  .reveal .slides section::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.25;
+    background:linear-gradient(90deg,rgba(21,21,21,.04) 1px,transparent 1px),
+               linear-gradient(rgba(21,21,21,.04) 1px,transparent 1px);
+    background-size:44px 44px;
+  }
+  .frame { position:absolute; inset:0; box-sizing:border-box; padding:82px 58px 50px; z-index:1; }
+  .topbar {
+    position:absolute; z-index:3; top:30px; left:58px; right:58px; display:flex;
+    justify-content:space-between; align-items:center; color:var(--muted); font-size:17px;
+    font-weight:800; letter-spacing:.02em;
+  }
+  .topbar .right { display:flex; align-items:center; gap:12px; }
+  .meter { width:150px; height:6px; border-radius:9px; overflow:hidden; background:#e5e8ec; }
+  .meter span { display:block; height:100%; background:var(--orange); }
+  h1,h2,h3,p { margin:0; }
+  h1 { font-size:66px; line-height:1.01; letter-spacing:-1.7px; font-weight:900; }
+  h2 { font-size:49px; line-height:1.06; letter-spacing:-1.2px; font-weight:900; }
+  h3 { font-size:25px; line-height:1.15; font-weight:900; }
+  p { color:var(--muted); font-size:25px; line-height:1.35; font-weight:650; }
+  strong { color:var(--ink); font-weight:900; }
+  .orange{color:var(--orange)} .blue{color:var(--blue)} .azure{color:var(--azure)}
+  .green{color:var(--green)} .red{color:var(--red)} .purple{color:var(--purple)}
+  .muted{color:var(--muted)} .mono{font-family:"JetBrains Mono",monospace}
+  .eyebrow { color:var(--orange); font-size:18px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; margin-bottom:16px; }
+  .deck-sub { margin-top:20px; font-size:28px; max-width:900px; }
+  .source { position:absolute; left:58px; bottom:25px; color:#808791; font-size:13px; font-weight:650; }
+  .center { display:flex; height:100%; align-items:center; justify-content:center; text-align:center; flex-direction:column; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:center; height:100%; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .card {
+    box-sizing:border-box; padding:22px; border:2px solid var(--line); border-radius:12px;
+    background:#fff; box-shadow:0 13px 34px rgba(20,20,20,.075);
+  }
+  .card h3 { margin-bottom:10px; }
+  .card p { font-size:20px; line-height:1.32; }
+  .card.blue{background:#edf6ff;border-color:#85bff0;color:var(--blue)}
+  .card.orange{background:#fff5ec;border-color:#f1ad76;color:var(--orange)}
+  .card.green{background:#eff9f1;border-color:#92d1a0;color:var(--green)}
+  .card.red{background:#fff1f1;border-color:#e9a0a0;color:var(--red)}
+  .card.purple{background:#f4f0ff;border-color:#b9a8e9;color:var(--purple)}
+  .card.dark{background:var(--dark);border-color:var(--dark);color:#fff}
+  .card.dark h3,.card.dark strong{color:#fff}.card.dark p{color:#cbd0d7}
+  .big-number { font-size:95px; line-height:.95; font-weight:900; letter-spacing:-5px; }
+  .metrics { display:flex; gap:16px; margin-top:24px; }
+  .metric { min-width:145px; padding:15px 18px; background:#fff; border:2px solid var(--line); border-radius:10px; }
+  .metric b { display:block; font-size:35px; line-height:1; }
+  .metric span { display:block; color:var(--muted); font-size:15px; margin-top:8px; font-weight:800; }
+  .flow { display:flex; align-items:center; justify-content:center; gap:14px; }
+  .flow.wrap { flex-wrap:wrap; }
+  .node { min-width:135px; padding:18px; border:2px solid var(--blue); border-radius:11px; background:#fff; text-align:center; font-size:19px; font-weight:900; line-height:1.2; box-shadow:0 8px 22px rgba(20,20,20,.06); }
+  .node small { display:block; margin-top:6px; color:var(--muted); font-size:14px; font-weight:700; }
+  .node.orange{border-color:var(--orange)} .node.green{border-color:var(--green)}
+  .node.azure{border-color:var(--azure);background:#eff8ff} .node.dark{border-color:var(--dark);background:var(--dark);color:#fff}
+  .arrow { color:#9da5af; font-size:32px; font-weight:900; }
+  .quote {
+    padding:28px 32px; border-left:7px solid var(--orange); background:#fff6eb;
+    border-radius:0 12px 12px 0; font-size:32px; font-weight:900; line-height:1.23;
+  }
+  .quote small { display:block; color:var(--muted); font-size:18px; margin-top:14px; font-weight:700; }
+  .checklist { display:grid; gap:13px; margin-top:22px; }
+  .check { display:grid; grid-template-columns:34px 1fr; gap:12px; align-items:start; font-size:22px; line-height:1.25; font-weight:800; }
+  .check i { display:flex; width:26px; height:26px; align-items:center; justify-content:center; border-radius:50%; background:#e9f5eb; color:var(--green); font-style:normal; font-size:17px; }
+  .check.bad i { background:#fff0f0; color:var(--red); }
+  .codebox { background:#25282e; border-radius:12px; box-shadow:0 18px 44px rgba(0,0,0,.17); overflow:hidden; }
+  .codebar { padding:10px 16px; color:#aeb5bf; background:#1d2025; font-size:14px; font-weight:800; }
+  pre { margin:0!important; width:100%; box-shadow:none!important; }
+  .reveal pre code { box-sizing:border-box; max-height:none; padding:20px 23px; background:#25282e; color:#f5f5f5; font:17px/1.42 "JetBrains Mono",monospace; }
+  .terminal { padding:18px 22px; background:#191c20; border-radius:12px; color:#d9dee5; font:16px/1.45 "JetBrains Mono",monospace; box-shadow:0 18px 42px rgba(0,0,0,.17); }
+  .terminal .ok {color:#70d680}.terminal .warn{color:#ffd166}.terminal .dim{color:#858e9b}
+  .tag { display:inline-flex; align-items:center; min-height:34px; padding:0 13px; border-radius:99px; background:#edf3fa; color:#34506c; border:1px solid #d8e2ec; font-size:16px; font-weight:900; }
+  .tag.orange{background:#fff1e6;border-color:#f2c096;color:#a84700}
+  .tags { display:flex; gap:9px; flex-wrap:wrap; margin-top:20px; }
+  .img { width:100%; object-fit:contain; border:0!important; box-shadow:none!important; margin:0!important; }
+  .img.carded { border-radius:12px!important; box-shadow:0 15px 40px rgba(0,0,0,.12)!important; }
+  .img-h360 { height:360px; } .img-h400{height:400px}
+  .bars { display:grid; gap:12px; }
+  .bar { display:grid; grid-template-columns:145px 1fr 70px; gap:12px; align-items:center; font-size:18px; font-weight:900; }
+  .bar-track { height:20px; background:#eceff2; border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; background:var(--orange); border-radius:4px; }
+  .bar-fill.blue { background:var(--blue); }
+  .layers { display:grid; gap:10px; }
+  .layer { display:grid; grid-template-columns:80px 1fr 105px; gap:16px; align-items:center; border:2px solid var(--line); background:#fff; border-radius:10px; padding:13px 17px; }
+  .layer b { font-size:21px; }.layer p{font-size:18px}.layer .life{text-align:right;font-size:15px;font-weight:900;color:var(--muted)}
+  .span-tree { display:grid; gap:9px; font-family:"JetBrains Mono",monospace; font-size:17px; font-weight:700; }
+  .span { padding:10px 14px; border-left:6px solid var(--azure); background:#eef7ff; border-radius:4px 9px 9px 4px; }
+  .span.l2 { margin-left:40px; border-color:var(--purple); background:#f4f0ff; }
+  .span.l3 { margin-left:80px; border-color:var(--orange); background:#fff3e8; }
+  .span b { float:right; color:var(--muted); }
+  .loop { display:grid; grid-template-columns:1fr 58px 1fr 58px 1fr; align-items:center; gap:8px; }
+  .loop .card { text-align:center; padding:22px 14px; }
+  .loop .arrow { text-align:center; }
+  .pr { background:#fff; border:2px solid #d0d7de; border-radius:12px; padding:22px 25px; box-shadow:0 15px 35px rgba(0,0,0,.09); }
+  .pr .state { display:inline-block;background:#1a7f37;color:white;border-radius:99px;padding:7px 13px;font-size:16px;font-weight:900 }
+  .pr h3{font-size:27px;margin:15px 0 10px}.pr p{font-size:18px}.pr .reviews{margin-top:18px;border-top:1px solid #d8dee4;padding-top:15px;color:var(--green);font-size:18px;font-weight:900}
+  .takeaways { display:grid; gap:16px; margin-top:26px; }
+  .takeaway { display:grid; grid-template-columns:52px 1fr; align-items:center; gap:16px; font-size:23px; font-weight:850; }
+  .takeaway .n { color:var(--orange); font-size:35px; font-weight:900; }
+  .brandrow { display:flex; align-items:center; gap:24px; margin-top:28px; }
+  .brandrow img { height:44px; max-width:190px; object-fit:contain; border:0!important; box-shadow:none!important; margin:0!important; }
+  .reveal .controls,.reveal .progress { color:var(--orange); }
+  @media (max-width:900px){.reveal{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="reveal"><div class="slides">
+
+<section data-part="OPEN">
+  <div class="frame center">
+    <div class="eyebrow">The AI-Native Workplace Summit 2026</div>
+    <h1>From Vibe Coding<br>to <span class="orange">Verifiable Agents</span></h1>
+    <p class="deck-sub">Memory, traces, and feedback loops for agents you can actually trust at work.</p>
+    <p style="margin-top:42px;font-size:20px"><strong>Auxten Wang</strong> · Technical Director @ ClickHouse · 16 Sep 2026</p>
+  </div>
+  <aside class="notes">The models are already good enough to surprise us. The question for work is no longer whether an agent can produce something. It is whether we can verify what it produced, understand why, and improve it safely.</aside>
+</section>
+
+<section data-part="OPEN">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">Why me?</div>
+        <h2>I build databases.<br>I also run work through agents.</h2>
+        <div class="checklist">
+          <div class="check"><i>1</i><div>Creator of <strong>chDB</strong>, acquired by ClickHouse in 2024</div></div>
+          <div class="check"><i>2</i><div>Technical Director at <strong>ClickHouse</strong></div></div>
+          <div class="check"><i>3</i><div>One person, too many products, several always-on agents</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding:30px;text-align:center">
+        <img src="logos/head.jpg" class="img" style="height:155px;width:155px;border-radius:50%;margin:0 auto 20px!important;object-fit:cover">
+        <h3>Auxten Wang</h3>
+        <p style="margin-top:8px">@auxten · auxten.com</p>
+        <div class="brandrow" style="justify-content:center">
+          <img src="logos/chdb-light.png" alt="chDB">
+          <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse">
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">My qualification is not that I have a theory. I have spent the last year letting agents touch real code, production operations, app releases, ads, and customer-facing work.</aside>
+</section>
+
+<section data-part="OPEN">
+  <div class="frame center">
+    <div class="eyebrow">A real bill</div>
+    <div class="big-number orange">$20,000</div>
+    <h2 style="margin-top:22px">I spent it on coding-agent tokens.</h2>
+    <p style="margin-top:18px">What I bought was not code. It was <strong>six expensive lessons</strong>.</p>
+    <div class="metrics">
+      <div class="metric"><b>600+</b><span>PANDAS APIS</span></div>
+      <div class="metric"><b>7,500+</b><span>TESTS</span></div>
+      <div class="metric"><b>~200K</b><span>LINES IN THE PR</span></div>
+    </div>
+  </div>
+  <div class="source">Source: chDB DataStore development; github.com/chdb-io/chdb/pull/496</div>
+  <aside class="notes">This was a compatibility layer between pandas and the embedded ClickHouse engine. Large surface, repetitive work, easy to test: supposedly the perfect AI task. It still cost twenty thousand dollars in tokens. That is small compared with six months of an engineer, but large enough to force us to learn.</aside>
+</section>
+
+<section data-part="OPEN">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The uncomfortable part</div>
+        <h2>It worked.<br><span class="orange">I couldn't tell you why.</span></h2>
+        <p style="margin-top:22px">My agent once wrote a social reply that earned 50+ likes. I understood every word.</p>
+        <p style="margin-top:12px"><strong>I had no idea why people loved it.</strong></p>
+      </div>
+      <div class="card dark">
+        <div style="font-size:18px;color:#9ca5b0;font-weight:900;margin-bottom:16px">RESULT</div>
+        <div style="font-size:61px;font-weight:900;line-height:1;color:#fff">50+</div>
+        <div style="font-size:19px;color:#cbd0d7;margin-top:10px">people approved</div>
+        <div style="height:1px;background:#41464e;margin:24px 0"></div>
+        <div style="font-size:18px;color:#9ca5b0;font-weight:900;margin-bottom:12px">EXPLANATION</div>
+        <div style="font-size:44px;font-weight:900;color:#ff8a65">?</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">This is harmless on social media. In a workplace agent, this is not enough. A successful-looking outcome with no explanation, no provenance, and no replay path is still a governance failure. This is vibe agenting.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The project</div>
+        <h2>Make 600+ behaviors match.</h2>
+        <p style="margin-top:20px">Change one import. Existing pandas code should behave the same—while ClickHouse does the heavy work underneath.</p>
+        <div class="metrics">
+          <div class="metric"><b>1 line</b><span>MIGRATION</span></div>
+          <div class="metric"><b>4.2×</b><span>GEOMEAN SPEEDUP*</span></div>
+        </div>
+      </div>
+      <div class="codebox">
+        <div class="codebar">sales_report.py</div>
+        <pre><code class="language-python"># before
+import pandas as pd
+
+# after
+import chdb.datastore as pd
+
+result = (
+    pd.read_parquet("sales.parquet")
+      .query("amount > 1000")
+      .groupby("region")
+      .sum()
+)</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="source">* 50M-row benchmark, 10 real-world scenarios; results vary by workload.</div>
+  <aside class="notes">For non-data people: imagine rebuilding a familiar tool so every button behaves the same, but a new engine runs behind it. The model can generate method after method. The difficult part is proving each one is actually compatible.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame">
+    <div class="eyebrow">Lesson 1 · An oracle</div>
+    <h2>Verifiable means:<br><span class="orange">something else says you're right.</span></h2>
+    <div class="flow" style="margin-top:48px">
+      <div class="node">Real notebook<small>GitHub / Kaggle</small></div><div class="arrow">→</div>
+      <div class="node blue">Swap one import<small>pandas → DataStore</small></div><div class="arrow">→</div>
+      <div class="node orange">Run both<small>same inputs</small></div><div class="arrow">→</div>
+      <div class="node green">Compare all output<small>values · type · order</small></div>
+    </div>
+    <div class="quote" style="margin-top:46px">Do not ask the model whether its answer is correct.<br>Build a system that can tell.</div>
+  </div>
+  <aside class="notes">Because pandas already exists, it becomes the oracle. We take real notebooks, replace one import, run both paths, and compare the full outputs. This is the heart of verifiability: external evidence, not confidence.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">Lesson 2 · The shortcut</div>
+        <h2>Agents <span class="red">cheat.</span></h2>
+        <p style="margin-top:20px">A test fails because row order differs. The fastest way to green?</p>
+        <div class="codebox" style="margin-top:20px">
+          <div class="codebar">the tempting “fix”</div>
+          <pre><code class="language-python">actual.sort_values(...)
+expected.sort_values(...)
+assert_equal(actual, expected)</code></pre>
+        </div>
+      </div>
+      <div>
+        <div class="card red"><h3>Test passes</h3><p>The incompatible behavior is now hidden.</p></div>
+        <div class="arrow" style="text-align:center;margin:10px">↓</div>
+        <div class="card green"><h3>Our rule</h3><p>Never normalize away a difference. Fix it—or mark an explicit, reviewed XFAIL.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Agents optimize for the signal we give them. If the signal is “make the test green,” they may alter the test. We explicitly banned sorting, reset_index, weak length-only checks, and silent skipping. Observe the shortcut, then close it.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">Lesson 3 · Durable rules</div>
+        <h2>Put rules in the repo.<br><span class="orange">Then keep deleting them.</span></h2>
+        <div class="checklist">
+          <div class="check"><i>+</i><div>Architecture decisions</div></div>
+          <div class="check"><i>+</i><div>Forbidden shortcuts</div></div>
+          <div class="check"><i>+</i><div>What “done” actually means</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="mono" style="font-size:18px;font-weight:900;color:var(--blue)">CLAUDE.md / AGENTS.md</div>
+        <div class="bars" style="margin-top:24px">
+          <div class="bar"><span>Signal</span><div class="bar-track"><div class="bar-fill blue" style="width:85%"></div></div><b>high</b></div>
+          <div class="bar"><span>Rule #147</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><b>maybe</b></div>
+          <div class="bar"><span>Rule #498</span><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><b>noise</b></div>
+        </div>
+        <div class="quote" style="font-size:24px;margin-top:27px">Am I adding another button to the iPhone?</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">A repository rule file unexpectedly became the team interface for teaching agents. But rules have the same attention budget as every other context item. A five-hundred-line file becomes a terms-of-service page: technically present, practically ignored.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame">
+    <div class="eyebrow">Lesson 4 · Break the shared blind spot</div>
+    <h2>Bring in someone with <span class="orange">zero memory.</span></h2>
+    <div class="grid2" style="height:auto;margin-top:36px">
+      <div class="card blue">
+        <h3>Daily agent</h3>
+        <p>Knows the history. Knows every workaround. Eventually learns to step around every rough edge.</p>
+      </div>
+      <div class="card orange">
+        <h3>Fresh reviewer</h3>
+        <p>No project context. Asked to be critical, rational, and evidence-driven. Sees what insiders stopped seeing.</p>
+      </div>
+    </div>
+    <p style="margin-top:34px;text-align:center"><strong>Creators and reviewers need different context.</strong></p>
+  </div>
+  <aside class="notes">The daily agent and I developed the same blind spots. A fresh model found confusing errors, inconsistent APIs, and missing documentation immediately. Separation of roles matters more than elaborate prompting.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">Lesson 5 · Deterministic control</div>
+        <h2>Files carry context.<br>JSON carries decisions.</h2>
+        <div class="flow wrap" style="justify-content:flex-start;margin-top:28px">
+          <span class="tag">DISCOVER</span><span class="tag">IMPLEMENT</span>
+          <span class="tag">TEST</span><span class="tag orange">REVIEW</span>
+        </div>
+        <p style="margin-top:24px">Agents write artifacts to disk. The next agent reads only what it needs.</p>
+        <p style="margin-top:12px"><strong>APPROVE · REJECT · ESCALATE</strong> are structured—not guessed from prose.</p>
+      </div>
+      <div class="terminal">
+        <span class="dim">$ python scripts/auto_loop.py</span><br><br>
+        Task: real Prophet notebook<br>
+        Generated: 18 mirror tests<br>
+        <span class="ok">✓ 7569 passed</span><br>
+        <span class="warn">Review: IMPROVE</span><br><br>
+        <span class="dim">{</span><br>
+        &nbsp;&nbsp;"decision": "IMPROVE",<br>
+        &nbsp;&nbsp;"reason": "weak assertion",<br>
+        &nbsp;&nbsp;"rollback_on_failure": true<br>
+        <span class="dim">}</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">A Python supervisor orchestrated test generator, implementer, test runner, and reviewer. The filesystem held shared state. Structured decisions controlled the loop. A failed iteration triggered git rollback. The same pattern works with GitHub Copilot coding agent or any other coding agent.</aside>
+</section>
+
+<section data-part="THE $20K LESSON">
+  <div class="frame center">
+    <div class="eyebrow">I did not have the words yet</div>
+    <h2>We were building three systems.</h2>
+    <div class="grid3" style="width:100%;margin-top:40px;text-align:left">
+      <div class="card blue"><h3>Memory</h3><p>Keep the right knowledge across runs.</p></div>
+      <div class="card orange"><h3>Traces</h3><p>Record what happened and why.</p></div>
+      <div class="card green"><h3>Feedback loops</h3><p>Turn failures into better behavior.</p></div>
+    </div>
+    <p style="margin-top:42px"><strong>Every lesson survived a switch of agent framework.</strong></p>
+  </div>
+  <aside class="notes">This is the structure for the rest of the talk. None of these systems belongs to a particular model, IDE, or agent framework. They are the durable infrastructure around the model.</aside>
+</section>
+
+<section data-part="MEMORY">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The handoff problem</div>
+        <h2>Every handoff loses context.</h2>
+        <p style="margin-top:22px">Days of architecture decisions, rejected ideas, naming rules, and weird edge cases…</p>
+        <p style="margin-top:16px"><strong>Then the next agent starts from a README.</strong></p>
+      </div>
+      <div class="flow" style="flex-direction:column">
+        <div class="node blue" style="width:300px">Build session<small>rich implicit context</small></div>
+        <div class="arrow">↓</div>
+        <div style="font-size:55px;font-weight:900;color:var(--red)">−30%</div>
+        <div class="arrow">↓</div>
+        <div class="node orange" style="width:300px">Operations agent<small>please explain it again</small></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Thirty percent is my felt estimate, not a benchmark. The point is the shape of the loss: explicit documentation moves; reasoning and rejected alternatives usually do not. This is no different from an employee handoff.</aside>
+</section>
+
+<section data-part="MEMORY">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The obvious fix</div>
+        <h2>A Markdown file is <span class="orange">write-only memory.</span></h2>
+        <div class="checklist">
+          <div class="check"><i>+</i><div>Easy to append</div></div>
+          <div class="check bad"><i>×</i><div>No ranking by relevance</div></div>
+          <div class="check bad"><i>×</i><div>No expiry or contradiction handling</div></div>
+          <div class="check bad"><i>×</i><div>No answer to “why did you recall this?”</div></div>
+        </div>
+      </div>
+      <div class="codebox">
+        <div class="codebar">memory.md</div>
+        <pre><code class="language-markdown"># Things to remember
+- User likes vegetarian food
+- Use Firebase for new apps
+- Never use approach B
+- Prefer short reports
+- Temporary workaround...
+- Another exception...
+- Another rule...</code></pre>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Markdown is good documentation. It is a poor memory system. Once everything is appended, every memory competes for attention forever.</aside>
+</section>
+
+<section data-part="MEMORY">
+  <div class="frame">
+    <div class="eyebrow">A memory needs a lifecycle</div>
+    <h2><span class="orange">Bad memory</span> is worse than no memory.</h2>
+    <div class="grid2" style="height:auto;margin-top:28px">
+      <div class="card red">
+        <h3>One vegetarian week</h3>
+        <p>becomes a permanent identity: “the user never eats meat.”</p>
+      </div>
+      <div class="card red">
+        <h3>One discarded Firebase idea</h3>
+        <p>keeps returning in every architecture review.</p>
+      </div>
+    </div>
+    <div class="layers" style="margin-top:27px">
+      <div class="layer"><b class="blue">L0</b><p><strong>Working memory</strong> · current task state</p><div class="life">SESSION</div></div>
+      <div class="layer"><b class="orange">L1</b><p><strong>Episodic memory</strong> · what happened and when</p><div class="life">DECAYS</div></div>
+      <div class="layer"><b class="green">L2</b><p><strong>Semantic memory</strong> · reviewed facts and decisions</p><div class="life">REVISED</div></div>
+    </div>
+  </div>
+  <aside class="notes">A safe memory system is not a firehose. Short-lived events should decay. Durable facts should be reviewed and revised when contradicted. Append-only history preserves the audit trail even when the current belief changes.</aside>
+</section>
+
+<section data-part="MEMORY">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">Retrieval, not stuffing</div>
+        <h2>Recall is one SQL query.</h2>
+        <div class="flow wrap" style="justify-content:flex-start;margin-top:26px">
+          <span class="tag">vector similarity</span><span class="tag">keywords</span>
+          <span class="tag">time decay</span><span class="tag">past usefulness</span>
+        </div>
+        <div class="metrics">
+          <div class="metric"><b>~10 ms</b><span>LOCAL RECALL</span></div>
+          <div class="metric"><b>1</b><span>QUERY</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="card dark">
+          <img src="logos/chdb-light.png" class="img" style="height:72px;margin-bottom:22px!important" alt="chDB">
+          <h3>ClickHouse, inside your process.</h3>
+          <p style="margin-top:12px">Think of it as SQLite for analytical data: one package, no database server.</p>
+        </div>
+        <div class="codebox" style="margin-top:14px">
+          <pre><code class="language-python">pip install chdb
+
+memory = recall(task, project, user)</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="source">Measured on the ClickMem local demo; latency varies by hardware and corpus.</div>
+  <aside class="notes">This is where chDB appears naturally. Memory retrieval is a mixed analytical query over text, vectors, metadata, time, and history. For one user, run the query locally. At organization scale, graduate the same shape to ClickHouse.</aside>
+</section>
+
+<section data-part="MEMORY">
+  <div class="frame">
+    <div class="eyebrow">Enterprise memory</div>
+    <h2>Give the digital teammate a <span class="azure">name, boundary, and history.</span></h2>
+    <div class="flow" style="margin-top:40px">
+      <div class="node azure">Entra Agent ID<small>who is acting?</small></div><div class="arrow">→</div>
+      <div class="node azure">Purview policies<small>what may it see?</small></div><div class="arrow">→</div>
+      <div class="node">OneLake / ADLS<small>files where they live</small></div><div class="arrow">→</div>
+      <div class="node orange">chDB / ClickHouse<small>recall + history</small></div>
+    </div>
+    <div class="quote" style="margin-top:50px">Treat an agent like a new hire: its own identity, access, memory—and manager.</div>
+  </div>
+  <div class="source">Microsoft Agent 365 and Foundry terminology as of Sep 2026.</div>
+  <aside class="notes">Microsoft's digital teammate framing is useful because it brings familiar governance with it. Entra establishes identity. Purview governs data boundaries. The memory record should say who learned what, from where, and under which authority.</aside>
+</section>
+
+<section data-part="TRACES">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The visibility problem</div>
+        <h2>I had no idea what was running.</h2>
+        <p style="margin-top:20px">Bugs, deployments, scheduled jobs, reports—everything landed in one chat.</p>
+        <p style="margin-top:18px"><strong>No run record. No owner. No final state.</strong></p>
+      </div>
+      <div class="card red">
+        <h3>“The agent is working on it.”</h3>
+        <div class="checklist">
+          <div class="check bad"><i>?</i><div>Did it receive the task?</div></div>
+          <div class="check bad"><i>?</i><div>Which tools did it call?</div></div>
+          <div class="check bad"><i>?</i><div>Did it finish—or disappear?</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Watching the reasoning manually helped early in DataStore. But an enterprise cannot watch every agent in real time. The manual habit needs to become telemetry.</aside>
+</section>
+
+<section data-part="TRACES">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">A minimum reliability contract</div>
+        <h2>First, acknowledge.<br>Then, always return.</h2>
+        <div class="card green" style="margin-top:28px">
+          <h3>1 · Accepted</h3><p>Before any model call, persist the task and return an acknowledgement.</p>
+        </div>
+        <div class="card blue" style="margin-top:14px">
+          <h3>2 · Terminal state</h3><p>Every run ends as success, failure, timeout, or cancelled.</p>
+        </div>
+      </div>
+      <div class="span-tree">
+        <div class="span">agent.run <b>17.2s</b></div>
+        <div class="span l2">model.plan <b>2.1s</b></div>
+        <div class="span l2">tool.search <b>4.7s</b></div>
+        <div class="span l3">retry #1 <b>429</b></div>
+        <div class="span l2">tool.write <b>1.3s</b></div>
+        <div class="span l2">model.answer <b>3.8s</b></div>
+        <div class="span" style="border-color:var(--green);background:#eff9f1">run.success <b>✓</b></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">In my messaging workflow, the acknowledgement was a check mark before the first model call. That tiny detail built more trust than a smarter model. The span tree then explains everything between accepted and finished.</aside>
+</section>
+
+<section data-part="TRACES">
+  <div class="frame">
+    <div class="eyebrow">Three views, three owners</div>
+    <h2>Do not mix the loops.</h2>
+    <div class="grid3" style="margin-top:36px">
+      <div class="card blue"><h3>Developer loop</h3><p>Microsoft Foundry tracing, Application Insights, or Langfuse. Debug one run.</p></div>
+      <div class="card azure"><h3>Organization loop</h3><p>Agent 365 + Entra Agent ID. Inventory, access, activity, lifecycle.</p></div>
+      <div class="card orange"><h3>Analysis loop</h3><p>Your own SQL and evaluations. Find patterns across thousands of runs.</p></div>
+    </div>
+    <div class="flow" style="margin-top:36px">
+      <div class="node dark" style="min-width:260px">OpenTelemetry<small>shared GenAI + agent span semantics</small></div>
+      <div class="arrow">→</div>
+      <p style="font-size:21px"><strong>Instrument once.</strong><br>Choose the views you need.</p>
+    </div>
+  </div>
+  <div class="source">Foundry traces are stored in Azure Monitor Application Insights; Agent 365 provides organization-level governance.</div>
+  <aside class="notes">Foundry is the builder view. Agent 365 is the organization control plane. Your analytical loop asks custom business questions. OpenTelemetry makes these layers composable instead of locking the agent into one backend.</aside>
+</section>
+
+<section data-part="TRACES">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The moment it clicked</div>
+        <h2>A trace is just a <span class="orange">wide table.</span></h2>
+        <p style="margin-top:20px">I opened one bad run and saw the missing context, failed tool call, retries, latency, and token cost.</p>
+        <p style="margin-top:16px"><strong>Then I stopped debugging one run at a time.</strong></p>
+        <div class="brandrow">
+          <span class="tag orange">Langfuse</span>
+          <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse">
+        </div>
+      </div>
+      <div class="codebox">
+        <div class="codebar">questions the trace store can answer</div>
+        <pre><code class="language-sql">SELECT tool, countIf(status='error')
+FROM spans GROUP BY tool;
+
+SELECT skill, sum(tokens)
+FROM spans GROUP BY skill;
+
+SELECT quantile(0.95)(latency_ms)
+FROM spans WHERE name='memory.recall';</code></pre>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Langfuse made individual traces understandable. ClickHouse makes the population understandable. Langfuse is now part of ClickHouse, but the important point is architectural: traces are analytical data.</aside>
+</section>
+
+<section data-part="TRACES">
+  <div class="frame">
+    <div class="eyebrow">The honest cost slide</div>
+    <h2>Full visibility creates <span class="orange">a lot of data.</span></h2>
+    <div class="grid3" style="margin-top:36px">
+      <div class="card blue"><h3>Compress</h3><p>Columnar storage makes repetitive span attributes cheap.</p></div>
+      <div class="card orange"><h3>Tier</h3><p>Keep hot detail. Aggregate older runs. Apply explicit TTLs.</p></div>
+      <div class="card red"><h3>Redact</h3><p>Remove secrets, credentials, and personal data before export.</p></div>
+    </div>
+    <div class="quote" style="margin-top:40px">“Trace everything” is not a privacy policy.</div>
+  </div>
+  <div class="source">Microsoft Foundry guidance recommends redacting sensitive content before it reaches telemetry.</div>
+  <aside class="notes">Observability can become a second copy of your most sensitive data. Redaction must happen before export, not after. Data residency also matters when telemetry moves between regional resources and tenant-level services.</aside>
+</section>
+
+<section data-part="FEEDBACK">
+  <div class="frame">
+    <div class="eyebrow">Close the loop</div>
+    <h2>The agent reviews the agent.</h2>
+    <div class="loop" style="margin-top:43px">
+      <div class="card blue"><h3>1 · Observe</h3><p>Collect traces and outcomes.</p></div><div class="arrow">→</div>
+      <div class="card orange"><h3>2 · Find bad cases</h3><p>Hallucinations, loops, weak decisions.</p></div><div class="arrow">→</div>
+      <div class="card green"><h3>3 · Improve</h3><p>Rules, skills, tests, prompts.</p></div>
+    </div>
+    <div class="flow" style="margin-top:40px">
+      <div class="arrow">↖</div><p style="font-size:21px"><strong>Periodic, evidence-driven, reviewable.</strong></p><div class="arrow">↙</div>
+    </div>
+    <p style="margin-top:26px;text-align:center;font-size:21px">The supervisor catches laziness, hallucinations, and fake tests—<strong>but never approves irreversible actions for itself.</strong></p>
+  </div>
+  <aside class="notes">I gave the agent a skill to query its own Langfuse history. Periodically it identifies bad interactions and proposes updates to rules and skills. Proposes, not silently ships. The line between self-improvement and self-corruption is human review.</aside>
+</section>
+
+<section data-part="FEEDBACK">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">Not just for coders</div>
+        <h2>The 8 a.m. patrol.</h2>
+        <p style="margin-top:20px">One read-only agent checks ads, analytics, subscriptions, releases, and model errors.</p>
+        <p style="margin-top:14px"><strong>Its real job is to tell me whether to panic.</strong></p>
+      </div>
+      <div class="card dark">
+        <div style="font-size:15px;color:#9da5af;font-weight:900">DAILY ANOMALY REPORT · 08:17</div>
+        <h3 style="margin-top:18px;color:#fff">Nothing critical.</h3>
+        <p style="margin-top:9px">3 medium anomalies.</p>
+        <div style="height:1px;background:#424750;margin:20px 0"></div>
+        <p><strong style="color:#fff">engagedSessions ↓72%</strong><br>but sessions, users, and events are normal.</p>
+        <p style="margin-top:14px;color:#8bd39a">Likely a tracking artifact—not an outage.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">This is an AI-native workplace example that is not code generation. The value is not dumping numbers. The value is combining evidence into an operational judgment, while staying read-only.</aside>
+</section>
+
+<section data-part="FEEDBACK">
+  <div class="frame">
+    <div class="eyebrow">Production failures become tests</div>
+    <h2>Every bad trace is the start of an <span class="orange">eval set.</span></h2>
+    <div class="flow" style="margin-top:42px">
+      <div class="node red">Bad run<small>real production case</small></div><div class="arrow">→</div>
+      <div class="node orange">Label<small>expected + failure type</small></div><div class="arrow">→</div>
+      <div class="node blue">Replay<small>prompt · model · tool change</small></div><div class="arrow">→</div>
+      <div class="node green">Gate<small>ship only if it holds</small></div>
+    </div>
+    <div class="grid3" style="margin-top:42px">
+      <div class="card"><h3>Groundedness</h3><p>Did the answer follow evidence?</p></div>
+      <div class="card"><h3>Safety</h3><p>Did policy hold under pressure?</p></div>
+      <div class="card"><h3>Business outcome</h3><p>Did the actual task succeed?</p></div>
+    </div>
+  </div>
+  <div class="source">Microsoft Foundry includes built-in evaluators and supports custom business-specific evaluations.</div>
+  <aside class="notes">A benchmark built from toy prompts is useful. A regression set built from your own production failures is much better. Foundry gives standard evaluators; the most important evaluator is often your business oracle.</aside>
+</section>
+
+<section data-part="FEEDBACK">
+  <div class="frame">
+    <div class="grid2">
+      <div>
+        <div class="eyebrow">The payoff</div>
+        <h2>My agent found a bug in <span class="orange">its own runtime.</span></h2>
+        <div class="checklist">
+          <div class="check"><i>1</i><div>Diagnosed an infinite restart loop</div></div>
+          <div class="check"><i>2</i><div>Wrote a one-line fix and two tests</div></div>
+          <div class="check"><i>3</i><div>Opened the pull request under its own identity</div></div>
+        </div>
+      </div>
+      <div class="pr">
+        <span class="state">Merged</span>
+        <h3>fix: avoid restart loop on plugin metadata updates</h3>
+        <p>One rule classified install timestamps as a no-op before the catch-all restart rule.</p>
+        <div class="reviews">✓ 3 human reviewers approved</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">This is the end state I want: not “the agent is smart,” but the agent can diagnose, test, propose, and submit under its own identity, while humans retain approval. The original incident happened in the open-source runtime my agent was using; the framework name is not important.</aside>
+</section>
+
+<section data-part="FEEDBACK">
+  <div class="frame">
+    <div class="eyebrow">Do not automate the wrong thing</div>
+    <h2>Closed loop does not mean <span class="red">closed oversight.</span></h2>
+    <div class="grid3" style="margin-top:38px">
+      <div class="card red"><h3>No silent self-editing</h3><p>Rules and skills change only through reviewable diffs.</p></div>
+      <div class="card orange"><h3>No shared superuser</h3><p>Each agent gets its own identity and least privilege.</p></div>
+      <div class="card blue"><h3>No universal architecture</h3><p>A solo setup is not a 5,000-agent tenant design.</p></div>
+    </div>
+    <div class="quote" style="margin-top:42px">Containment gives an agent room to act without giving it room to ruin everything.</div>
+  </div>
+  <aside class="notes">The more autonomy we want, the more containment we need. Identity, permissions, review boundaries, rollback, and durable traces are what make autonomy safe.</aside>
+</section>
+
+<section data-part="PUTTING IT TOGETHER">
+  <div class="frame">
+    <div class="eyebrow">One picture</div>
+    <h2>Identity around the agent.<br>Evidence around every run.</h2>
+    <div class="flow" style="margin-top:32px">
+      <div class="node azure">Copilot Studio<br>/ Foundry<small>agent + tools</small></div><div class="arrow">→</div>
+      <div class="node dark">OpenTelemetry<small>runs · tools · models</small></div><div class="arrow">→</div>
+      <div style="display:grid;gap:10px">
+        <div class="node azure">App Insights / Agent 365<small>debug + govern</small></div>
+        <div class="node orange">Langfuse / ClickHouse<small>analyze + evaluate</small></div>
+      </div>
+    </div>
+    <div class="flow" style="margin-top:25px">
+      <div class="node azure">Entra Agent ID<small>identity + authority</small></div><div class="arrow">↗</div>
+      <div class="node green">Memory<small>chDB local · ClickHouse at scale</small></div><div class="arrow">↗</div>
+      <div class="node orange">Feedback loop<small>bad case → eval → reviewed change</small></div>
+    </div>
+  </div>
+  <aside class="notes">This is not a requirement to buy every box. It is a map of responsibilities. Identity answers who. Traces answer what happened. Memory answers what the agent knew. Evaluation answers whether it worked. The feedback loop improves the next run.</aside>
+</section>
+
+<section data-part="PUTTING IT TOGETHER">
+  <div class="frame">
+    <div class="eyebrow">Start this afternoon</div>
+    <h2>Three changes. No grand platform rewrite.</h2>
+    <div class="takeaways">
+      <div class="takeaway"><div class="n">01</div><div><strong>Turn on tracing.</strong> Capture one complete run from accepted to terminal state.</div></div>
+      <div class="takeaway"><div class="n">02</div><div><strong>Give memory a schema.</strong> Replace one append-only Markdown list with rows, provenance, and status.</div></div>
+      <div class="takeaway"><div class="n">03</div><div><strong>Pick 10 bad cases.</strong> Make them the first regression set before changing model or prompt.</div></div>
+    </div>
+    <p style="margin-top:40px"><strong>Do this before adding another agent.</strong></p>
+  </div>
+  <aside class="notes">This is deliberately small. One traced workflow, one structured memory table, ten real failures. The point is to begin producing evidence before scaling autonomy.</aside>
+</section>
+
+<section data-part="CLOSE">
+  <div class="frame center">
+    <div class="eyebrow">Three takeaways</div>
+    <h2 style="font-size:47px">Do not hire a teammate who…</h2>
+    <div class="grid3" style="width:100%;margin-top:38px;text-align:left">
+      <div class="card blue"><h3>forgets everything</h3><p>Memory needs retrieval, lifecycle, and provenance.</p></div>
+      <div class="card orange"><h3>leaves no record</h3><p>Every run needs identity, spans, and a final state.</p></div>
+      <div class="card green"><h3>never learns</h3><p>Failures should become evaluations and reviewed changes.</p></div>
+    </div>
+    <p style="margin-top:40px;font-size:29px"><strong>Prompt engineering is the entry ticket.<br><span class="orange">System engineering is the moat.</span></strong></p>
+  </div>
+  <aside class="notes">Memory, traces, and feedback loops turn capability into trust. Verifiable does not mean deterministic. It means we can explain, replay, evaluate, and improve the system.</aside>
+</section>
+
+<section data-part="Q&A">
+  <div class="frame center">
+    <div class="eyebrow">Thank you</div>
+    <h1>Questions?</h1>
+    <p style="margin-top:24px">@auxten · auxten.com</p>
+    <div class="tags" style="justify-content:center;margin-top:30px">
+      <span class="tag">github.com/chdb-io/chdb</span>
+      <span class="tag">github.com/auxten/clickmem</span>
+      <span class="tag orange">zhuanlan.zhihu.com/p/2011796810969158285</span>
+    </div>
+    <div class="brandrow" style="justify-content:center;margin-top:45px">
+      <img src="logos/chdb-light.png" alt="chDB">
+      <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse">
+    </div>
+  </div>
+  <aside class="notes">Leave this slide up for Q&A. If asked about the specific runtime, answer directly, but keep the discussion on portable architecture rather than framework comparison.</aside>
+</section>
+
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+  const sections = [...document.querySelectorAll('.slides > section')];
+  sections.forEach((section, i) => {
+    if (i === 0 || i === sections.length - 1) return;
+    const part = section.dataset.part || '';
+    const topbar = document.createElement('div');
+    topbar.className = 'topbar';
+    topbar.innerHTML = `<span>${part}</span><span class="right"><span>${String(i + 1).padStart(2, '0')} / ${sections.length}</span><span class="meter"><span style="width:${((i + 1) / sections.length) * 100}%"></span></span></span>`;
+    section.appendChild(topbar);
+  });
+  Reveal.initialize({
+    hash:true, slideNumber:false, transition:'fade', transitionSpeed:'fast',
+    controlsTutorial:false, progress:true, center:false, width:1280, height:720,
+    margin:0, plugins:[RevealHighlight]
+  });
+</script>
+</body>
+</html>
