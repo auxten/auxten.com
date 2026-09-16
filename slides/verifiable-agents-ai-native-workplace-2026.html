@@ -15,9 +15,7 @@
   }
   html,body,.reveal,.reveal .slides,.reveal .slides section { background:var(--paper); }
   .reveal { color:var(--ink); font-family:"Inter",system-ui,sans-serif; font-size:30px; }
-  .reveal .slides section {
-    box-sizing:border-box; height:720px; padding:0; text-align:left; overflow:hidden;
-  }
+  .reveal .slides section { box-sizing:border-box; height:720px; padding:0; text-align:left; overflow:hidden; }
   .reveal .slides section::before {
     content:""; position:absolute; inset:0; pointer-events:none; opacity:.25;
     background:linear-gradient(90deg,rgba(21,21,21,.04) 1px,transparent 1px),
@@ -25,11 +23,7 @@
     background-size:44px 44px;
   }
   .frame { position:absolute; inset:0; box-sizing:border-box; padding:82px 58px 50px; z-index:1; }
-  .topbar {
-    position:absolute; z-index:3; top:30px; left:58px; right:58px; display:flex;
-    justify-content:space-between; align-items:center; color:var(--muted); font-size:17px;
-    font-weight:800; letter-spacing:.02em;
-  }
+  .topbar { position:absolute; z-index:3; top:30px; left:58px; right:58px; display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:17px; font-weight:800; letter-spacing:.02em; }
   .topbar .right { display:flex; align-items:center; gap:12px; }
   .meter { width:150px; height:6px; border-radius:9px; overflow:hidden; background:#e5e8ec; }
   .meter span { display:block; height:100%; background:var(--orange); }
@@ -43,23 +37,18 @@
   .green{color:var(--green)} .red{color:var(--red)} .purple{color:var(--purple)}
   .muted{color:var(--muted)} .mono{font-family:"JetBrains Mono",monospace}
   .eyebrow { color:var(--orange); font-size:18px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; margin-bottom:16px; }
-  .deck-sub { margin-top:20px; font-size:28px; max-width:900px; }
+  .deck-sub { margin-top:20px; font-size:28px; max-width:960px; }
   .source { position:absolute; left:58px; bottom:25px; color:#808791; font-size:13px; font-weight:650; }
   .center { display:flex; height:100%; align-items:center; justify-content:center; text-align:center; flex-direction:column; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:28px; align-items:center; height:100%; }
   .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
-  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
-  .card {
-    box-sizing:border-box; padding:22px; border:2px solid var(--line); border-radius:12px;
-    background:#fff; box-shadow:0 13px 34px rgba(20,20,20,.075);
-  }
+  .card { box-sizing:border-box; padding:22px; border:2px solid var(--line); border-radius:12px; background:#fff; box-shadow:0 13px 34px rgba(20,20,20,.075); }
   .card h3 { margin-bottom:10px; }
   .card p { font-size:20px; line-height:1.32; }
   .card.blue{background:#edf6ff;border-color:#85bff0;color:var(--blue)}
   .card.orange{background:#fff5ec;border-color:#f1ad76;color:var(--orange)}
   .card.green{background:#eff9f1;border-color:#92d1a0;color:var(--green)}
   .card.red{background:#fff1f1;border-color:#e9a0a0;color:var(--red)}
-  .card.purple{background:#f4f0ff;border-color:#b9a8e9;color:var(--purple)}
   .card.dark{background:var(--dark);border-color:var(--dark);color:#fff}
   .card.dark h3,.card.dark strong{color:#fff}.card.dark p{color:#cbd0d7}
   .big-number { font-size:95px; line-height:.95; font-weight:900; letter-spacing:-5px; }
@@ -71,13 +60,10 @@
   .flow.wrap { flex-wrap:wrap; }
   .node { min-width:135px; padding:18px; border:2px solid var(--blue); border-radius:11px; background:#fff; text-align:center; font-size:19px; font-weight:900; line-height:1.2; box-shadow:0 8px 22px rgba(20,20,20,.06); }
   .node small { display:block; margin-top:6px; color:var(--muted); font-size:14px; font-weight:700; }
-  .node.orange{border-color:var(--orange)} .node.green{border-color:var(--green)}
-  .node.azure{border-color:var(--azure);background:#eff8ff} .node.dark{border-color:var(--dark);background:var(--dark);color:#fff}
+  .node.orange{border-color:var(--orange)} .node.green{border-color:var(--green)} .node.red{border-color:var(--red)}
+  .node.dark{border-color:var(--dark);background:var(--dark);color:#fff} .node.dark small{color:#b8bec7}
   .arrow { color:#9da5af; font-size:32px; font-weight:900; }
-  .quote {
-    padding:28px 32px; border-left:7px solid var(--orange); background:#fff6eb;
-    border-radius:0 12px 12px 0; font-size:32px; font-weight:900; line-height:1.23;
-  }
+  .quote { padding:28px 32px; border-left:7px solid var(--orange); background:#fff6eb; border-radius:0 12px 12px 0; font-size:32px; font-weight:900; line-height:1.23; }
   .quote small { display:block; color:var(--muted); font-size:18px; margin-top:14px; font-weight:700; }
   .checklist { display:grid; gap:13px; margin-top:22px; }
   .check { display:grid; grid-template-columns:34px 1fr; gap:12px; align-items:start; font-size:22px; line-height:1.25; font-weight:800; }
@@ -88,68 +74,71 @@
   pre { margin:0!important; width:100%; box-shadow:none!important; }
   .reveal pre code { box-sizing:border-box; max-height:none; padding:20px 23px; background:#25282e; color:#f5f5f5; font:17px/1.42 "JetBrains Mono",monospace; }
   .terminal { padding:18px 22px; background:#191c20; border-radius:12px; color:#d9dee5; font:16px/1.45 "JetBrains Mono",monospace; box-shadow:0 18px 42px rgba(0,0,0,.17); }
-  .terminal .ok {color:#70d680}.terminal .warn{color:#ffd166}.terminal .dim{color:#858e9b}
+  .terminal .ok {color:#70d680}.terminal .warn{color:#ffd166}.terminal .dim{color:#858e9b}.terminal .bad{color:#ff8a80}
   .tag { display:inline-flex; align-items:center; min-height:34px; padding:0 13px; border-radius:99px; background:#edf3fa; color:#34506c; border:1px solid #d8e2ec; font-size:16px; font-weight:900; }
   .tag.orange{background:#fff1e6;border-color:#f2c096;color:#a84700}
   .tags { display:flex; gap:9px; flex-wrap:wrap; margin-top:20px; }
   .img { width:100%; object-fit:contain; border:0!important; box-shadow:none!important; margin:0!important; }
   .img.carded { border-radius:12px!important; box-shadow:0 15px 40px rgba(0,0,0,.12)!important; }
-  .img-h360 { height:360px; } .img-h400{height:400px}
-  .bars { display:grid; gap:12px; }
-  .bar { display:grid; grid-template-columns:145px 1fr 70px; gap:12px; align-items:center; font-size:18px; font-weight:900; }
-  .bar-track { height:20px; background:#eceff2; border-radius:4px; overflow:hidden; }
-  .bar-fill { height:100%; background:var(--orange); border-radius:4px; }
-  .bar-fill.blue { background:var(--blue); }
-  .layers { display:grid; gap:10px; }
-  .layer { display:grid; grid-template-columns:80px 1fr 105px; gap:16px; align-items:center; border:2px solid var(--line); background:#fff; border-radius:10px; padding:13px 17px; }
-  .layer b { font-size:21px; }.layer p{font-size:18px}.layer .life{text-align:right;font-size:15px;font-weight:900;color:var(--muted)}
-  .span-tree { display:grid; gap:9px; font-family:"JetBrains Mono",monospace; font-size:17px; font-weight:700; }
-  .span { padding:10px 14px; border-left:6px solid var(--azure); background:#eef7ff; border-radius:4px 9px 9px 4px; }
-  .span.l2 { margin-left:40px; border-color:var(--purple); background:#f4f0ff; }
-  .span.l3 { margin-left:80px; border-color:var(--orange); background:#fff3e8; }
-  .span b { float:right; color:var(--muted); }
-  .loop { display:grid; grid-template-columns:1fr 58px 1fr 58px 1fr; align-items:center; gap:8px; }
-  .loop .card { text-align:center; padding:22px 14px; }
-  .loop .arrow { text-align:center; }
-  .pr { background:#fff; border:2px solid #d0d7de; border-radius:12px; padding:22px 25px; box-shadow:0 15px 35px rgba(0,0,0,.09); }
-  .pr .state { display:inline-block;background:#1a7f37;color:white;border-radius:99px;padding:7px 13px;font-size:16px;font-weight:900 }
-  .pr h3{font-size:27px;margin:15px 0 10px}.pr p{font-size:18px}.pr .reviews{margin-top:18px;border-top:1px solid #d8dee4;padding-top:15px;color:var(--green);font-size:18px;font-weight:900}
   .takeaways { display:grid; gap:16px; margin-top:26px; }
   .takeaway { display:grid; grid-template-columns:52px 1fr; align-items:center; gap:16px; font-size:23px; font-weight:850; }
   .takeaway .n { color:var(--orange); font-size:35px; font-weight:900; }
   .brandrow { display:flex; align-items:center; gap:24px; margin-top:28px; }
-  .brandrow img { height:44px; max-width:190px; object-fit:contain; border:0!important; box-shadow:none!important; margin:0!important; }
-  .reveal .controls,.reveal .progress { color:var(--orange); }
+  .brandrow img { height:40px; width:auto; border:0!important; box-shadow:none!important; margin:0!important; }
+  .strike { text-decoration:line-through; text-decoration-thickness:6px; text-decoration-color:var(--red); color:#9aa1ab; }
+  .era { display:grid; grid-template-columns:1fr 84px 1fr; align-items:stretch; gap:0; margin-top:30px; }
+  .era .col { padding:24px 26px; border-radius:12px; border:2px solid var(--line); background:#fff; }
+  .era .col.after { background:#fff6eb; border-color:#f1ad76; }
+  .era .col h3 { margin-bottom:12px; }
+  .era .col p { font-size:20px; line-height:1.35; }
+  .era .col ul { margin:12px 0 0 0; padding-left:22px; color:var(--ink); font-size:19px; font-weight:700; line-height:1.4; }
+  .era .divider { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; }
+  .era .divider i { display:block; width:4px; flex:1; background:var(--orange); border-radius:2px; }
+  .era .divider b { font-size:13px; font-weight:900; color:var(--orange); text-align:center; line-height:1.2; letter-spacing:.04em; }
+  .timeline { display:grid; grid-template-columns:repeat(4,1fr); gap:0; margin-top:30px; position:relative; }
+  .timeline::before { content:""; position:absolute; left:6%; right:6%; top:14px; height:4px; background:#d8dee6; border-radius:2px; }
+  .tl { position:relative; text-align:center; padding-top:40px; }
+  .tl::before { content:""; position:absolute; top:3px; left:50%; transform:translateX(-50%); width:26px; height:26px; border-radius:50%; background:#fff; border:5px solid var(--blue); }
+  .tl.orange::before { border-color:var(--orange); } .tl.green::before { border-color:var(--green); }
+  .tl b { display:block; font-size:22px; font-weight:900; } .tl span { display:block; color:var(--muted); font-size:16px; font-weight:750; margin-top:5px; line-height:1.3; }
+  .sqlslide { padding:18px 22px 16px; background:#25282e; color:#e8ecf1; font:17px/1.55 "JetBrains Mono",monospace; }
+  .sqlslide .kw { color:#82b1ff; font-weight:700; } .sqlslide .fn { color:#80cbc4; } .sqlslide .st { color:#ffcb6b; }
+  .sqlslide .cm { color:#8bd39a; font-weight:700; white-space:nowrap; }
+  .sqlgrid { display:grid; grid-template-columns:1fr auto; column-gap:18px; row-gap:2px; align-items:baseline; }
+  .rule { font-family:"JetBrains Mono",monospace; font-size:15.5px; line-height:1.5; color:#e8ecf1; }
+  .rule .h { color:#ffcb6b; font-weight:700; } .rule .x { color:#ff8a80; } .rule .ok { color:#8bd39a; }
   @media (max-width:900px){.reveal{font-size:25px}}
 </style>
 </head>
 <body>
 <div class="reveal"><div class="slides">
 
+<!-- 1 · TITLE -->
 <section data-part="OPEN">
   <div class="frame center">
     <div class="eyebrow">The AI-Native Workplace Summit 2026</div>
     <h1>From Vibe Coding<br>to <span class="orange">Verifiable Agents</span></h1>
-    <p class="deck-sub">Memory, traces, and feedback loops for agents you can actually trust at work.</p>
-    <p style="margin-top:42px;font-size:20px"><strong>Auxten Wang</strong> · Technical Director @ ClickHouse · 16 Sep 2026</p>
+    <p class="deck-sub">Ten months of building a pandas-compatible engine with coding agents—and what it took to trust the result.</p>
+    <p style="margin-top:42px;font-size:20px"><strong>Auxten Wang</strong> · Technical Director @ ClickHouse · Creator of chDB · 16 Sep 2026</p>
   </div>
-  <aside class="notes">The models are already good enough to surprise us. The question for work is no longer whether an agent can produce something. It is whether we can verify what it produced, understand why, and improve it safely.</aside>
+  <aside class="notes">One story, start to finish: a real project, a real deadline, a real team, and agents writing most of the code. Everything in this talk is something we actually did, with numbers you can check in the public repo.</aside>
 </section>
 
-<section data-part="OPEN">
+<!-- 2 · WHO I AM -->
+<section data-part="1 · WHO I AM">
   <div class="frame">
     <div class="grid2">
       <div>
-        <div class="eyebrow">Why me?</div>
-        <h2>I build databases.<br>I also run work through agents.</h2>
+        <div class="eyebrow">Who I am</div>
+        <h2>I build <span class="orange">chDB</span><br>at <span class="orange">ClickHouse</span>.</h2>
         <div class="checklist">
-          <div class="check"><i>1</i><div>Creator of <strong>chDB</strong>, acquired by ClickHouse in 2024</div></div>
-          <div class="check"><i>2</i><div>Technical Director at <strong>ClickHouse</strong></div></div>
-          <div class="check"><i>3</i><div>One person, too many products, several always-on agents</div></div>
+          <div class="check"><i>1</i><div>Created <strong>chDB</strong> in 2023 — ClickHouse as a Python library</div></div>
+          <div class="check"><i>2</i><div>ClickHouse acquired it in 2024. I joined as <strong>Technical Director</strong></div></div>
+          <div class="check"><i>3</i><div>Most of my day is chDB. Most of that day is spent with <strong>coding agents</strong>.</div></div>
         </div>
       </div>
       <div class="card" style="padding:30px;text-align:center">
-        <img src="logos/head.jpg" class="img" style="height:155px;width:155px;border-radius:50%;margin:0 auto 20px!important;object-fit:cover">
+        <img src="logos/head.jpg" class="img" style="height:155px;width:155px;border-radius:50%;margin:0 auto 20px!important;object-fit:cover" alt="Auxten Wang">
         <h3>Auxten Wang</h3>
         <p style="margin-top:8px">@auxten · auxten.com</p>
         <div class="brandrow" style="justify-content:center">
@@ -159,609 +148,480 @@
       </div>
     </div>
   </div>
-  <aside class="notes">My qualification is not that I have a theory. I have spent the last year letting agents touch real code, production operations, app releases, ads, and customer-facing work.</aside>
+  <aside class="notes">Two names to remember: ClickHouse, the open-source analytical database, and chDB, which is that same engine packaged as a Python library. I made chDB, ClickHouse bought it, and now I run it there. The rest of this talk is what happened when I built a large piece of it with agents.</aside>
 </section>
 
-<section data-part="OPEN">
-  <div class="frame center">
-    <div class="eyebrow">A real bill</div>
-    <div class="big-number orange">$20,000</div>
-    <h2 style="margin-top:22px">I spent it on coding-agent tokens.</h2>
-    <p style="margin-top:18px">What I bought was not code. It was <strong>six expensive lessons</strong>.</p>
-    <div class="metrics">
-      <div class="metric"><b>600+</b><span>PANDAS APIS</span></div>
-      <div class="metric"><b>7,500+</b><span>TESTS</span></div>
-      <div class="metric"><b>~200K</b><span>LINES IN THE PR</span></div>
-    </div>
-  </div>
-  <div class="source">Source: chDB DataStore development; github.com/chdb-io/chdb/pull/496</div>
-  <aside class="notes">This was a compatibility layer between pandas and the embedded ClickHouse engine. Large surface, repetitive work, easy to test: supposedly the perfect AI task. It still cost twenty thousand dollars in tokens. That is small compared with six months of an engineer, but large enough to force us to learn.</aside>
-</section>
-
-<section data-part="OPEN">
+<!-- 3 · WHAT IS CHDB -->
+<section data-part="1 · WHO I AM">
   <div class="frame">
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:0.56fr 0.44fr">
       <div>
-        <div class="eyebrow">The uncomfortable part</div>
-        <h2>It worked.<br><span class="orange">I couldn't tell you why.</span></h2>
-        <p style="margin-top:22px">My agent posted a reply on my behalf. It picked up 50+ likes—far better than anything I write myself.</p>
-        <p style="margin-top:12px"><strong>I could read every word and still not explain it.</strong></p>
+        <div class="eyebrow">What chDB is</div>
+        <h2>ClickHouse, inside your <span class="orange">Python process.</span></h2>
+        <p style="margin-top:14px;font-size:22px">Think SQLite, but the engine is the one that runs analytics at Anthropic, Cursor, and Cloudflare. No server, no config.</p>
+        <div class="codebox" style="margin-top:18px">
+          <pre><code class="language-python">pip install chdb
+
+import chdb
+chdb.query("SELECT count() FROM file('orders.parquet')")
+# schema inferred · nothing loaded into RAM</code></pre>
+        </div>
+        <div class="tags" style="margin-top:16px">
+          <span class="tag">70+ file formats</span><span class="tag">zero-copy pandas / Arrow</span><span class="tag">every CPU core</span><span class="tag orange">pandas-style API since v4</span>
+        </div>
       </div>
-      <div class="card dark">
-        <div style="font-size:17px;color:#9ca5b0;font-weight:900;letter-spacing:.08em">WHAT I HAVE</div>
-        <div style="display:flex;align-items:baseline;gap:12px;margin-top:12px">
-          <div style="font-size:54px;font-weight:900;line-height:1;color:#8bd39a">✓</div>
-          <div style="font-size:21px;color:#fff;font-weight:800">the output, and a good outcome</div>
-        </div>
-        <div style="height:1px;background:#41464e;margin:22px 0"></div>
-        <div style="font-size:17px;color:#9ca5b0;font-weight:900;letter-spacing:.08em;margin-bottom:14px">WHAT I DON'T HAVE</div>
-        <div style="display:grid;gap:11px;font-size:19px;font-weight:800;color:#e6e9ee">
-          <div>Which context it used <span style="float:right;color:#ff8a65">no record</span></div>
-          <div>Why it chose that angle <span style="float:right;color:#ff8a65">no record</span></div>
-          <div>Whether I can do it again <span style="float:right;color:#ff8a65">unknown</span></div>
-        </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <img src="logos/rocket-bike.png" class="img carded" style="width:100%;max-width:440px" alt="A rocket engine on a bicycle">
+        <p style="margin-top:14px;text-align:center;font-size:21px"><strong>A rocket engine on a bicycle.</strong><br>Local like SQLite. Analytical like ClickHouse.</p>
       </div>
     </div>
   </div>
-  <aside class="notes">This is harmless on social media. In a workplace agent, this is not enough. A successful-looking outcome with no explanation, no provenance, and no replay path is still a governance failure. This is vibe agenting.</aside>
+  <aside class="notes">For those who don't know ClickHouse: it is the open-source columnar database built for analytics. chDB is that whole engine as a pip install, living inside your Python process. One line to read a parquet file with SQL, no Docker, no server. The last tag is the important one for today: since version 4 it also speaks pandas.</aside>
 </section>
 
-<section data-part="THE $20K LESSON">
+<!-- 4 · THE PROJECT -->
+<section data-part="2 · WHAT WE BUILT">
   <div class="frame">
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:0.5fr 0.5fr">
       <div>
-        <div class="eyebrow">The project</div>
-        <h2>Make 600+ behaviors match.</h2>
-        <p style="margin-top:20px">Change one import. Existing pandas code should behave the same—while ClickHouse does the heavy work underneath.</p>
-        <div class="metrics">
-          <div class="metric"><b>1 line</b><span>MIGRATION</span></div>
-          <div class="metric"><b>4.2×</b><span>GEOMEAN SPEEDUP*</span></div>
+        <div class="eyebrow">The project · chDB DataStore</div>
+        <h2>Change <span class="orange">one line.</span><br>Keep everything else.</h2>
+        <p style="margin-top:18px">Your existing pandas code runs unchanged. Underneath, every chain of calls compiles to one SQL query and runs on the ClickHouse engine.</p>
+        <div class="checklist" style="margin-top:20px">
+          <div class="check"><i>✓</i><div><strong>Faster</strong> — all cores, one plan instead of ten copies</div></div>
+          <div class="check"><i>✓</i><div><strong>Less memory</strong> — streams blocks, never the whole table</div></div>
+          <div class="check"><i>✓</i><div><strong>Same API</strong> — if we can't translate a call, it falls back to real pandas</div></div>
         </div>
       </div>
       <div class="codebox">
         <div class="codebar">sales_report.py</div>
-        <pre><code class="language-python"># before
-import pandas as pd
+        <pre><code class="language-diff">- import pandas as pd
++ import chdb.datastore as pd
 
-# after
-import chdb.datastore as pd
-
-result = (
-    pd.read_parquet("sales.parquet")
-      .query("amount > 1000")
-      .groupby("region")
-      .sum()
-)</code></pre>
+  df  = pd.read_parquet("events.parquet")
+  top = (df[df.status == 200]
+           .groupby("user_id").amount.sum()
+           .sort_values(ascending=False)
+           .head(10))</code></pre>
       </div>
     </div>
   </div>
-  <div class="source">* 50M-row benchmark, 10 real-world scenarios; results vary by workload.</div>
-  <aside class="notes">For non-data people: imagine rebuilding a familiar tool so every button behaves the same, but a new engine runs behind it. The model can generate method after method. The difficult part is proving each one is actually compatible.</aside>
+  <aside class="notes">This is the product. The user changes one import line. The rest of the file does not know anything happened. DataStore records the pandas calls lazily, compiles the chain into a single SQL statement, and hands it to the embedded ClickHouse engine. When something cannot be translated, it runs the real pandas code for that step. Same result, different machine underneath.</aside>
 </section>
 
-<section data-part="THE $20K LESSON">
+<!-- 5 · TIMELINE AND CONSTRAINT -->
+<section data-part="2 · WHAT WE BUILT">
   <div class="frame">
-    <div class="eyebrow">Lesson 1 · An oracle</div>
-    <h2>Verifiable means:<br><span class="orange">something else says you're right.</span></h2>
-    <div class="flow" style="margin-top:48px">
+    <div class="eyebrow">Ten months, one deadline that never moved</div>
+    <h2>Match <span class="orange">600+ pandas behaviors.</span> First beta in weeks.</h2>
+    <div class="timeline">
+      <div class="tl orange"><b>3 Dec 2025</b><span>first public beta<br>v4.0.0b0</span></div>
+      <div class="tl"><b>27 Jan 2026</b><span>GA release v4.0.0<br>1,113 commits · +199K lines</span></div>
+      <div class="tl"><b>Feb 2026</b><span>first teammate joins<br>the project</span></div>
+      <div class="tl green"><b>11 Sep 2026</b><span>v4.4.0 · still shipping<br>11,161 tests in CI</span></div>
+    </div>
+    <div class="grid3" style="margin-top:40px">
+      <div class="card"><h3>Why so tight</h3><p>The engine already existed. The API surface was the whole job: hundreds of methods, each with pandas' exact semantics.</p></div>
+      <div class="card"><h3>Who</h3><p>One engineer at the start—me—plus coding agents doing most of the typing.</p></div>
+      <div class="card orange"><h3>The bill</h3><p>About <strong style="color:var(--orange)">$20,000</strong> in agent tokens over the first six months. Cheap next to an engineer. Expensive enough to learn from.</p></div>
+    </div>
+  </div>
+  <div class="source">github.com/chdb-io/chdb · pull/496 · release history</div>
+  <aside class="notes">Set the constraint clearly. The timeline was measured in weeks, not quarters. The first beta went out within weeks of starting, GA two months later, and the work has not stopped since. At the start it was one person and agents. The token bill over the first six months was around twenty thousand dollars, which is small compared with a hire and large enough that we paid attention to what we were doing.</aside>
+</section>
+
+<!-- 6 · BC / AD -->
+<section data-part="3 · WHY THIS WAY">
+  <div class="frame">
+    <div class="eyebrow">Why a compatibility layer instead of a better API</div>
+    <h2>Programming now has a <span class="orange">BC and an AD.</span></h2>
+    <div class="era">
+      <div class="col">
+        <h3>Before ChatGPT</h3>
+        <p>Fifteen years of humans writing pandas by hand, in public.</p>
+        <ul>
+          <li>Millions of notebooks and Stack Overflow answers</li>
+          <li>Every data-science course, book, and blog</li>
+          <li>Clean. Not one line of it generated by a model.</li>
+        </ul>
+      </div>
+      <div class="divider"><i></i><b>30 NOV<br>2022</b><i></i></div>
+      <div class="col after">
+        <h3>After ChatGPT</h3>
+        <p>Models trained on that corpus treat it as how the world is.</p>
+        <ul>
+          <li>Ask any model for data code: you get pandas</li>
+          <li>Ask it for a groupby: you get <span class="mono">.groupby().agg()</span></li>
+          <li>The API stopped being a library. It became a fact.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:26px;text-align:center"><strong>pandas is the de facto standard</strong> — the way the Gregorian calendar is: not the best design, just the one everyone counts in.</p>
+  </div>
+  <aside class="notes">This is the reasoning behind the whole project. Everything written before late 2022 is a clean human corpus. Every large model learned data work from it, and in that corpus, data work means pandas. So pandas is no longer just a popular library; it is what the models believe data code looks like. You do not get to argue with that. You build on it.</aside>
+</section>
+
+<!-- 7 · TOO LAZY TO LEARN -->
+<section data-part="3 · WHY THIS WAY">
+  <div class="frame center">
+    <div class="eyebrow">The decision</div>
+    <h2 style="font-size:54px">Do not invent a new API in 2026.</h2>
+    <div style="margin-top:44px;font-size:58px;font-weight:900;letter-spacing:-1.5px;line-height:1.1">
+      <span class="strike">Humans</span> <span class="orange">Agents</span> are too lazy to learn.
+    </div>
+    <p style="margin-top:38px;max-width:980px">A new API means fighting the model's prior on every single line it writes. A compatible API means every agent on earth is already fluent in your product.</p>
+    <p style="margin-top:16px;font-size:22px"><strong>The API is the asset. Replace the engine.</strong></p>
+  </div>
+  <aside class="notes">We used to say humans are too lazy to learn a new API, and that was true. Now the more important statement is that agents are too lazy to learn, in a very literal sense: they will keep writing what the training data taught them. If your API is different, you pay for that on every line, forever. So we kept the API and swapped the engine.</aside>
+</section>
+
+<!-- 8 · THE ORACLE -->
+<section data-part="4 · HOW WE BUILT IT">
+  <div class="frame">
+    <div class="eyebrow">Our unfair advantage</div>
+    <h2>We had a <span class="orange">reference implementation.</span></h2>
+    <p style="margin-top:14px">Most AI-built projects have no way to know if the output is right. We did: pandas itself.</p>
+    <div class="flow" style="margin-top:40px">
       <div class="node">Real notebook<small>GitHub / Kaggle</small></div><div class="arrow">→</div>
       <div class="node blue">Swap one import<small>pandas → DataStore</small></div><div class="arrow">→</div>
       <div class="node orange">Run both<small>same inputs</small></div><div class="arrow">→</div>
-      <div class="node green">Compare all output<small>values · type · order</small></div>
+      <div class="node green">Compare everything<small>values · dtypes · row order</small></div>
     </div>
-    <div class="quote" style="margin-top:46px">Do not ask the model whether its answer is correct.<br>Build a system that can tell.</div>
+    <div class="quote" style="margin-top:44px">Every pandas behavior became a test we did not have to design.<small>The agent writes the mirror. pandas is the judge. Neither one gets to grade its own work.</small></div>
   </div>
-  <aside class="notes">Because pandas already exists, it becomes the oracle. We take real notebooks, replace one import, run both paths, and compare the full outputs. This is the heart of verifiability: external evidence, not confidence.</aside>
+  <aside class="notes">This is the single most important thing about how the project worked. We never asked the model whether its implementation was correct. We took real notebooks, swapped the import, ran both paths, and compared the full output: values, types, and row order. Pandas was the oracle. This made the whole thing verifiable from day one.</aside>
 </section>
 
-<section data-part="THE $20K LESSON">
+<!-- 9 · READ EVERY THOUGHT -->
+<section data-part="4 · HOW WE BUILT IT">
   <div class="frame">
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:0.5fr 0.5fr">
       <div>
-        <div class="eyebrow">Lesson 2 · The shortcut</div>
+        <div class="eyebrow">The rule we still follow</div>
+        <h2>Read every thought.<br><span class="orange">Align hard, early.</span></h2>
+        <p style="margin-top:18px">In the first weeks I read the agent's reasoning for every change, not just the diff. When it reasoned wrong, I wrote the rule down that same day.</p>
+        <p style="margin-top:14px"><strong>That is expensive. It is also the only time the rules are cheap to find.</strong></p>
+      </div>
+      <div class="card dark">
+        <div style="font-size:15px;color:#9da5af;font-weight:900;letter-spacing:.08em">WHAT WENT INTO THE RULES FILE IN MONTH ONE</div>
+        <div class="checklist" style="margin-top:14px;gap:10px">
+          <div class="check" style="color:#fff;font-size:19px"><i>1</i><div>Everything is <strong style="color:#fff">lazy</strong>: return a plan, execute only when the user looks</div></div>
+          <div class="check" style="color:#fff;font-size:19px"><i>2</i><div>Never call <span class="mono" style="color:#ffcb6b">_execute()</span> or <span class="mono" style="color:#ffcb6b">to_df()</span> by hand</div></div>
+          <div class="check" style="color:#fff;font-size:19px"><i>3</i><div>Tests must <strong style="color:#fff">mirror</strong> pandas and DataStore line by line</div></div>
+          <div class="check" style="color:#fff;font-size:19px"><i>4</i><div>Compare the <strong style="color:#fff">whole</strong> result: columns, values, order</div></div>
+        </div>
+        <div style="height:1px;background:#41464e;margin:18px 0"></div>
+        <p style="font-size:16px">Each of these came from watching the agent get it wrong once.</p>
+      </div>
+    </div>
+  </div>
+  <div class="source">All four rules are in the repository today: chdb-io/chdb · AGENTS.md</div>
+  <aside class="notes">Be concrete. These four rules are real, they are in AGENTS.md in the public repository, and every one of them exists because I watched the agent reason its way to a wrong answer. The lazy-execution rule came from the agent eagerly materializing frames. The mirror-test rule came from tests that only checked one side. The early weeks are when you can still see the mistakes forming.</aside>
+</section>
+
+<!-- 10 · AGENTS CHEAT -->
+<section data-part="4 · HOW WE BUILT IT">
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.48fr 0.52fr">
+      <div>
+        <div class="eyebrow">The shortcut we banned</div>
         <h2>Agents <span class="red">cheat.</span></h2>
-        <p style="margin-top:20px">A test fails because row order differs. The fastest way to green?</p>
-        <div class="codebox" style="margin-top:20px">
+        <p style="margin-top:18px">A test fails because the rows come back in a different order. The fastest way to green?</p>
+        <div class="codebox" style="margin-top:18px">
           <div class="codebar">the tempting “fix”</div>
           <pre><code class="language-python">actual.sort_values(...)
 expected.sort_values(...)
-assert_equal(actual, expected)</code></pre>
+assert_equal(actual, expected)  # passes</code></pre>
         </div>
+        <p style="margin-top:16px;font-size:21px">Test green. Incompatible behavior now invisible.</p>
       </div>
-      <div>
-        <div class="card red"><h3>Test passes</h3><p>The incompatible behavior is now hidden.</p></div>
-        <div class="arrow" style="text-align:center;margin:10px">↓</div>
-        <div class="card green"><h3>Our rule</h3><p>Never normalize away a difference. Fix it—or mark an explicit, reviewed XFAIL.</p></div>
+      <div class="codebox">
+        <div class="codebar">AGENTS.md · verbatim</div>
+        <div class="rule" style="padding:18px 22px">
+          <span class="h">## 4. Testing principles</span><br><br>
+          Using <span class="h">reset_index()</span> in tests to mask<br>problems = <span class="x">DataStore bug</span>, not correct<br>test writing.<br><br>
+          <span class="h">FORBIDDEN:</span><br>
+          <span class="x">❌</span> Only verifying <span class="h">len()</span> without values<br>
+          <span class="x">❌</span> Comments describing expected behaviour<br>&nbsp;&nbsp;&nbsp;without actual assertions<br>
+          <span class="x">❌</span> <span class="h"># TODO: verify later</span><br><br>
+          <span class="h">REQUIRED:</span><br>
+          <span class="ok">✓</span> Complete output comparison<br>&nbsp;&nbsp;&nbsp;(columns + data + order)
+        </div>
       </div>
     </div>
   </div>
-  <aside class="notes">Agents optimize for the signal we give them. If the signal is “make the test green,” they may alter the test. We explicitly banned sorting, reset_index, weak length-only checks, and silent skipping. Observe the shortcut, then close it.</aside>
+  <aside class="notes">Agents optimize for the signal you give them. If the signal is "make the test pass," they will happily change the test. We caught sorting before comparison, reset_index to hide index bugs, and length-only checks. The right side is the actual text from our AGENTS.md. Observe the shortcut, then close it in writing where the next agent will read it.</aside>
 </section>
 
-<section data-part="THE $20K LESSON">
+<!-- 11 · THE TEAM GREW -->
+<section data-part="5 · WHEN THE TEAM GREW">
   <div class="frame">
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:0.5fr 0.5fr">
       <div>
-        <div class="eyebrow">Lesson 3 · Durable rules</div>
-        <h2>Put rules in the repo.<br><span class="orange">Then keep deleting them.</span></h2>
-        <div class="checklist">
-          <div class="check"><i>+</i><div>Architecture decisions</div></div>
-          <div class="check"><i>+</i><div>Forbidden shortcuts</div></div>
-          <div class="check"><i>+</i><div>What “done” actually means</div></div>
-        </div>
+        <div class="eyebrow">February 2026</div>
+        <h2>Then a teammate joined.<br><span class="orange">The old bugs came back.</span></h2>
+        <p style="margin-top:18px">Two months of rules lived in three places: my head, my chat history, and one agent's memory on one laptop.</p>
+        <p style="margin-top:14px"><strong>A new engineer with a fresh agent re-made mistakes I had fixed in December.</strong> Sorted comparisons. Eager execution. Length-only tests.</p>
       </div>
-      <div class="card">
-        <div class="mono" style="font-size:18px;font-weight:900;color:var(--blue)">CLAUDE.md / AGENTS.md</div>
-        <div class="bars" style="margin-top:24px">
-          <div class="bar"><span>Signal</span><div class="bar-track"><div class="bar-fill blue" style="width:85%"></div></div><b>high</b></div>
-          <div class="bar"><span>Rule #147</span><div class="bar-track"><div class="bar-fill" style="width:50%"></div></div><b>maybe</b></div>
-          <div class="bar"><span>Rule #498</span><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div><b>noise</b></div>
+      <div>
+        <div class="card red">
+          <h3>What was written down</h3>
+          <p>A README, and the AGENTS.md I had started. Maybe 20% of what we actually knew.</p>
         </div>
-        <div class="quote" style="font-size:24px;margin-top:27px">Am I adding another button to the iPhone?</div>
+        <div class="arrow" style="text-align:center;margin:8px">↓</div>
+        <div class="card dark">
+          <h3>What was not</h3>
+          <p>Why we rejected three designs. Which pandas quirks we chose to reproduce on purpose. Every "we always do X here" that I had said to an agent in passing.</p>
+        </div>
       </div>
     </div>
   </div>
-  <aside class="notes">A repository rule file unexpectedly became the team interface for teaching agents. But rules have the same attention budget as every other context item. A five-hundred-line file becomes a terms-of-service page: technically present, practically ignored.</aside>
+  <div class="source">Contributors on datastore/ by month: Jan 1 · Feb 2 · Jun 4, plus outside contributors from April onward.</div>
+  <aside class="notes">This is the problem that nobody plans for. Working alone with agents, you accumulate rules very fast, and almost none of them get written down, because the agent you are talking to already knows them. Then a second person arrives with a second agent, and it is December again. The failure is not the new engineer. It is that the knowledge had no durable home.</aside>
 </section>
 
-<section data-part="THE $20K LESSON">
+<!-- 12 · FIX 1: REVIEW AGENTS -->
+<section data-part="5 · WHEN THE TEAM GREW">
   <div class="frame">
-    <div class="eyebrow">Lesson 4 · Break the shared blind spot</div>
-    <h2>Bring in someone with <span class="orange">zero memory.</span></h2>
-    <div class="grid2" style="height:auto;margin-top:36px">
+    <div class="eyebrow">Fix 1 · Code review</div>
+    <h2>Reviewers with <span class="orange">zero memory.</span></h2>
+    <p style="margin-top:14px">We added several review agents to the pull-request flow. On purpose, they know nothing about the project except the rules file.</p>
+    <div class="grid2" style="height:auto;margin-top:30px">
       <div class="card blue">
-        <h3>Daily agent</h3>
-        <p>Knows the history. Knows every workaround. Eventually learns to step around every rough edge.</p>
+        <h3>The daily agent</h3>
+        <p>Knows the history and every workaround. Eventually learns to step around every rough edge—just like I did.</p>
       </div>
       <div class="card orange">
-        <h3>Fresh reviewer</h3>
-        <p>No project context. Asked to be critical, rational, and evidence-driven. Sees what insiders stopped seeing.</p>
+        <h3>The fresh reviewer</h3>
+        <p>No project context. Told to be critical, rational, and evidence-driven. Checks the FORBIDDEN list on every diff.</p>
       </div>
     </div>
-    <p style="margin-top:34px;text-align:center"><strong>Creators and reviewers need different context.</strong></p>
+    <div class="quote" style="margin-top:30px;font-size:27px">In its first pass, a reviewer with no history flagged a masked test, an inconsistent method signature, and three undocumented behaviors—all things the two of us had stopped seeing.<small>Creators and reviewers need different context. That is true for people, and it turned out to be true for agents.</small></div>
   </div>
-  <aside class="notes">The daily agent and I developed the same blind spots. A fresh model found confusing errors, inconsistent APIs, and missing documentation immediately. Separation of roles matters more than elaborate prompting.</aside>
+  <aside class="notes">The first fix was cheap: separate the roles. The agent that writes the code and I share the same blind spots. A reviewer that starts from zero, with only the rules file, sees what insiders stop seeing. This is not clever prompting. It is separation of duties, the same thing every engineering organization already does with people.</aside>
 </section>
 
-<section data-part="THE $20K LESSON">
+<!-- 13 · THE REAL PAIN -->
+<section data-part="5 · WHEN THE TEAM GREW">
   <div class="frame">
-    <div class="grid2">
+    <div class="grid2" style="grid-template-columns:0.5fr 0.5fr">
       <div>
-        <div class="eyebrow">Lesson 5 · Deterministic control</div>
-        <h2>Files carry context.<br>JSON carries decisions.</h2>
-        <div class="flow wrap" style="justify-content:flex-start;margin-top:28px">
-          <span class="tag">DISCOVER</span><span class="tag">IMPLEMENT</span>
-          <span class="tag">TEST</span><span class="tag orange">REVIEW</span>
-        </div>
-        <p style="margin-top:24px">Agents write artifacts to disk. The next agent reads only what it needs.</p>
-        <p style="margin-top:12px"><strong>APPROVE · REJECT · ESCALATE</strong> are structured—not guessed from prose.</p>
-      </div>
-      <div class="terminal">
-        <span class="dim">$ python scripts/auto_loop.py</span><br><br>
-        Task: real Prophet notebook<br>
-        Generated: 18 mirror tests<br>
-        <span class="ok">✓ 7569 passed</span><br>
-        <span class="warn">Review: IMPROVE</span><br><br>
-        <span class="dim">{</span><br>
-        &nbsp;&nbsp;"decision": "IMPROVE",<br>
-        &nbsp;&nbsp;"reason": "weak assertion",<br>
-        &nbsp;&nbsp;"rollback_on_failure": true<br>
-        <span class="dim">}</span>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">A Python supervisor orchestrated test generator, implementer, test runner, and reviewer. The filesystem held shared state. Structured decisions controlled the loop. A failed iteration triggered git rollback. The same pattern works with GitHub Copilot coding agent or any other coding agent.</aside>
-</section>
-
-<section data-part="THE $20K LESSON">
-  <div class="frame center">
-    <div class="eyebrow">I did not have the words yet</div>
-    <h2>We were building three systems.</h2>
-    <div class="grid3" style="width:100%;margin-top:40px;text-align:left">
-      <div class="card blue"><h3>Memory</h3><p>Keep the right knowledge across runs.</p></div>
-      <div class="card orange"><h3>Traces</h3><p>Record what happened and why.</p></div>
-      <div class="card green"><h3>Feedback loops</h3><p>Turn failures into better behavior.</p></div>
-    </div>
-    <p style="margin-top:42px"><strong>Every lesson survived a switch of agent framework.</strong></p>
-  </div>
-  <aside class="notes">This is the structure for the rest of the talk. None of these systems belongs to a particular model, IDE, or agent framework. They are the durable infrastructure around the model.</aside>
-</section>
-
-<section data-part="MEMORY">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">The handoff problem</div>
-        <h2>Every handoff loses context.</h2>
-        <p style="margin-top:22px">Days of architecture decisions, rejected ideas, naming rules, and weird edge cases…</p>
-        <p style="margin-top:16px"><strong>Then the next agent starts from a README.</strong></p>
-      </div>
-      <div class="flow" style="flex-direction:column">
-        <div class="node blue" style="width:300px">Build session<small>rich implicit context</small></div>
-        <div class="arrow">↓</div>
-        <div style="font-size:55px;font-weight:900;color:var(--red)">−30%</div>
-        <div class="arrow">↓</div>
-        <div class="node orange" style="width:300px">Operations agent<small>please explain it again</small></div>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">Thirty percent is my felt estimate, not a benchmark. The point is the shape of the loss: explicit documentation moves; reasoning and rejected alternatives usually do not. This is no different from an employee handoff.</aside>
-</section>
-
-<section data-part="MEMORY">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">The obvious fix</div>
-        <h2>A Markdown file is <span class="orange">write-only memory.</span></h2>
-        <div class="checklist">
-          <div class="check"><i>+</i><div>Easy to append</div></div>
-          <div class="check bad"><i>×</i><div>No ranking by relevance</div></div>
-          <div class="check bad"><i>×</i><div>No expiry or contradiction handling</div></div>
-          <div class="check bad"><i>×</i><div>No answer to “why did you recall this?”</div></div>
-        </div>
-      </div>
-      <div class="codebox">
-        <div class="codebar">memory.md</div>
-        <pre><code class="language-markdown"># Things to remember
-- User likes vegetarian food
-- Use Firebase for new apps
-- Never use approach B
-- Prefer short reports
-- Temporary workaround...
-- Another exception...
-- Another rule...</code></pre>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">Markdown is good documentation. It is a poor memory system. Once everything is appended, every memory competes for attention forever.</aside>
-</section>
-
-<section data-part="MEMORY">
-  <div class="frame">
-    <div class="eyebrow">A memory needs a lifecycle</div>
-    <h2><span class="orange">Bad memory</span> is worse than no memory.</h2>
-    <div class="grid2" style="height:auto;margin-top:28px">
-      <div class="card red">
-        <h3>One vegetarian week</h3>
-        <p>becomes a permanent identity: “the user never eats meat.”</p>
-      </div>
-      <div class="card red">
-        <h3>One discarded Firebase idea</h3>
-        <p>keeps returning in every architecture review.</p>
-      </div>
-    </div>
-    <div class="layers" style="margin-top:27px">
-      <div class="layer"><b class="blue">L0</b><p><strong>Working memory</strong> · current task state</p><div class="life">SESSION</div></div>
-      <div class="layer"><b class="orange">L1</b><p><strong>Episodic memory</strong> · what happened and when</p><div class="life">DECAYS</div></div>
-      <div class="layer"><b class="green">L2</b><p><strong>Semantic memory</strong> · reviewed facts and decisions</p><div class="life">REVISED</div></div>
-    </div>
-  </div>
-  <aside class="notes">A safe memory system is not a firehose. Short-lived events should decay. Durable facts should be reviewed and revised when contradicted. Append-only history preserves the audit trail even when the current belief changes.</aside>
-</section>
-
-<section data-part="MEMORY">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">Retrieval, not stuffing</div>
-        <h2>Recall is one SQL query.</h2>
-        <div class="flow wrap" style="justify-content:flex-start;margin-top:26px">
-          <span class="tag">vector similarity</span><span class="tag">keywords</span>
-          <span class="tag">time decay</span><span class="tag">past usefulness</span>
-        </div>
-        <div class="metrics">
-          <div class="metric"><b>~10 ms</b><span>LOCAL RECALL</span></div>
-          <div class="metric"><b>1</b><span>QUERY</span></div>
-        </div>
-      </div>
-      <div>
-        <div class="card dark">
-          <img src="logos/chdb-light.png" class="img" style="height:72px;margin-bottom:22px!important" alt="chDB">
-          <h3>ClickHouse, inside your process.</h3>
-          <p style="margin-top:12px">Think of it as SQLite for analytical data: one package, no database server.</p>
-        </div>
-        <div class="codebox" style="margin-top:14px">
-          <pre><code class="language-python">pip install chdb
-
-memory = recall(task, project, user)</code></pre>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="source">Measured on the ClickMem local demo; latency varies by hardware and corpus.</div>
-  <aside class="notes">This is where chDB appears naturally. Memory retrieval is a mixed analytical query over text, vectors, metadata, time, and history. For one user, run the query locally. At organization scale, graduate the same shape to ClickHouse.</aside>
-</section>
-
-<section data-part="MEMORY">
-  <div class="frame">
-    <div class="eyebrow">Enterprise memory</div>
-    <h2>Give the digital teammate a <span class="azure">name, boundary, and history.</span></h2>
-    <div class="flow" style="margin-top:40px">
-      <div class="node azure">Entra Agent ID<small>who is acting?</small></div><div class="arrow">→</div>
-      <div class="node azure">Purview policies<small>what may it see?</small></div><div class="arrow">→</div>
-      <div class="node">OneLake / ADLS<small>files where they live</small></div><div class="arrow">→</div>
-      <div class="node orange">chDB / ClickHouse<small>recall + history</small></div>
-    </div>
-    <div class="quote" style="margin-top:50px">Treat an agent like a new hire: its own identity, access, memory—and manager.</div>
-  </div>
-  <div class="source">Microsoft Agent 365 and Foundry terminology as of Sep 2026.</div>
-  <aside class="notes">Microsoft's digital teammate framing is useful because it brings familiar governance with it. Entra establishes identity. Purview governs data boundaries. The memory record should say who learned what, from where, and under which authority.</aside>
-</section>
-
-<section data-part="TRACES">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">The visibility problem</div>
-        <h2>I had no idea what was running.</h2>
-        <p style="margin-top:20px">Bugs, deployments, scheduled jobs, reports—everything landed in one chat.</p>
-        <p style="margin-top:18px"><strong>No run record. No owner. No final state.</strong></p>
-      </div>
-      <div class="card red">
-        <h3>“The agent is working on it.”</h3>
-        <div class="checklist">
-          <div class="check bad"><i>?</i><div>Did it receive the task?</div></div>
-          <div class="check bad"><i>?</i><div>Which tools did it call?</div></div>
-          <div class="check bad"><i>?</i><div>Did it finish—or disappear?</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">Watching the reasoning manually helped early in DataStore. But an enterprise cannot watch every agent in real time. The manual habit needs to become telemetry.</aside>
-</section>
-
-<section data-part="TRACES">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">A minimum reliability contract</div>
-        <h2>First, acknowledge.<br>Then, always return.</h2>
-        <div class="card green" style="margin-top:28px">
-          <h3>1 · Accepted</h3><p>Before any model call, persist the task and return an acknowledgement.</p>
-        </div>
-        <div class="card blue" style="margin-top:14px">
-          <h3>2 · Terminal state</h3><p>Every run ends as success, failure, timeout, or cancelled.</p>
-        </div>
-      </div>
-      <div class="span-tree">
-        <div class="span">agent.run <b>17.2s</b></div>
-        <div class="span l2">model.plan <b>2.1s</b></div>
-        <div class="span l2">tool.search <b>4.7s</b></div>
-        <div class="span l3">retry #1 <b>429</b></div>
-        <div class="span l2">tool.write <b>1.3s</b></div>
-        <div class="span l2">model.answer <b>3.8s</b></div>
-        <div class="span" style="border-color:var(--green);background:#eff9f1">run.success <b>✓</b></div>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">In my messaging workflow, the acknowledgement was a check mark before the first model call. That tiny detail built more trust than a smarter model. The span tree then explains everything between accepted and finished.</aside>
-</section>
-
-<section data-part="TRACES">
-  <div class="frame">
-    <div class="eyebrow">Three views, three owners</div>
-    <h2>Do not mix the loops.</h2>
-    <div class="grid3" style="margin-top:36px">
-      <div class="card blue"><h3>Developer loop</h3><p>Microsoft Foundry tracing, Application Insights, or Langfuse. Debug one run.</p></div>
-      <div class="card azure"><h3>Organization loop</h3><p>Agent 365 + Entra Agent ID. Inventory, access, activity, lifecycle.</p></div>
-      <div class="card orange"><h3>Analysis loop</h3><p>Your own SQL and evaluations. Find patterns across thousands of runs.</p></div>
-    </div>
-    <div class="flow" style="margin-top:36px">
-      <div class="node dark" style="min-width:260px">OpenTelemetry<small>shared GenAI + agent span semantics</small></div>
-      <div class="arrow">→</div>
-      <p style="font-size:21px"><strong>Instrument once.</strong><br>Choose the views you need.</p>
-    </div>
-  </div>
-  <div class="source">Foundry traces are stored in Azure Monitor Application Insights; Agent 365 provides organization-level governance.</div>
-  <aside class="notes">Foundry is the builder view. Agent 365 is the organization control plane. Your analytical loop asks custom business questions. OpenTelemetry makes these layers composable instead of locking the agent into one backend.</aside>
-</section>
-
-<section data-part="TRACES">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">The moment it clicked</div>
-        <h2>A trace is just a <span class="orange">wide table.</span></h2>
-        <p style="margin-top:20px">I opened one bad run and saw the missing context, failed tool call, retries, latency, and token cost.</p>
-        <p style="margin-top:16px"><strong>Then I stopped debugging one run at a time.</strong></p>
-        <div class="brandrow">
-          <span class="tag orange">Langfuse</span>
-          <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse">
-        </div>
-      </div>
-      <div class="codebox">
-        <div class="codebar">questions the trace store can answer</div>
-        <pre><code class="language-sql">SELECT tool, countIf(status='error')
-FROM spans GROUP BY tool;
-
-SELECT skill, sum(tokens)
-FROM spans GROUP BY skill;
-
-SELECT quantile(0.95)(latency_ms)
-FROM spans WHERE name='memory.recall';</code></pre>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">Langfuse made individual traces understandable. ClickHouse makes the population understandable. Langfuse is now part of ClickHouse, but the important point is architectural: traces are analytical data.</aside>
-</section>
-
-<section data-part="TRACES">
-  <div class="frame">
-    <div class="eyebrow">The honest cost slide</div>
-    <h2>Full visibility creates <span class="orange">a lot of data.</span></h2>
-    <div class="grid3" style="margin-top:36px">
-      <div class="card blue"><h3>Compress</h3><p>Columnar storage makes repetitive span attributes cheap.</p></div>
-      <div class="card orange"><h3>Tier</h3><p>Keep hot detail. Aggregate older runs. Apply explicit TTLs.</p></div>
-      <div class="card red"><h3>Redact</h3><p>Remove secrets, credentials, and personal data before export.</p></div>
-    </div>
-    <div class="quote" style="margin-top:40px">“Trace everything” is not a privacy policy.</div>
-  </div>
-  <div class="source">Microsoft Foundry guidance recommends redacting sensitive content before it reaches telemetry.</div>
-  <aside class="notes">Observability can become a second copy of your most sensitive data. Redaction must happen before export, not after. Data residency also matters when telemetry moves between regional resources and tenant-level services.</aside>
-</section>
-
-<section data-part="FEEDBACK">
-  <div class="frame">
-    <div class="eyebrow">Close the loop</div>
-    <h2>The agent reviews the agent.</h2>
-    <div class="loop" style="margin-top:43px">
-      <div class="card blue"><h3>1 · Observe</h3><p>Collect traces and outcomes.</p></div><div class="arrow">→</div>
-      <div class="card orange"><h3>2 · Find bad cases</h3><p>Hallucinations, loops, weak decisions.</p></div><div class="arrow">→</div>
-      <div class="card green"><h3>3 · Improve</h3><p>Rules, skills, tests, prompts.</p></div>
-    </div>
-    <div class="flow" style="margin-top:40px">
-      <div class="arrow">↖</div><p style="font-size:21px"><strong>Periodic, evidence-driven, reviewable.</strong></p><div class="arrow">↙</div>
-    </div>
-    <p style="margin-top:26px;text-align:center;font-size:21px">The supervisor catches laziness, hallucinations, and fake tests—<strong>but never approves irreversible actions for itself.</strong></p>
-  </div>
-  <aside class="notes">I gave the agent a skill to query its own Langfuse history. Periodically it identifies bad interactions and proposes updates to rules and skills. Proposes, not silently ships. The line between self-improvement and self-corruption is human review.</aside>
-</section>
-
-<section data-part="FEEDBACK">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">Not just for coders</div>
-        <h2>The 8 a.m. patrol.</h2>
-        <p style="margin-top:20px">One read-only agent checks ads, analytics, subscriptions, releases, and model errors.</p>
-        <p style="margin-top:14px"><strong>Its real job is to tell me whether to panic.</strong></p>
+        <div class="eyebrow">Fix 2 · The deeper problem</div>
+        <h2>Most rules are born inside a decision.<br><span class="orange">Nobody notices.</span></h2>
+        <p style="margin-top:18px">In a review I say: “keep pandas' exact error message here.” That is a project rule. I did not think of it as one. Neither did the agent.</p>
+        <p style="margin-top:14px"><strong>The agent understood it for that session. Then the session ended, and so did the rule.</strong></p>
       </div>
       <div class="card dark">
-        <div style="font-size:15px;color:#9da5af;font-weight:900">DAILY ANOMALY REPORT · 08:17</div>
-        <h3 style="margin-top:18px;color:#fff">Nothing critical.</h3>
-        <p style="margin-top:9px">3 medium anomalies.</p>
-        <div style="height:1px;background:#424750;margin:20px 0"></div>
-        <p><strong style="color:#fff">engagedSessions ↓72%</strong><br>but sessions, users, and events are normal.</p>
-        <p style="margin-top:14px;color:#8bd39a">Likely a tracking artifact—not an outage.</p>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">This is an AI-native workplace example that is not code generation. The value is not dumping numbers. The value is combining evidence into an operational judgment, while staying read-only.</aside>
-</section>
-
-<section data-part="FEEDBACK">
-  <div class="frame">
-    <div class="eyebrow">Production failures become tests</div>
-    <h2>Every bad trace is the start of an <span class="orange">eval set.</span></h2>
-    <div class="flow" style="margin-top:42px">
-      <div class="node red">Bad run<small>real production case</small></div><div class="arrow">→</div>
-      <div class="node orange">Label<small>expected + failure type</small></div><div class="arrow">→</div>
-      <div class="node blue">Replay<small>prompt · model · tool change</small></div><div class="arrow">→</div>
-      <div class="node green">Gate<small>ship only if it holds</small></div>
-    </div>
-    <div class="grid3" style="margin-top:42px">
-      <div class="card"><h3>Groundedness</h3><p>Did the answer follow evidence?</p></div>
-      <div class="card"><h3>Safety</h3><p>Did policy hold under pressure?</p></div>
-      <div class="card"><h3>Business outcome</h3><p>Did the actual task succeed?</p></div>
-    </div>
-  </div>
-  <div class="source">Microsoft Foundry includes built-in evaluators and supports custom business-specific evaluations.</div>
-  <aside class="notes">A benchmark built from toy prompts is useful. A regression set built from your own production failures is much better. Foundry gives standard evaluators; the most important evaluator is often your business oracle.</aside>
-</section>
-
-<section data-part="FEEDBACK">
-  <div class="frame">
-    <div class="grid2">
-      <div>
-        <div class="eyebrow">The payoff</div>
-        <h2>My agent found a bug in <span class="orange">its own runtime.</span></h2>
-        <div class="checklist">
-          <div class="check"><i>1</i><div>Diagnosed an infinite restart loop</div></div>
-          <div class="check"><i>2</i><div>Wrote a one-line fix and two tests</div></div>
-          <div class="check"><i>3</i><div>Opened the pull request under its own identity</div></div>
+        <div style="font-size:15px;color:#9da5af;font-weight:900;letter-spacing:.08em">ONE AFTERNOON OF REVIEW, THREE RULES NOBODY WROTE DOWN</div>
+        <div style="display:grid;gap:14px;margin-top:16px">
+          <div><p style="color:#fff;font-weight:800">“Match pandas' error text, not just the exception type.”</p><p style="font-size:16px;margin-top:4px">→ project rule</p></div>
+          <div><p style="color:#fff;font-weight:800">“Don't add a fast path here; the SQL builder should handle it.”</p><p style="font-size:16px;margin-top:4px">→ architecture decision</p></div>
+          <div><p style="color:#fff;font-weight:800">“We reproduce this pandas quirk on purpose.”</p><p style="font-size:16px;margin-top:4px">→ the kind of fact a new teammate “fixes” by accident</p></div>
         </div>
       </div>
-      <div class="pr">
-        <span class="state">Merged</span>
-        <h3>fix: avoid restart loop on plugin metadata updates</h3>
-        <p>One rule classified install timestamps as a no-op before the catch-all restart rule.</p>
-        <div class="reviews">✓ 3 human reviewers approved</div>
-      </div>
     </div>
   </div>
-  <aside class="notes">This is the end state I want: not “the agent is smart,” but the agent can diagnose, test, propose, and submit under its own identity, while humans retain approval. The original incident happened in the open-source runtime my agent was using; the framework name is not important.</aside>
+  <aside class="notes">This is the pain that led to the tool on the next slide. Rules do not arrive labeled as rules. They arrive as small decisions in the middle of doing something else. The agent picks them up in the moment, and then they evaporate at the end of the session. Writing docs after the fact does not work, because you cannot remember what you decided in passing.</aside>
 </section>
 
-<section data-part="FEEDBACK">
+<!-- 14 · CLICKMEM -->
+<section data-part="5 · WHEN THE TEAM GREW">
   <div class="frame">
-    <div class="eyebrow">Do not automate the wrong thing</div>
-    <h2>Closed loop does not mean <span class="red">closed oversight.</span></h2>
-    <div class="grid3" style="margin-top:38px">
-      <div class="card red"><h3>No silent self-editing</h3><p>Rules and skills change only through reviewable diffs.</p></div>
-      <div class="card orange"><h3>No shared superuser</h3><p>Each agent gets its own identity and least privilege.</p></div>
-      <div class="card blue"><h3>No universal architecture</h3><p>A solo setup is not a 5,000-agent tenant design.</p></div>
-    </div>
-    <div class="quote" style="margin-top:42px">Containment gives an agent room to act without giving it room to ruin everything.</div>
-  </div>
-  <aside class="notes">The more autonomy we want, the more containment we need. Identity, permissions, review boundaries, rollback, and durable traces are what make autonomy safe.</aside>
-</section>
-
-<section data-part="PUTTING IT TOGETHER">
-  <div class="frame">
-    <div class="eyebrow">One picture</div>
-    <h2>Identity around the agent.<br>Evidence around every run.</h2>
+    <div class="eyebrow">Fix 2 · ClickMem</div>
+    <h2>Hook every agent. <span class="orange">Distill at the end of each session.</span> Share.</h2>
     <div class="flow" style="margin-top:32px">
-      <div class="node azure">Copilot Studio<br>/ Foundry<small>agent + tools</small></div><div class="arrow">→</div>
-      <div class="node dark">OpenTelemetry<small>runs · tools · models</small></div><div class="arrow">→</div>
-      <div style="display:grid;gap:10px">
-        <div class="node azure">App Insights / Agent 365<small>debug + govern</small></div>
-        <div class="node orange">Langfuse / ClickHouse<small>analyze + evaluate</small></div>
+      <div class="node">Claude Code · Cursor<br>Codex · Hermes<small>hooks installed in each</small></div><div class="arrow">→</div>
+      <div class="node orange">Session ends<small>agent asks itself: what here is worth keeping?</small></div><div class="arrow">→</div>
+      <div class="node green">Rows in chDB<small>project · kind · tags · embedding</small></div><div class="arrow">→</div>
+      <div class="node dark">Next session, any machine<small>recall by project + task</small></div>
+    </div>
+    <div class="grid3" style="margin-top:34px">
+      <div class="card"><h3>Explicit, not everything</h3><p>The agent commits refined decisions and rules. Raw chat stays cold. No background mining of transcripts into “insights.”</p></div>
+      <div class="card"><h3>Scoped</h3><p>Every memory carries a project and a kind: principle, decision, fact. A rule for DataStore does not leak into another repo.</p></div>
+      <div class="card orange"><h3>Shared</h3><p>One local server on my Mac mini serves my laptop and my agents. Teammates point at the same store; ClickHouse backend when it outgrows one box.</p></div>
+    </div>
+  </div>
+  <div class="source">github.com/auxten/clickmem · built on chDB · adapters for Claude Code, Cursor, Codex, Aider, Cline, Windsurf, Zed, Hermes and a generic REST/MCP path</div>
+  <aside class="notes">ClickMem is what we built for this, on top of chDB. Hooks go into every agent we use. At the end of a session the agent, with its own model, decides which conclusions are worth keeping and commits them as structured rows: project, kind, tags, embedding. Next session, on any machine, the agent recalls by project and task. It is deliberately not a firehose: raw transcripts are stored cold and never injected. Only refined decisions enter the store.</aside>
+</section>
+
+<!-- 15 · RECALL IS ONE SQL QUERY -->
+<section data-part="5 · WHEN THE TEAM GREW">
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.36fr 0.64fr;align-items:start">
+      <div>
+        <div class="eyebrow">Why a database, not a Markdown file</div>
+        <h2>Recall is one SQL query.</h2>
+        <p style="margin-top:18px;font-size:22px">Meaning, project scope, recency, and what helped before—one table, one round-trip, about 10 ms locally.</p>
+        <p style="margin-top:22px;font-size:19px">A Markdown memory file is write-only: it grows forever, every line competes for attention, and nothing expires. Rows can be filtered, ranked, revised, and audited.</p>
+      </div>
+      <div class="codebox">
+        <div class="codebar">recall.sql · the shape of it</div>
+        <div class="sqlslide sqlgrid">
+          <div><span class="kw">SELECT</span> content,</div><div></div>
+          <div>&nbsp;&nbsp;<span class="fn">1 - cosineDistance</span>(embedding, :q) <span class="kw">AS</span> meaning</div><div class="cm">-- vector</div>
+          <div><span class="kw">FROM</span> memory</div><div></div>
+          <div><span class="kw">WHERE</span> project = <span class="st">'chdb-io/chdb'</span></div><div class="cm">-- whose memory</div>
+          <div>&nbsp;&nbsp;<span class="kw">AND</span> <span class="fn">hasAny</span>(tags, [<span class="st">'testing'</span>])</div><div class="cm">-- keywords</div>
+          <div>&nbsp;&nbsp;<span class="kw">AND</span> created &gt; <span class="fn">now</span>() - <span class="kw">INTERVAL</span> 90 <span class="kw">DAY</span></div><div class="cm">-- time decay</div>
+          <div><span class="kw">ORDER BY</span> pinned <span class="kw">DESC</span>,</div><div></div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;meaning <span class="kw">DESC</span>,</div><div></div>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;times_used <span class="kw">DESC</span></div><div class="cm">-- past use</div>
+          <div><span class="kw">LIMIT</span> 8</div><div></div>
+        </div>
       </div>
     </div>
-    <div class="flow" style="margin-top:25px">
-      <div class="node azure">Entra Agent ID<small>identity + authority</small></div><div class="arrow">↗</div>
-      <div class="node green">Memory<small>chDB local · ClickHouse at scale</small></div><div class="arrow">↗</div>
-      <div class="node orange">Feedback loop<small>bad case → eval → reviewed change</small></div>
-    </div>
   </div>
-  <aside class="notes">This is not a requirement to buy every box. It is a map of responsibilities. Identity answers who. Traces answer what happened. Memory answers what the agent knew. Evaluation answers whether it worked. The feedback loop improves the next run.</aside>
+  <div class="source">Simplified from ClickMem's recall. Production adds privacy filters, conflict status, and latest-version-only.</div>
+  <aside class="notes">This is why memory is a database problem and not a file problem. One query does four jobs: cosineDistance ranks by meaning, WHERE keeps other projects out, the interval keeps a one-week workaround from becoming a permanent belief, and times_used is the cheap feedback signal. chDB runs this in-process in about ten milliseconds. The same SQL runs on a ClickHouse cluster when the team outgrows one machine.</aside>
 </section>
 
-<section data-part="PUTTING IT TOGETHER">
+<!-- 16 · HERMES: SAME DESIGN -->
+<section data-part="5 · WHEN THE TEAM GREW">
   <div class="frame">
-    <div class="eyebrow">Start this afternoon</div>
-    <h2>Three changes. No grand platform rewrite.</h2>
+    <div class="grid2" style="grid-template-columns:0.52fr 0.48fr">
+      <div>
+        <div class="eyebrow">The same idea, from someone else</div>
+        <h2>Hermes Agent turns <span class="orange">conversations into skills.</span></h2>
+        <p style="margin-top:18px">I use Hermes Agent for a lot of my daily operations. Its best feature: after a task, it writes what it learned into a reusable skill file, without being asked.</p>
+        <p style="margin-top:14px">They call it <strong>self-evolving</strong>. It is less magical than that. It is a hook that turns a conversation into a file the next session will read.</p>
+        <p style="margin-top:14px;font-size:21px"><strong>That is exactly the right design.</strong> Whatever agent you run, this is the pattern to demand from it.</p>
+      </div>
+      <div class="terminal">
+        <span class="dim">me ›</span> when you finish the App Store upload, always<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check the export-compliance prompt first<br><br>
+        <span class="dim">hermes ›</span> Done. Upload complete.<br>
+        <span class="ok">✓ Updated skill: app-store-publish</span><br>
+        <span class="dim">&nbsp;&nbsp;+ step 0: confirm export-compliance dialog</span><br>
+        <span class="dim">&nbsp;&nbsp;+ note: prompt appears only on first build of a version</span><br><br>
+        <span class="dim">-- next week, new session --</span><br>
+        <span class="dim">hermes ›</span> Loading skill app-store-publish…<br>
+        <span class="ok">✓ Export-compliance confirmed before upload</span>
+      </div>
+    </div>
+  </div>
+  <div class="source">Hermes Agent · open-source, Nous Research · terminal condensed from a real exchange</div>
+  <aside class="notes">Give credit where it is due. Hermes Agent, which I use for a lot of my own operations, has a built-in loop where the agent updates its own skill files after a task. The marketing word is self-evolving. The engineering reality is a hook plus a file. That is fine, because the design is right: the conversation produces a durable artifact the next session reads. ClickMem does the same for decisions; Hermes does it for procedures.</aside>
+</section>
+
+<!-- 17 · THE TEST SUITE -->
+<section data-part="6 · CLOSING THE LOOP">
+  <div class="frame">
+    <div class="eyebrow">Ten months later</div>
+    <h2><span class="orange">11,161</span> tests. Every one runs on every pull request.</h2>
+    <div class="grid3" style="margin-top:34px">
+      <div class="card blue"><h3>Mirror tests</h3><p>The bulk of the suite. pandas and DataStore side by side, full output compared: columns, values, order.</p></div>
+      <div class="card orange"><h3>Journeys</h3><p>Whole real-world notebooks replayed end to end: a Kaggle-style exploration, an Amazon-reviews analysis, chained aggregations.</p></div>
+      <div class="card green"><h3>Performance</h3><p>Speed and memory checks so a correctness fix cannot quietly make the engine slower than pandas.</p></div>
+    </div>
+    <div class="metrics" style="margin-top:34px;justify-content:center">
+      <div class="metric"><b>281</b><span>TEST FILES</span></div>
+      <div class="metric"><b>11,161</b><span>TEST FUNCTIONS</span></div>
+      <div class="metric"><b>0</b><span>SORT-BEFORE-COMPARE ALLOWED</span></div>
+    </div>
+  </div>
+  <div class="source">Counted on chdb-io/chdb main, datastore/tests, 16 Sep 2026</div>
+  <aside class="notes">These numbers are from the public repository this morning. Most tests are mirrors: the same operation in pandas and DataStore, results compared completely. Journeys replay entire real notebooks. Performance tests keep us honest on speed and memory. And the rule from earlier is enforced: sorting before comparison is not allowed anywhere in this suite.</aside>
+</section>
+
+<!-- 18 · AUTO LOOP -->
+<section data-part="6 · CLOSING THE LOOP">
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns:0.5fr 0.5fr">
+      <div>
+        <div class="eyebrow">The Auto Loop</div>
+        <h2>Agents that find their own <span class="orange">edge cases.</span></h2>
+        <p style="margin-top:16px;font-size:22px">A Python supervisor runs four agents in a loop. Files on disk are the shared state. Decisions are JSON, not prose.</p>
+        <div class="checklist" style="margin-top:16px;gap:10px">
+          <div class="check"><i>1</i><div><strong>Generator</strong> picks a real notebook, writes mirror tests</div></div>
+          <div class="check"><i>2</i><div><strong>Implementer</strong> fixes whatever diverges from pandas</div></div>
+          <div class="check"><i>3</i><div><strong>Runner</strong> executes the full suite</div></div>
+          <div class="check"><i>4</i><div><strong>Reviewer</strong> returns APPROVE / IMPROVE / REJECT — then a PR, or a git rollback</div></div>
+        </div>
+      </div>
+      <div class="terminal">
+        <span class="dim">$ python scripts/auto_loop.py --source kaggle</span><br><br>
+        Task: time-series forecasting notebook<br>
+        Generated: 18 mirror tests<br>
+        <span class="bad">✗ 3 divergences</span> · MultiIndex slice with step · empty-frame dtype chain · groupby iteration order<br>
+        Implementer: 2 fixes, 1 XFAIL proposed<br>
+        <span class="ok">✓ 11,161 passed</span> · 1 xfail<br>
+        <span class="warn">Review: IMPROVE</span><br>
+        <span class="dim">{</span> "decision": "IMPROVE",<br>
+        &nbsp;&nbsp;"reason": "xfail lacks linked pandas issue",<br>
+        &nbsp;&nbsp;"rollback_on_failure": true <span class="dim">}</span><br>
+        <span class="dim">→ PR #… opened for human review</span>
+      </div>
+    </div>
+  </div>
+  <div class="source">Test files it produced are in the repo: test_exploratory_batch47_multicolumn_multiindex_sparse.py, test_slice_step.py, test_groupby_iteration.py…</div>
+  <aside class="notes">This is the loop that found the edge cases no human would have written tests for. The generator takes a real notebook and writes mirror tests. The implementer fixes divergences. The runner executes everything. The reviewer returns a structured decision, and a failed iteration triggers a git rollback. Humans review the resulting PR. The file names at the bottom are real test files this loop produced.</aside>
+</section>
+
+<!-- 19 · RESULTS -->
+<section data-part="6 · CLOSING THE LOOP">
+  <div class="frame">
+    <div class="eyebrow">What ten months bought</div>
+    <h2 style="font-size:42px">Faster on <span class="orange">14 of 20</span> everyday ops. <span class="orange">One third</span> of the RAM.</h2>
+    <img src="logos/benchmark_pandas_datastore.png" class="img carded" style="height:330px;margin-top:16px!important;background:#fff" alt="pandas vs DataStore benchmark, 10M rows, 20 operations">
+    <div class="metrics" style="margin-top:18px">
+      <div class="metric"><b>×35–52</b><span>SORTS ON 10M ROWS</span></div>
+      <div class="metric"><b>33%</b><span>PEAK RAM VS PANDAS</span></div>
+      <div class="metric"><b>×71</b><span>CLICKBENCH DATAFRAME, OVERALL</span></div>
+      <div class="metric"><b>1</b><span>LINE CHANGED</span></div>
+    </div>
+  </div>
+  <div class="source">10M-row parquet, best of 2, outputs verified identical between engines. ClickBench DataFrame category: 43.77 GiB, same hardware, pandas ×71 slower overall.</div>
+  <aside class="notes">Now the muscle slide. Ten million rows, twenty everyday operations, same laptop: DataStore wins fourteen. Sorts are the blowout, thirty-five to fifty-two times, because the engine keeps a ten-row heap instead of materializing the sorted frame. Peak memory is about a third of pandas. On the published ClickBench DataFrame benchmark the gap is seventy-one times overall. And the user changed one line.</aside>
+</section>
+
+<!-- 20 · HONEST LIMITS -->
+<section data-part="6 · CLOSING THE LOOP">
+  <div class="frame">
+    <div class="eyebrow">Where pandas still wins</div>
+    <h2>Six of twenty. <span class="orange">We say so in the docs.</span></h2>
+    <div class="grid3" style="margin-top:36px">
+      <div class="card red"><h3>Small data</h3><p>Under about a million rows, pandas is faster. Compiling to SQL has a fixed cost. Keep pandas there.</p></div>
+      <div class="card red"><h3>Bulk value replace</h3><p><span class="mono">mask</span> / <span class="mono">where</span> rewrite a column in place. We round-trip it through the engine. pandas wins on speed and RAM.</p></div>
+      <div class="card"><h3>Anything we can't translate</h3><p>Falls back to real pandas for that step. Correct, but no speedup. The logs tell you exactly which step.</p></div>
+    </div>
+    <div class="quote" style="margin-top:40px;font-size:27px">The oracle that made the project possible also makes it impossible to hide this. Every benchmark row is a mirror test.</div>
+  </div>
+  <aside class="notes">One clean concession, said out loud. Small data is pandas country. Bulk value replacement is pandas country. And anything the compiler cannot translate runs as real pandas, correct but not faster. The point for this room: because every result is compared against pandas, we could not oversell this even if we wanted to.</aside>
+</section>
+
+<!-- 21 · TAKEAWAYS -->
+<section data-part="7 · WHAT I'D TELL YOUR TEAM">
+  <div class="frame">
+    <div class="eyebrow">Three things that transferred to every agent we tried</div>
+    <h2>Before you add another agent.</h2>
     <div class="takeaways">
-      <div class="takeaway"><div class="n">01</div><div><strong>Turn on tracing.</strong> Capture one complete run from accepted to terminal state.</div></div>
-      <div class="takeaway"><div class="n">02</div><div><strong>Give memory a schema.</strong> Replace one append-only Markdown list with rows, provenance, and status.</div></div>
-      <div class="takeaway"><div class="n">03</div><div><strong>Pick 10 bad cases.</strong> Make them the first regression set before changing model or prompt.</div></div>
+      <div class="takeaway"><div class="n">01</div><div><strong>Find your oracle first.</strong> Something other than the model must be able to say “wrong.” For us it was pandas. For you it may be last quarter's numbers, the old system, or a human sign-off.</div></div>
+      <div class="takeaway"><div class="n">02</div><div><strong>Put rules where the next agent reads them.</strong> A rules file in the repo, and a shared memory store with project scope. Not your chat history. Not one laptop.</div></div>
+      <div class="takeaway"><div class="n">03</div><div><strong>Turn every failure into a test that runs forever.</strong> Then let agents hunt for the next failure. Humans review the pull request.</div></div>
     </div>
-    <p style="margin-top:40px"><strong>Do this before adding another agent.</strong></p>
+    <p style="margin-top:32px;font-size:26px"><strong>Prompt engineering is the entry ticket.<br><span class="orange">System engineering is the moat.</span></strong></p>
   </div>
-  <aside class="notes">This is deliberately small. One traced workflow, one structured memory table, ten real failures. The point is to begin producing evidence before scaling autonomy.</aside>
+  <div class="source">Same three held across Claude Code, Cursor, Codex, Hermes, and GitHub Copilot coding agent.</div>
+  <aside class="notes">Close on what transfers. Everything on this slide survived changes of model and agent framework, because none of it lives in the model. The oracle is verification. The rules file and the memory store are memory. The test suite plus the loop is feedback. Those three are the system around the agent, and that system is what you can actually trust.</aside>
 </section>
 
-<section data-part="CLOSE">
-  <div class="frame center">
-    <div class="eyebrow">Three takeaways</div>
-    <h2 style="font-size:47px">Do not hire a teammate who…</h2>
-    <div class="grid3" style="width:100%;margin-top:38px;text-align:left">
-      <div class="card blue"><h3>forgets everything</h3><p>Memory needs retrieval, lifecycle, and provenance.</p></div>
-      <div class="card orange"><h3>leaves no record</h3><p>Every run needs identity, spans, and a final state.</p></div>
-      <div class="card green"><h3>never learns</h3><p>Failures should become evaluations and reviewed changes.</p></div>
-    </div>
-    <p style="margin-top:40px;font-size:29px"><strong>Prompt engineering is the entry ticket.<br><span class="orange">System engineering is the moat.</span></strong></p>
-  </div>
-  <aside class="notes">Memory, traces, and feedback loops turn capability into trust. Verifiable does not mean deterministic. It means we can explain, replay, evaluate, and improve the system.</aside>
-</section>
-
+<!-- 22 · Q&A -->
 <section data-part="Q&A">
   <div class="frame center">
     <div class="eyebrow">Thank you</div>
     <h1>Questions?</h1>
     <p style="margin-top:24px">@auxten · auxten.com</p>
     <div class="tags" style="justify-content:center;margin-top:30px">
+      <span class="tag orange">pip install chdb</span>
       <span class="tag">github.com/chdb-io/chdb</span>
       <span class="tag">github.com/auxten/clickmem</span>
-      <span class="tag orange">zhuanlan.zhihu.com/p/2011796810969158285</span>
     </div>
     <div class="brandrow" style="justify-content:center;margin-top:45px">
       <img src="logos/chdb-light.png" alt="chDB">
       <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse">
     </div>
   </div>
-  <aside class="notes">Leave this slide up for Q&A. If asked about the specific runtime, answer directly, but keep the discussion on portable architecture rather than framework comparison.</aside>
+  <aside class="notes">Leave this up for Q&A. If asked which agent framework to use: the honest answer is that it mattered less than the oracle, the rules file, and the test loop.</aside>
 </section>
 
 </div></div>
