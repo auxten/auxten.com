@@ -557,6 +557,66 @@ assert_equal(actual, expected)  # passes</code></pre>
   <aside class="notes">This is the loop that found the edge cases no human would have written tests for. The generator takes a real notebook and writes mirror tests. The implementer fixes divergences. The runner executes everything. The reviewer returns a structured decision, and a failed iteration triggers a git rollback. Humans review the resulting PR. The file names at the bottom are real test files this loop produced.</aside>
 </section>
 
+<!-- 18b · HOW IT RUNS -->
+<section data-part="6 · CLOSING THE LOOP">
+  <div class="frame">
+    <div class="eyebrow">Before the numbers · how it actually runs</div>
+    <h2 style="font-size:42px">Lazy chain → compiler → <span class="orange">segments.</span></h2>
+    <svg viewBox="0 0 1160 360" width="1164" height="361" style="display:block;margin-top:18px" role="img" aria-label="Pandas calls are recorded into a lazy chain; on first result a compiler cuts the chain into segments: SQL for the ClickHouse engine, SQL plus an in-process Python UDF, or a Pandas segment for ops with no SQL translation">
+      <rect x="0" y="0" width="290" height="360" rx="10" fill="#fff" stroke="#151515" stroke-width="3"/>
+      <text x="145" y="34" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#151515">Your pandas code</text>
+      <text x="145" y="60" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#515862">unchanged, except the import</text>
+      <g font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#151515">
+        <text x="18" y="104">import chdb.datastore</text><text x="18" y="128">    as pd</text>
+        <text x="18" y="168">df = pd.read_parquet(f)</text>
+        <text x="18" y="208">df[df.status == 200]</text>
+        <text x="18" y="232">  .groupby("user_id")</text>
+        <text x="18" y="256">  .amount.sum()</text>
+        <text x="18" y="280" fill="#e65100">  .map(score)</text>
+        <text x="18" y="304">  .sort_values()</text>
+        <text x="18" y="328">  .head(10)</text>
+      </g>
+      <path d="M290 180 L326 180" stroke="#151515" stroke-width="4" fill="none"/><path d="M318 170 L338 180 L318 190 Z" fill="#151515"/>
+      <rect x="338" y="0" width="210" height="360" rx="10" fill="#fff6eb" stroke="#f1ad76" stroke-width="3"/>
+      <text x="443" y="34" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#151515">Lazy op chain</text>
+      <text x="443" y="60" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#515862">recorded, not run</text>
+      <g font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#151515">
+        <rect x="358" y="84" width="170" height="30" rx="5" fill="#fff" stroke="#151515" stroke-width="2"/><text x="443" y="106" text-anchor="middle">read_parquet</text>
+        <rect x="358" y="120" width="170" height="30" rx="5" fill="#fff" stroke="#151515" stroke-width="2"/><text x="443" y="142" text-anchor="middle">filter</text>
+        <rect x="358" y="156" width="170" height="30" rx="5" fill="#fff" stroke="#151515" stroke-width="2"/><text x="443" y="178" text-anchor="middle">groupby · sum</text>
+        <rect x="358" y="192" width="170" height="30" rx="5" fill="#fff" stroke="#e65100" stroke-width="2"/><text x="443" y="214" text-anchor="middle" fill="#e65100">map(score)</text>
+        <rect x="358" y="228" width="170" height="30" rx="5" fill="#fff" stroke="#151515" stroke-width="2"/><text x="443" y="250" text-anchor="middle">sort · head</text>
+      </g>
+      <text x="443" y="292" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#515862">runs when you look:</text>
+      <text x="443" y="316" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#151515">print · len</text>
+      <text x="443" y="340" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="18" fill="#151515">to_pandas()</text>
+      <path d="M548 180 L584 180" stroke="#151515" stroke-width="4" fill="none"/><path d="M576 170 L596 180 L576 190 Z" fill="#151515"/>
+      <rect x="596" y="100" width="150" height="160" rx="10" fill="#20242a" stroke="#20242a" stroke-width="3"/>
+      <text x="671" y="158" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#fff">Compiler</text>
+      <text x="671" y="188" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#d9dbe0">one plan,</text>
+      <text x="671" y="212" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#d9dbe0">cut into</text>
+      <text x="671" y="236" text-anchor="middle" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#d9dbe0">segments</text>
+      <path d="M746 150 L786 66" stroke="#267a3e" stroke-width="4" fill="none"/><path d="M775 62 L796 48 L793 72 Z" fill="#267a3e"/>
+      <path d="M746 180 L786 180" stroke="#e65100" stroke-width="4" fill="none"/><path d="M778 170 L798 180 L778 190 Z" fill="#e65100"/>
+      <path d="M746 210 L786 294" stroke="#0969da" stroke-width="4" fill="none"/><path d="M775 298 L796 312 L793 288 Z" fill="#0969da"/>
+      <rect x="798" y="0" width="362" height="104" rx="10" fill="#eff9f1" stroke="#92d1a0" stroke-width="3"/>
+      <text x="816" y="32" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#151515">SQL → ClickHouse engine</text>
+      <text x="816" y="60" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#267a3e">filter · groupby · sort · join · head</text>
+      <text x="816" y="86" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#515862">all cores · streaming · no copies</text>
+      <rect x="798" y="128" width="362" height="104" rx="10" fill="#fff5ec" stroke="#f1ad76" stroke-width="3"/>
+      <text x="816" y="160" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#151515">SQL + Python UDF</text>
+      <text x="816" y="188" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#e65100">.map(fn) · .apply(fn) run by the engine</text>
+      <text x="816" y="214" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#515862">your Python function, inside the plan</text>
+      <rect x="798" y="256" width="362" height="104" rx="10" fill="#edf6ff" stroke="#85bff0" stroke-width="3"/>
+      <text x="816" y="288" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#151515">pandas segment</text>
+      <text x="816" y="316" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#0969da">no SQL translation: mask, where …</text>
+      <text x="816" y="342" font-family="Inter, sans-serif" font-weight="700" font-size="18" fill="#515862">real pandas runs it, hands it back</text>
+    </svg>
+    <p style="margin-top:16px;font-size:19px">Segments run in order and pass results along. What comes back is a normal pandas DataFrame, same dtypes and index. A pandas segment mid-chain costs a round-trip through the engine—that is exactly where the next slide shows pandas winning.</p>
+  </div>
+  <aside class="notes">One slide on how it works so the numbers make sense. Left: your pandas code, unchanged except the import. Every call is recorded into a lazy chain; nothing runs. When you look at the result, the compiler builds one plan and cuts it into segments. Three kinds: most ops have a SQL equivalent and become one statement for the ClickHouse engine. A map or apply with a Python function becomes SQL plus an in-process UDF. Ops with no SQL translation, like mask and where, become a pandas segment: real pandas runs that step and hands the result back. Hold on to the segment idea; it explains both the wins and the losses on the next slide.</aside>
+</section>
+
 <!-- 19 · RESULTS -->
 <section data-part="6 · CLOSING THE LOOP">
   <div class="frame">
