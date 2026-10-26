@@ -80,6 +80,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 
 ## Conference Talks
 
+- **ClickHouse Internal Talk 2026** (28 October 2026): What is chDB, and what can you use it for? — embedded ClickHouse use cases (CI, Python data, ML, AI agents) and new features (minimal-copy Pandas/Arrow, WebAssembly, Pandas-compatible API, pg_chdb), with live chDB WebAssembly demos in the slides (Slides: https://auxten.com/slides/chdb-what-is-chdb-2026.html)
 - **The AI-Native Workplace Summit 2026** (16 September 2026): From Vibe Coding to Verifiable Agents: Memory, Traces, and Feedback Loops (Slides: https://auxten.com/slides/verifiable-agents-ai-native-workplace-2026.html)
 - **PyData Amsterdam 2026** (11 September 2026): No GIL, Real Gains: Porting a C++ Python Extension to Free-Threaded Python 3.14 (Slides: https://auxten.com/slides/chdb-nogil-pydata-amsterdam-2026.html)
 - **PyCon JP 2026** (22 August 2026, Hiroshima): Rediscovering DataFrames: 100× Analytics Without Leaving Pandas (Slides: https://auxten.com/slides/chdb-rediscovering-dataframes-pycon-jp-2026.html)
