@@ -499,7 +499,7 @@ tool = ChDBTool(read_only=<span class="kw">True</span>,
     </div>
   </div>
   <div class="punchbar">Counted from the engine, not the brochure. <span class="y">chdb 4.4 · engine 26.9</span></div>
-  <aside class="notes">[16:30] Part 2: why chDB is useful at all. As far as I know, ClickHouse is the SQL engine with the widest range of formats and sources. These numbers come from querying the system tables of chdb 4.4 on my laptop. Most server users never touch them, because a server's data usually arrives through INSERT. An embedded engine lives next to files, buckets and DataFrames — so these features suddenly matter.</aside>
+  <aside class="notes">[16:30] Part 2: why chDB is useful at all. As far as I know, ClickHouse is the SQL engine with the widest range of formats and sources. These numbers come from querying the system tables of chdb 4.4 on my laptop. Most server users never touch them, because a server's data usually arrives through INSERT. An embedded engine lives next to files, buckets and DataFrames — so these features suddenly matter. Heads-up: the browser build used in the live demos is a few releases behind (engine 26.5: 101 formats, 53 table functions) — if someone queries system.formats in a demo box, that's why the number differs.</aside>
 </section>
 
 <!-- ============ 14 · TABLE FUNCTIONS ============ -->
