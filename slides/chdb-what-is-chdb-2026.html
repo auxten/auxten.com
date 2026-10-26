@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What is chDB, and what can you use it for? — 2026-10-28</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fdfdf6;
+    --ink: #161616;
+    --yellow: #fadb14;
+    --orange: #e65100;
+    --blue: #1565c0;
+    --green: #2e7d32;
+    --red: #c62828;
+    --purple: #6a1b9a;
+  }
+
+  html, body, .reveal, .reveal .slides, .reveal .slides section { background: var(--paper); }
+
+  .reveal {
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-size: 30px;
+  }
+  .reveal .slides section {
+    box-sizing: border-box; height: 720px; padding: 0; text-align: left; overflow: hidden;
+  }
+  .reveal .slides section::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(#00000012 1.5px, transparent 1.5px);
+    background-size: 26px 26px; pointer-events: none;
+  }
+  .frame { position: absolute; inset: 0; box-sizing: border-box; padding: 60px 70px; }
+
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: 92px; font-weight: 900; line-height: 0.98; letter-spacing: -3px; color: var(--ink); }
+  h2 { font-size: 50px; font-weight: 900; line-height: 1.04; letter-spacing: -1.5px; color: var(--ink); margin-top: 40px; }
+  h3 { font-size: 26px; font-weight: 900; color: var(--ink); }
+  p  { font-size: 25px; font-weight: 600; line-height: 1.35; color: #3c3c38; }
+  .mono { font-family: "JetBrains Mono", Menlo, monospace; }
+  .muted { color: #6d6d66; }
+  .hl { background: var(--yellow); padding: 0 10px; }
+
+  .topbar { position: absolute; top: 30px; left: 70px; right: 70px; display: flex; justify-content: space-between; align-items: center; z-index: 5; }
+  .topbar .sec { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
+    background: var(--ink); color: #fff; padding: 6px 14px; letter-spacing: 1px; }
+  .topbar .sec.live { background: var(--red); }
+  .topbar .pg { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
+    background: #fff; border: 3px solid var(--ink); padding: 3px 12px; }
+
+  .sticker { display: inline-block; background: var(--yellow); border: 4px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink); padding: 12px 24px; font-weight: 900; }
+  .sticker.white { background: #fff; }
+  .box { background: var(--ink); color: var(--yellow); padding: 0 18px; display: inline-block; }
+
+  .card { box-sizing: border-box; background: #fff; border: 4px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink); padding: 20px 24px; }
+  .card.b { border-color: var(--blue);   box-shadow: 7px 7px 0 var(--blue); }
+  .card.o { border-color: var(--orange); box-shadow: 7px 7px 0 var(--orange); }
+  .card.g { border-color: var(--green);  box-shadow: 7px 7px 0 var(--green); }
+  .card.p { border-color: var(--purple); box-shadow: 7px 7px 0 var(--purple); }
+  .card.r { border-color: var(--red);    box-shadow: 7px 7px 0 var(--red); }
+  .card.dark { background: var(--ink); color: #fff; box-shadow: 8px 8px 0 var(--yellow); }
+  .card h3 { font-size: 24px; letter-spacing: 0.5px; }
+  .card.b h3 { color: var(--blue); } .card.o h3 { color: var(--orange); } .card.g h3 { color: var(--green); }
+  .card.p h3 { color: var(--purple); } .card.r h3 { color: var(--red); }
+  .card .m { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; color: #3c3c38; margin-top: 6px; line-height: 1.45; }
+  .card .t { font-size: 20px; font-weight: 700; color: #3c3c38; margin-top: 8px; line-height: 1.35; }
+  .card.dark .m, .card.dark .t { color: #cfcfc6; }
+
+  .code { box-sizing: border-box; background: var(--ink); border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--yellow); padding: 20px 26px;
+    font-family: "JetBrains Mono", monospace; font-weight: 500; color: #f6f6f0; font-size: 20px; line-height: 1.6; white-space: pre; }
+  .code .kw { color: var(--yellow); font-weight: 700; }
+  .code .st { color: #8be28b; }
+  .code .cm { color: #8a8a7f; }
+  .code .fn { color: #7db8ff; }
+  .code .bad { color: #ff8a80; }
+  .code .line { display: block; }
+  .code .l-g { border-left: 7px solid #4caf50; padding-left: 12px; margin-left: -19px; }
+  .code .l-o { border-left: 7px solid var(--orange); padding-left: 12px; margin-left: -19px; }
+  .code .l-b { border-left: 7px solid #4d94ff; padding-left: 12px; margin-left: -19px; }
+  .code.light { background: #fff; color: var(--ink); box-shadow: 8px 8px 0 var(--ink); }
+  .code.light .kw { color: var(--blue); } .code.light .st { color: var(--green); } .code.light .cm { color: #8a8a7f; }
+
+  .label { font-family: "JetBrains Mono", monospace; font-size: 16px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+  .foot { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 70px; font-size: 23px; font-weight: 800; z-index: 4; }
+  .foot .y { color: var(--yellow); }
+
+  .punchbar { position: absolute; left: 70px; right: 70px; bottom: 50px; background: var(--ink); color: #fff;
+    border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--yellow);
+    padding: 16px 26px; font-size: 28px; font-weight: 900; z-index: 4; }
+  .punchbar .y { color: var(--yellow); }
+
+  .frame-img { background: #fff; border: 4px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); padding: 12px; }
+  .frame-img img { display: block; width: 100%; height: auto; }
+
+  .rows { display: grid; gap: 14px; }
+  .rows .row { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start;
+    font-size: 23px; font-weight: 700; line-height: 1.3; }
+  .rows .sq { width: 16px; height: 16px; background: var(--orange); border: 3px solid var(--ink); margin-top: 6px; }
+  .rows .sq.x { background: var(--red); }
+  .rows .sq.ok { background: var(--green); }
+  .rows .sq.b { background: var(--blue); }
+
+  .stat { box-sizing: border-box; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    padding: 18px 20px; text-align: center; }
+  .stat .num { font-size: 60px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+  .stat .lab { font-size: 18px; font-weight: 700; color: #55554f; margin-top: 10px; line-height: 1.3; }
+  .stat.red .num { color: var(--red); } .stat.green .num { color: var(--green); } .stat.ylw .num { color: var(--orange); } .stat.blue .num { color: var(--blue); }
+
+  .chat { background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); }
+  .chat .bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 4px solid var(--ink);
+    font-family: "JetBrains Mono", monospace; font-size: 16px; font-weight: 700; background: var(--yellow); }
+  .chat .bar i { width: 12px; height: 12px; border: 2.5px solid var(--ink); display: inline-block; background: #fff; }
+  .chat .body { padding: 16px; display: grid; gap: 12px; }
+  .bub { max-width: 88%; border: 3px solid var(--ink); padding: 10px 14px; font-size: 18px; font-weight: 700; line-height: 1.35; }
+  .bub.user { justify-self: end; background: #eef4ff; border-color: var(--blue); }
+  .bub.agent { justify-self: start; background: #fffbe6; }
+  .bub .m { font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; display: block; margin-top: 6px; color: #3c3c38; }
+
+  .logo-pol { background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center; }
+  .reveal img { margin: 0; border: 0; box-shadow: none; max-width: none; max-height: none; }
+
+  .svgwrap { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .z2 { position: relative; z-index: 2; }
+
+  /* ---------- hub (recurring main visual) ---------- */
+  .hubnode { position: absolute; width: 330px; box-sizing: border-box; background: #fff; border: 4px solid var(--ink);
+    box-shadow: 7px 7px 0 var(--ink); padding: 10px 16px; z-index: 2; transition: none; }
+  .hubnode h3 { font-size: 22px; }
+  .hubnode .m { font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; color: #55554f; margin-top: 2px; }
+  .hubnode.dim { opacity: 0.28; box-shadow: 4px 4px 0 #9a9a90; border-color: #9a9a90; }
+  .hubnode.on.u { border-color: var(--blue); box-shadow: 7px 7px 0 var(--blue); }
+  .hubnode.on.u h3 { color: var(--blue); }
+  .hubnode.on.w { border-color: var(--orange); box-shadow: 7px 7px 0 var(--orange); }
+  .hubnode.on.w h3 { color: var(--orange); }
+  .hubcore { position: absolute; left: 500px; top: 360px; width: 280px; z-index: 2; text-align: center; }
+  .hubcol { position: absolute; top: 150px; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 800; letter-spacing: 1.5px; padding: 4px 12px; z-index: 2; }
+  .hubcol.dim { opacity: 0.3; }
+
+  /* ---------- live demo ---------- */
+  .demo { position: absolute; z-index: 3; }
+  .demo .ed { display: grid; grid-template-columns: 1fr auto; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--yellow); background: var(--ink); }
+  .demo textarea { box-sizing: border-box; width: 100%; border: 0; outline: 0; resize: none; background: var(--ink); color: #f6f6f0;
+    font-family: "JetBrains Mono", monospace; font-size: 19px; line-height: 1.5; padding: 14px 18px; font-weight: 500; }
+  .demo button.run { border: 0; border-left: 4px solid var(--ink); background: var(--yellow); color: var(--ink); font-family: "Inter";
+    font-weight: 900; font-size: 22px; padding: 0 22px; cursor: pointer; }
+  .demo button.run:hover { background: #ffe94d; }
+  .demo .out { margin-top: 22px; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 12px 14px; overflow: hidden; }
+  .demo .out table { border-collapse: collapse; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; width: 100%; }
+  .demo .out th { text-align: left; background: var(--ink); color: var(--yellow); padding: 5px 10px; font-weight: 800; }
+  .demo .out td { padding: 4px 10px; border-bottom: 2px solid #ececdf; white-space: nowrap; max-width: 360px; overflow: hidden; text-overflow: ellipsis; }
+  .demo .out td.n { text-align: right; }
+  .demo .out pre { margin: 0; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; white-space: pre; }
+  .demo .out .err { color: var(--red); font-family: "JetBrains Mono", monospace; font-size: 16px; white-space: pre-wrap; }
+  .demo .meta { margin-top: 10px; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 700; color: #55554f; }
+  .demo .meta .tag { display: inline-block; padding: 2px 8px; border: 2.5px solid var(--ink); margin-right: 8px; background: #fff; }
+  .demo .meta .tag.live { background: var(--green); color: #fff; border-color: var(--green); }
+  .demo .meta .tag.rec { background: #ececdf; }
+
+  .engine { position: absolute; right: 70px; bottom: 30px; z-index: 6; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 800;
+    background: #fff; border: 3px solid var(--ink); padding: 5px 12px; display: flex; align-items: center; gap: 8px; }
+  .engine i { width: 12px; height: 12px; border: 2.5px solid var(--ink); background: #bdbdb4; display: inline-block; }
+  .engine.ready i { background: var(--green); }
+  .engine.loading i { background: var(--yellow); }
+  .engine.off i { background: var(--red); }
+
+  .drop { position: absolute; z-index: 3; border: 5px dashed var(--ink); background: #fffbe6; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; gap: 12px; }
+  .drop.over { background: var(--yellow); }
+  .drop .big { font-size: 30px; font-weight: 900; }
+  .drop button { font-family: "Inter"; font-size: 19px; font-weight: 800; border: 3px solid var(--ink); background: #fff; padding: 6px 16px; cursor: pointer; box-shadow: 4px 4px 0 var(--ink); }
+
+  /* ---------- misc ---------- */
+  .tl { position: absolute; left: 70px; right: 70px; top: 300px; height: 6px; background: var(--ink); }
+  .tl .dot { position: absolute; top: -13px; width: 24px; height: 24px; background: var(--yellow); border: 4px solid var(--ink); box-sizing: border-box; }
+  .tl .ev { position: absolute; top: 34px; width: 230px; margin-left: -12px; }
+  .tl .ev .yr { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 900; color: var(--orange); }
+  .tl .ev .tx { font-size: 20px; font-weight: 700; line-height: 1.3; margin-top: 6px; }
+
+  .bars { display: grid; gap: 12px; }
+  .bars .b { display: grid; grid-template-columns: 150px 1fr 110px; gap: 14px; align-items: center; font-weight: 800; font-size: 21px; }
+  .bars .b .fill { height: 34px; border: 3px solid var(--ink); background: #d7d7cc; box-sizing: border-box; }
+  .bars .b .fill.win { background: var(--green); }
+  .bars .b .fill.lose { background: var(--red); }
+  .bars .b .v { font-family: "JetBrains Mono", monospace; font-size: 20px; }
+
+  table.cmp { border-collapse: collapse; font-size: 19px; font-weight: 700; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); }
+  table.cmp th { background: var(--ink); color: var(--yellow); text-align: left; padding: 8px 14px; font-family: "JetBrains Mono", monospace; font-size: 17px; }
+  table.cmp td { padding: 8px 14px; border-top: 2px solid #ececdf; vertical-align: top; }
+  table.cmp tr.us td { background: #fffbe6; }
+
+  .langs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; }
+  .lang { background: #fff; border: 4px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); height: 108px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px; font-weight: 800; font-size: 18px; }
+  .lang img { height: 44px; width: auto; }
+  .lang .txt { font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 900; height: 44px; display: flex; align-items: center; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ 01 · TITLE ============ -->
+<section>
+  <div class="frame">
+    <span class="sticker" style="position:absolute; top:64px; left:70px; transform:rotate(-2deg); font-size:24px;">2026-10-28 · 14:40–15:40</span>
+    <div class="logo-pol" style="position:absolute; top:64px; right:70px; width:150px; height:150px; transform:rotate(2deg);">
+      <img src="logos/chdb-light.png" alt="chDB" style="width:110px;">
+    </div>
+    <h1 style="position:absolute; top:190px; left:70px;">What is <span class="box">chDB</span>,<br>and what can you<br>use it for?</h1>
+    <div class="sticker white mono" style="position:absolute; top:520px; left:70px; font-size:24px; box-shadow:8px 8px 0 var(--orange);">
+      ClickHouse, as a library — and where people put it
+    </div>
+  </div>
+  <div class="foot"><span>Auxten Wang · <span class="y">ClickHouse</span> · Creator of chDB</span><span>@auxten</span></div>
+  <aside class="notes">[00:00] Welcome. 60 minutes: about 48 of talk, the rest for questions. Mixed room today — engineers, sales, marketing. Promise: by the end everyone can explain chDB in one sentence and knows which customer conversations it belongs in. Several slides run a live ClickHouse engine inside this browser tab — watch the little "engine" chip bottom-right.</aside>
+</section>
+
+<!-- ============ 02 · ABOUT ============ -->
+<section>
+  <div class="topbar"><span class="sec">ABOUT</span><span class="pg"></span></div>
+  <div class="frame">
+    <div style="display:flex; gap:70px; align-items:center; margin-top:90px;">
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:24px; margin-bottom:30px;">
+          <div class="logo-pol" style="width:120px; height:120px; transform:rotate(-2deg); overflow:hidden; padding:0;">
+            <img src="logos/head.jpg" alt="Auxten Wang" style="width:112px; height:112px; object-fit:cover;">
+          </div>
+          <div>
+            <h2 style="font-size:46px; margin-top:0;">Auxten Wang</h2>
+            <p class="mono" style="font-size:21px; margin-top:6px;"><strong>@auxten</strong> · auxten.com</p>
+          </div>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="sq"></span><span>Started <strong>chDB</strong> as a side project in 2023</span></div>
+          <div class="row"><span class="sq"></span><span>chDB <strong>joined ClickHouse</strong> in 2024</span></div>
+          <div class="row"><span class="sq"></span><span>Today: embedded ClickHouse — Python, browser, agents, Postgres</span></div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:34px; align-items:center;">
+        <div class="logo-pol" style="width:230px; height:230px; transform:rotate(2deg);">
+          <img src="logos/chdb-light.png" alt="chDB" style="width:180px;">
+        </div>
+        <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="width:230px;">
+      </div>
+    </div>
+  </div>
+  <aside class="notes">[00:45] Twenty seconds. Everyone here knows me as "the chDB person" — today is the long version of what that actually is.</aside>
+</section>
+
+<!-- ============ 03 · ONE-SENTENCE ANSWER ============ -->
+<section>
+  <div class="topbar"><span class="sec">THE ANSWER</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>chDB is ClickHouse <span class="hl">as a library</span></h2>
+    <div style="position:absolute; top:190px; left:70px; width:520px;">
+      <div class="label muted">CLICKHOUSE SERVER</div>
+      <div style="display:flex; align-items:center; gap:18px;">
+        <div class="card" style="width:170px; text-align:center; padding:16px 10px;"><h3>Your app</h3></div>
+        <div class="mono" style="font-size:17px; font-weight:800; text-align:center; line-height:1.3;">——→<br><span class="muted">network<br>port 8123</span></div>
+        <div class="card dark" style="width:200px; text-align:center; padding:16px 10px;"><h3 style="color:var(--yellow);">ClickHouse</h3><div class="m" style="text-align:center;">a process you run</div></div>
+      </div>
+      <div class="rows" style="margin-top:30px;">
+        <div class="row"><span class="sq b"></span><span>Shared, always on, many users</span></div>
+        <div class="row"><span class="sq b"></span><span>Somebody installs and operates it</span></div>
+      </div>
+    </div>
+    <div style="position:absolute; top:190px; left:690px; width:520px;">
+      <div class="label" style="color:var(--orange);">CHDB</div>
+      <div class="card o" style="padding:14px 18px;">
+        <h3>Your app's process</h3>
+        <div style="display:flex; gap:12px; margin-top:12px; align-items:center; white-space:nowrap;">
+          <div class="card" style="padding:8px 12px; box-shadow:4px 4px 0 var(--ink);"><h3 style="font-size:19px;">your code</h3></div>
+          <div class="mono" style="font-size:16px; font-weight:800; text-align:center; line-height:1.2;">——→<br><span class="muted">function call</span></div>
+          <div class="card dark" style="padding:8px 12px; box-shadow:5px 5px 0 var(--yellow);"><h3 style="color:var(--yellow); font-size:19px;">ClickHouse engine</h3></div>
+        </div>
+      </div>
+      <div class="rows" style="margin-top:30px;">
+        <div class="row"><span class="sq"></span><span><span class="mono">pip install chdb</span> — nothing to run</span></div>
+        <div class="row"><span class="sq"></span><span>Same SQL, same engine, <strong>inside</strong> your program</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="punchbar">Think <span class="y">SQLite</span> — but the engine inside is ClickHouse.</div>
+  <aside class="notes">[01:30] The one sentence for everyone, including sales: chDB is ClickHouse as a library. A server is a separate process you talk to over the network; chDB is a function call inside your program. Same relationship SQLite has to Postgres. Technically: the ClickHouse engine compiled into one shared library, with thin bindings for each language.</aside>
+</section>
+
+<!-- ============ 04 · LIVE: THIS SLIDE RUNS CLICKHOUSE ============ -->
+<section>
+  <div class="topbar"><span class="sec live">LIVE DEMO</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>This slide is running ClickHouse</h2>
+    <p style="margin-top:12px;">Not a screenshot. The engine is compiled to WebAssembly and loaded in this browser tab.</p>
+    <div class="demo" style="top:230px; left:70px; width:700px;">
+      <div class="ed"><textarea rows="3" spellcheck="false">SELECT version() AS engine,
+       sum(number)  AS total
+FROM numbers(100000000)  -- 100M rows</textarea><button class="run">Run ▶</button></div>
+      <div class="out"><table><tr><th>engine</th><th>total</th></tr><tr><td>26.5.1.1</td><td class="n">4999999950000000</td></tr></table></div>
+      <div class="meta"><span class="tag rec">recorded</span>77 ms · 100,000,000 rows · laptop Chrome, 2026-10-26</div>
+    </div>
+    <div class="sticker" style="position:absolute; top:250px; right:70px; width:340px; transform:rotate(2deg); font-size:26px; line-height:1.3;">
+      No server.<br>No install.<br>No network round-trip.
+    </div>
+    <div class="card" style="position:absolute; top:470px; right:70px; width:340px; padding:14px 18px;">
+      <div class="m" style="margin-top:0;">npm i chdb-wasm<br>also: wasm.chdb.io</div>
+    </div>
+  </div>
+  <div class="engine"><i></i><span class="es">engine: idle</span></div>
+  <aside class="notes">[03:00] Click Run. 100 million rows summed in tens of milliseconds, in the tab, on stage Wi-Fi or none. If the chip is red (old browser, no network for the first download) the box shows the recorded result — say so out loud. The engine downloads once (about 29 MB compressed) while slides 1–3 were up. We come back to the browser build later.</aside>
+</section>
+
+<!-- ============ 05 · WILD IDEA TIMELINE ============ -->
+<section>
+  <div class="topbar"><span class="sec">ORIGIN</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>It started as a wild idea</h2>
+    <p style="margin-top:12px;">"What if ClickHouse were a <span class="mono" style="font-weight:800;">pip install</span>?"</p>
+    <div class="tl">
+      <div class="dot" style="left:0%;"></div>
+      <div class="dot" style="left:30%;"></div>
+      <div class="dot" style="left:60%;"></div>
+      <div class="dot" style="left:calc(100% - 24px);"></div>
+      <div class="ev" style="left:0%;"><div class="yr">2023</div><div class="tx">Side project: ClickHouse compiled into a Python module</div></div>
+      <div class="ev" style="left:30%;"><div class="yr">2024</div><div class="tx">Joins ClickHouse. DataFrames read without copying</div></div>
+      <div class="ev" style="left:60%;"><div class="yr">2025</div><div class="tx">CI, notebooks, ML pipelines, agents adopt it</div></div>
+      <div class="ev" style="left:calc(100% - 218px); text-align:right; width:230px;"><div class="yr">2026</div><div class="tx">v4: Pandas API, browser, Postgres, 11 languages</div></div>
+    </div>
+  </div>
+  <div class="punchbar">The idea was small. <span class="y">The engine underneath wasn't.</span></div>
+  <aside class="notes">[04:30] The origin is honestly a hack: take a server and squeeze it into a library. The surprise was how much of ClickHouse still works when there is no server — almost all of it. That is the rest of the talk: what people did with it, why it works, what we added.</aside>
+</section>
+
+<!-- ============ 06 · CAUGHT ON ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADOPTION</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Then it caught on</h2>
+    <div class="frame-img" style="position:absolute; top:160px; left:70px; width:640px; transform:rotate(-1deg); background:#222;">
+      <img src="logos/chdb-pypi-chart.png" alt="chDB PyPI weekly downloads, 2023 to April 2026">
+    </div>
+    <p class="mono muted" style="position:absolute; top:552px; left:70px; font-size:15px;">PyPI downloads per week, 2023 → Apr 2026</p>
+    <div style="position:absolute; top:160px; left:780px; width:430px; display:grid; gap:22px;">
+      <div class="stat ylw"><div class="num">~1.0M</div><div class="lab">PyPI downloads last week</div></div>
+      <div class="stat"><div class="num">3.37M</div><div class="lab">PyPI downloads last month</div></div>
+      <div class="stat blue"><div class="num">2.9k</div><div class="lab">GitHub stars · chdb-io/chdb</div></div>
+    </div>
+    <p class="mono muted" style="position:absolute; bottom:40px; left:70px; font-size:15px;">pypistats.org + GitHub API, fetched 2026-10-26</p>
+  </div>
+  <aside class="notes">[06:00] Numbers fetched two days ago. A million downloads a week is mostly machines: CI jobs and pipelines installing it on every run — which is itself the first use case. The chart is the April snapshot; the trend continued.</aside>
+</section>
+
+<!-- ============ 07 · HUB: WHERE PEOPLE PUT IT ============ -->
+<section>
+  <div class="topbar"><span class="sec">THE MAP</span><span class="pg"></span></div>
+  <div class="frame"><h2 style="margin-top:6px;">One engine, many homes</h2></div>
+  <div class="hub" data-on="u,w"></div>
+  <aside class="notes">[07:30] The map for the rest of the talk. Left: places users took chDB that we never planned — CI, Python data work, ML, agents. Right: what we built on purpose — DataFrames without copies, the browser, a Pandas API, Postgres. The engine in the middle is the same in all eight.</aside>
+</section>
+
+<!-- ============ 08 · HUB: USERS ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 1 · WHAT PEOPLE DO WITH IT</span><span class="pg"></span></div>
+  <div class="frame"><h2 style="margin-top:6px;">Part 1: what people do with it</h2></div>
+  <div class="hub" data-on="u"></div>
+  <aside class="notes">[08:00] Four use cases, about two minutes each. For each one: the old way, the chDB way, and why a customer cares.</aside>
+</section>
+
+<!-- ============ 09 · CI ============ -->
+<section>
+  <div class="topbar"><span class="sec">USE CASE · CI</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Your tests don't need a ClickHouse server</h2>
+    <div style="position:absolute; top:175px; left:70px; width:520px;">
+      <div class="label" style="color:var(--red);">BEFORE · CI.YML</div>
+      <div class="code light" style="font-size:17px; line-height:1.55; box-shadow:8px 8px 0 var(--red); border-color:var(--red);"><span class="kw">services:</span>
+  <span class="kw">clickhouse:</span>
+    image: clickhouse/clickhouse-server
+    ports: [<span class="st">"8123:8123"</span>]
+    <span class="cm"># + health check, wait loop, flaky timeouts</span></div>
+    </div>
+    <div style="position:absolute; top:175px; left:650px; width:560px;">
+      <div class="label" style="color:var(--green);">AFTER · TEST CODE</div>
+      <div class="code" style="font-size:18px;"><span class="kw">import</span> clickhouse_connect
+<span class="cm"># was: host="localhost", port=8123</span>
+c = clickhouse_connect.<span class="fn">get_client</span>(
+      dsn=<span class="st">"chdb://"</span>)
+c.query(<span class="st">"SELECT count() FROM t"</span>)</div>
+      <p class="mono muted" style="font-size:15px; margin-top:16px;">clickhouse-connect 1.11 + chdb 4.4 · ran 2026-10-26</p>
+    </div>
+    <div class="rows" style="position:absolute; top:470px; left:70px; width:1140px; grid-template-columns:1fr 1fr 1fr; gap:24px;">
+      <div class="row"><span class="sq ok"></span><span>No Docker in CI</span></div>
+      <div class="row"><span class="sq ok"></span><span>Same client, same SQL</span></div>
+      <div class="row"><span class="sq ok"></span><span>Starts in-process, instantly</span></div>
+    </div>
+  </div>
+  <div class="punchbar">Every test run used to start a database. <span class="y">Now it imports one.</span></div>
+  <aside class="notes">[08:30] The quiet biggest use. Teams that build on ClickHouse need it in their test suite. Old way: a Docker service container per CI job, health checks, waits, flakiness. New way: the official Python client has an in-process chDB backend — change the DSN to chdb:// and the same tests run against the same engine. Honest: the backend is marked experimental, one engine per process, no async client. For sales: lowers the friction of building on ClickHouse.</aside>
+</section>
+
+<!-- ============ 10 · PYTHON DATA ============ -->
+<section>
+  <div class="topbar"><span class="sec">USE CASE · PYTHON DATA</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>SQL on the DataFrame you already have</h2>
+    <div class="code" style="position:absolute; top:185px; left:70px; width:700px;"><span class="kw">import</span> chdb, pandas <span class="kw">as</span> pd
+df = pd.read_csv(<span class="st">"sales.csv"</span>)        <span class="cm"># any DataFrame</span>
+
+chdb.query(<span class="st">"""</span>
+<span class="st">  SELECT city, quantile(0.9)(amount)</span>
+<span class="st">  FROM </span><span class="fn">Python</span><span class="st">(df) GROUP BY city"""</span>,
+  <span class="st">"DataFrame"</span>)                       <span class="cm"># back to pandas</span></div>
+    <div style="position:absolute; top:190px; left:840px; width:370px; display:grid; gap:20px;">
+      <div class="card g" style="padding:14px 18px;"><h3>IN</h3><div class="t">DataFrame, Arrow table, dict — read in place</div></div>
+      <div class="card o" style="padding:14px 18px;"><h3>MIDDLE</h3><div class="t">Full ClickHouse SQL, all cores</div></div>
+      <div class="card b" style="padding:14px 18px;"><h3>OUT</h3><div class="t">DataFrame, Arrow, Parquet, CSV…</div></div>
+    </div>
+  </div>
+  <div class="punchbar">Keep pandas for what it's good at. <span class="y">Hand the heavy SQL to ClickHouse.</span></div>
+  <aside class="notes">[10:30] Data people live in pandas. When a groupby gets slow or a quantile is awkward, they don't want a database project — they want SQL on the object they already have. Python(df) is a table function that reads the DataFrame's memory directly. Results come back as a DataFrame or Arrow table. Later slide: how we got that path down to minimal copying.</aside>
+</section>
+
+<!-- ============ 11 · ML ============ -->
+<section>
+  <div class="topbar"><span class="sec">USE CASE · ML</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Feature prep without a warehouse</h2>
+    <div style="position:absolute; top:175px; left:70px; right:70px; display:flex; align-items:center; gap:16px;">
+      <div class="card b" style="flex:1; padding:12px 16px;"><h3>RAW LOGS</h3><div class="m">Parquet · S3 · local</div></div>
+      <div class="mono" style="font-size:30px; font-weight:900;">→</div>
+      <div class="card dark" style="flex:1.2; padding:12px 16px;"><h3 style="color:var(--yellow);">chDB SQL</h3><div class="m">quantiles · windows · joins</div></div>
+      <div class="mono" style="font-size:30px; font-weight:900;">→</div>
+      <div class="card g" style="flex:1; padding:12px 16px;"><h3>DATAFRAME</h3><div class="m">→ numpy → model.fit</div></div>
+    </div>
+    <div class="code" style="position:absolute; top:330px; left:70px; width:760px; font-size:19px;">feats = chdb.query(<span class="st">"""</span>
+<span class="st">  SELECT url, count() AS hits,</span>
+<span class="st">         quantile(0.95)(latency_ms) AS p95_ms,</span>
+<span class="st">         avg(status &gt;= 500)          AS error_rate</span>
+<span class="st">  FROM file('access_log.parquet') GROUP BY url"""</span>,
+  <span class="st">"DataFrame"</span>)
+model.fit(feats[[<span class="st">"hits"</span>, <span class="st">"p95_ms"</span>, <span class="st">"error_rate"</span>]])</div>
+    <div class="sticker white mono" id="ml-stat" style="position:absolute; top:360px; right:70px; width:300px; font-size:20px; line-height:1.45; transform:rotate(1.5deg);">
+      10M log rows →<br>4.87M feature rows<br><b style="color:var(--green);">1.7 s</b> chDB<br><b style="color:var(--red);">6.0 s</b> pandas<br><span class="muted" style="font-size:15px;">laptop · single run</span>
+    </div>
+  </div>
+  <aside class="notes">[12:30] ML engineers spend most of their time on features, not models. The usual answer is "load it into a warehouse first". chDB does the aggregation straight off the Parquet files and hands a DataFrame to scikit-learn or PyTorch. Same SQL works later on a ClickHouse cluster when the data outgrows a laptop.</aside>
+</section>
+
+<!-- ============ 12 · AGENTS ============ -->
+<section>
+  <div class="topbar"><span class="sec">USE CASE · AI AGENTS</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>An agent's database: <span class="hl">one SQL tool</span></h2>
+    <div style="position:absolute; top:180px; left:70px; width:560px;">
+      <div class="code" style="font-size:18px;"><span class="kw">from</span> chdb.agents <span class="kw">import</span> ChDBTool
+tool = ChDBTool(read_only=<span class="kw">True</span>,
+                max_rows=<span class="st">100</span>)
+<span class="cm"># tools the agent sees:</span>
+<span class="cm"># run_select_query · list_tables</span>
+<span class="cm"># describe_table · attach_file …</span></div>
+      <div class="rows" style="margin-top:28px;">
+        <div class="row"><span class="sq ok"></span><span>Read-only by default — writes raise an error</span></div>
+        <div class="row"><span class="sq ok"></span><span>Row, byte and time limits built in</span></div>
+        <div class="row"><span class="sq ok"></span><span>LlamaIndex · Pydantic AI · smolagents · MCP</span></div>
+      </div>
+    </div>
+    <div class="chat" style="position:absolute; top:180px; left:690px; width:520px;">
+      <div class="bar"><i></i><i></i><i></i>&nbsp;agent session</div>
+      <div class="body">
+        <div class="bub user">How many customers per tier in last quarter's CRM export?</div>
+        <div class="bub agent">Querying the archive directly…<span class="m">SELECT tier, count() FROM file('crm_exports.tar :: users_*.csv') GROUP BY tier</span></div>
+        <div class="bub agent">enterprise 32 · free 34 · pro 34</div>
+      </div>
+    </div>
+  </div>
+  <div class="punchbar">LLMs already speak SQL. <span class="y">Give them an engine that reads everything.</span></div>
+  <aside class="notes">[14:30] Agents need to look at data: files users upload, exports, S3 buckets. Instead of ten connectors, give the model one SQL tool. chDB ships a ready tool: read-only by default, with row/byte/time limits, plus bindings for the common agent frameworks. The answer in the chat is the real output of that query on a demo tar file. The SQL left behind doubles as an audit log.</aside>
+</section>
+
+<!-- ============ 13 · SECRET: COUNTED FROM ENGINE ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · THE SECRET</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>The power is ClickHouse <span class="hl">you never noticed</span></h2>
+    <p style="margin-top:12px;">Most people meet ClickHouse as a fast server. Inside, it's also the widest data reader I know.</p>
+    <div style="position:absolute; top:270px; left:70px; right:70px; display:grid; grid-template-columns:repeat(3, 1fr); gap:34px;">
+      <div class="stat ylw"><div class="num">112</div><div class="lab">data formats (76 read · 97 write)<br><span class="mono" style="font-size:15px;">system.formats</span></div></div>
+      <div class="stat blue"><div class="num">81</div><div class="lab">table functions = data sources<br><span class="mono" style="font-size:15px;">system.table_functions</span></div></div>
+      <div class="stat green"><div class="num">1,874</div><div class="lab">SQL functions (258 aggregate)<br><span class="mono" style="font-size:15px;">system.functions</span></div></div>
+    </div>
+  </div>
+  <div class="punchbar">Counted from the engine, not the brochure. <span class="y">chdb 4.4 · engine 26.9</span></div>
+  <aside class="notes">[16:30] Part 2: why chDB is useful at all. As far as I know, ClickHouse is the SQL engine with the widest range of formats and sources. These numbers come from querying the system tables of chdb 4.4 on my laptop. Most server users never touch them, because a server's data usually arrives through INSERT. An embedded engine lives next to files, buckets and DataFrames — so these features suddenly matter.</aside>
+</section>
+
+<!-- ============ 14 · TABLE FUNCTIONS ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · SOURCES</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>One function per place data lives</h2>
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:24px; margin-top:34px;">
+      <div class="card" style="padding:12px 16px;"><h3 class="mono" style="font-size:21px;">file()</h3><div class="m">local · globs · archives</div></div>
+      <div class="card b" style="padding:12px 16px;"><h3 class="mono" style="font-size:21px;">s3() url() gcs()</h3><div class="m">buckets &amp; HTTP</div></div>
+      <div class="card o" style="padding:12px 16px;"><h3 class="mono" style="font-size:21px;">postgresql()</h3><div class="m">mysql · mongodb · sqlite · redis</div></div>
+      <div class="card g" style="padding:12px 16px;"><h3 class="mono" style="font-size:21px;">iceberg()</h3><div class="m">hudi · paimon · lakes</div></div>
+    </div>
+    <div class="code" style="position:absolute; top:330px; left:70px; width:780px;"><span class="kw">SELECT</span> type, round(avg(price)) <span class="kw">AS</span> avg_price
+<span class="kw">FROM</span> <span class="fn">s3</span>(<span class="st">'https://…/house_0.parquet'</span>)
+<span class="kw">GROUP BY</span> type <span class="kw">ORDER BY</span> avg_price <span class="kw">DESC</span>
+<span class="cm">-- detached 286,753 · flat 198,888 · terraced 157,110</span></div>
+    <div class="sticker" style="position:absolute; top:350px; right:70px; transform:rotate(2deg); font-size:24px; line-height:1.3;">
+      2.77M rows of UK<br>house sales, queried<br>where they sit.
+    </div>
+  </div>
+  <div class="punchbar">No load step. <span class="y">The table is wherever the data already is.</span></div>
+  <aside class="notes">[18:00] A table function turns a location into a table. Files, buckets, other databases, lakehouse tables, and Python objects. The query is the public UK house-price dataset straight from S3; numbers are its real output. For a sales conversation: "you don't have to move your data to try ClickHouse".</aside>
+</section>
+
+<!-- ============ 15 · SCHEMA ON READ / GLOBS / ARCHIVES ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · TRICKS</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Three tricks most users never see</h2>
+    <div style="position:absolute; top:180px; left:70px; right:70px; display:grid; grid-template-columns:repeat(3, 1fr); gap:30px;">
+      <div class="card b"><h3>SCHEMA ON READ</h3><div class="t">Point at a file. Columns and types are inferred.</div>
+        <div class="code" style="font-size:16px; padding:12px 14px; margin-top:16px; box-shadow:6px 6px 0 var(--yellow);"><span class="kw">DESCRIBE</span> <span class="fn">url</span>(<span class="st">'…parquet'</span>)
+<span class="cm">-- price Int64</span>
+<span class="cm">-- town  String …</span></div></div>
+      <div class="card o"><h3>GLOBS</h3><div class="t">A thousand files, one table.</div>
+        <div class="code" style="font-size:16px; padding:12px 14px; margin-top:16px; box-shadow:6px 6px 0 var(--yellow);"><span class="fn">file</span>(<span class="st">'logs/2026-*/</span>
+<span class="st">      *.csv.gz'</span>)
+<span class="cm">-- gzip read on the fly</span></div></div>
+      <div class="card g"><h3>INSIDE ARCHIVES</h3><div class="t">Query CSVs inside a tar. No unpacking.</div>
+        <div class="code" style="font-size:16px; padding:12px 14px; margin-top:16px; box-shadow:6px 6px 0 var(--yellow);"><span class="fn">file</span>(<span class="st">'crm.tar ::</span>
+<span class="st">      users_*.csv'</span>)
+<span class="cm">-- 100 rows, 2 files</span></div></div>
+    </div>
+  </div>
+  <div class="punchbar">The messy folder <span class="y">is</span> the database.</div>
+  <aside class="notes">[19:30] Three features that sound small and save hours. Schema inference: no CREATE TABLE before you can look. Globs: a whole partitioned folder is one table. Archives: query inside a tar without extracting. Honest note: zip support depends on the build; tar and gzip work everywhere I tested.</aside>
+</section>
+
+<!-- ============ 16 · LIVE: QUERY THE INTERNET ============ -->
+<section>
+  <div class="topbar"><span class="sec live">LIVE DEMO</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Query a file on S3 — from this tab</h2>
+    <div class="demo" style="top:180px; left:70px; width:1140px;">
+      <div class="ed"><textarea rows="3" spellcheck="false">SELECT count() AS rows
+FROM url('https://datasets-documentation.s3.eu-west-3.amazonaws.com/house_parquet/house_0.parquet')</textarea><button class="run">Run ▶</button></div>
+      <div class="out"><table><tr><th>rows</th></tr><tr><td class="n" style="text-align:left;">2772030</td></tr></table></div>
+      <div class="meta"><span class="tag rec">recorded</span>725 ms · Parquet footer only · laptop Chrome, 2026-10-26</div>
+    </div>
+    <div class="card" style="position:absolute; top:520px; left:70px; width:1140px; padding:12px 18px;">
+      <div class="m" style="margin-top:0;">Try next: <b>DESCRIBE url('…')</b> — schema inferred over the internet in ~12 ms after the first read</div>
+    </div>
+  </div>
+  <div class="engine"><i></i><span class="es">engine: idle</span></div>
+  <aside class="notes">[21:00] Run the count: 2.77 million rows in well under a second — Parquet stores the row count in its footer, so the engine reads a few kilobytes, not the file. Then edit to DESCRIBE url(…) to show inferred columns. Do NOT run a full GROUP BY here: in the browser build that downloads the whole file (about 30 s on good Wi-Fi). Natively, chDB reads only the byte ranges it needs.</aside>
+</section>
+
+<!-- ============ 17 · LIVE: CONVERT ANYTHING ============ -->
+<section>
+  <div class="topbar"><span class="sec live">LIVE DEMO</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Convert anything to anything</h2>
+    <div class="demo" style="top:170px; left:70px; width:680px;">
+      <div class="ed"><textarea rows="6" spellcheck="false">SELECT * FROM format(JSONEachRow, '
+{"rep":"Ada","region":"APAC","deals":12}
+{"rep":"Lin","region":"EMEA","deals":7}
+{"rep":"Sam","region":"APAC","deals":9}')
+FORMAT Markdown</textarea><button class="run">Run ▶</button></div>
+      <div class="out"><pre>| rep | region | deals |
+|:-|:-|-:|
+| Ada | APAC | 12 |
+| Lin | EMEA | 7 |
+| Sam | APAC | 9 |</pre></div>
+      <div class="meta"><span class="tag rec">recorded</span>10 ms · laptop Chrome, 2026-10-26</div>
+    </div>
+    <div style="position:absolute; top:180px; left:810px; width:400px;">
+      <div class="sticker" style="transform:rotate(1.5deg); font-size:24px; line-height:1.3;">Swap the last word:</div>
+      <div class="card" style="margin-top:28px; padding:14px 18px;">
+        <div class="m" style="margin-top:0; font-size:18px; line-height:1.7;">FORMAT CSV<br>FORMAT Pretty<br>FORMAT JSON<br>FORMAT XML<br>FORMAT TSKV …</div>
+      </div>
+      <p class="muted" style="font-size:19px; margin-top:22px;">In Python, add <span class="mono">INTO OUTFILE 'x.parquet'</span> and you have a file converter.</p>
+    </div>
+  </div>
+  <div class="engine"><i></i><span class="es">engine: idle</span></div>
+  <aside class="notes">[23:00] Run it, then change Markdown to CSV, Pretty, JSON — live, each in milliseconds. This is the most underrated chDB use: a universal format converter you can script. Marketing angle: "ClickHouse reads and writes 100+ formats" is a concrete, demo-able claim.</aside>
+</section>
+
+<!-- ============ 18 · ONE QUERY, THREE WORLDS ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · PUT TOGETHER</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>One query, <span class="hl">three worlds</span></h2>
+    <div style="display:flex; gap:40px; margin-top:30px;">
+      <div class="card g" style="flex:1; padding:12px 18px;"><h3>PROCESS RAM</h3><div class="m">Python(tickets)</div></div>
+      <div class="card o" style="flex:1; padding:12px 18px;"><h3>ARCHIVE</h3><div class="m">crm_exports.tar :: *.csv</div></div>
+      <div class="card b" style="flex:1; padding:12px 18px;"><h3>CLOUD</h3><div class="m">url('…/orders.parquet')</div></div>
+    </div>
+    <div class="code" style="position:absolute; top:300px; left:70px; width:820px; font-size:20px;"><span class="line"><span class="kw">SELECT</span> name, tier, subject, sum(amount) <span class="kw">AS</span> spend</span><span class="line l-g"><span class="kw">FROM</span> <span class="fn">Python</span>(tickets)</span><span class="line l-o"><span class="kw">JOIN</span> <span class="fn">file</span>(<span class="st">'crm_exports.tar :: users_*.csv'</span>) <span class="kw">USING</span> …</span><span class="line l-b"><span class="kw">JOIN</span> <span class="fn">url</span>(<span class="st">'https://auxten.com/…/orders.parquet'</span>) <span class="kw">USING</span> …</span><span class="line"><span class="kw">GROUP BY</span> name, tier, subject <span class="kw">ORDER BY</span> spend <span class="kw">DESC</span></span></div>
+    <div class="sticker" style="position:absolute; top:320px; right:70px; width:260px; transform:rotate(1.5deg); font-size:25px; line-height:1.3;">
+      No warehouse.<br>No load step.<br><u>The pipeline is the query.</u>
+    </div>
+    <div class="sticker white mono" style="position:absolute; bottom:50px; left:70px; font-size:20px; padding:10px 18px; box-shadow:6px 6px 0 var(--ink);">
+      → user_58 · pro · api limits · <strong style="color:var(--orange);">3,716</strong> &nbsp;<span class="muted">(real output)</span>
+    </div>
+  </div>
+  <aside class="notes">[24:30] Everything from Part 2 in one statement: a DataFrame in memory, CSVs inside a tar, a Parquet file over HTTP — joined. Green, orange, blue lines match the cards. That's the shape of most "quick question" data work, and normally it's three scripts and a temp table.</aside>
+</section>
+
+<!-- ============ 19 · HUB: WHAT WE ADDED ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 3 · WHAT WE ADDED</span><span class="pg"></span></div>
+  <div class="frame"><h2 style="margin-top:6px;">Part 3: what we built on top</h2></div>
+  <div class="hub" data-on="w"></div>
+  <aside class="notes">[26:00] Right side of the map. Four things the team built over the last two years. Each one opens a different door: Python users, web developers, pandas users, Postgres users.</aside>
+</section>
+
+<!-- ============ 20 · MINIMAL COPY: JOURNEY ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · MINIMAL COPY</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>DataFrames in and out — no detours</h2>
+    <div style="position:absolute; top:190px; left:70px; right:70px; display:grid; gap:26px;">
+      <div style="display:grid; grid-template-columns:120px 1fr; gap:20px; align-items:center;">
+        <div class="mono" style="font-size:26px; font-weight:900; color:var(--red);">v1<br><span style="font-size:16px;" class="muted">2023</span></div>
+        <div style="display:flex; gap:10px; align-items:center; font-family:'JetBrains Mono'; font-size:18px; font-weight:800;">
+          <span class="card" style="padding:6px 12px; box-shadow:4px 4px 0 var(--ink);">DataFrame</span>→<span class="card r" style="padding:6px 12px; box-shadow:4px 4px 0 var(--red);">Parquet</span>→<span class="card dark" style="padding:6px 12px; box-shadow:4px 4px 0 var(--yellow);">engine</span>→<span class="card r" style="padding:6px 12px; box-shadow:4px 4px 0 var(--red);">Parquet</span>→<span class="card" style="padding:6px 12px; box-shadow:4px 4px 0 var(--ink);">DataFrame</span>
+          <span class="muted" style="margin-left:12px;">4 conversions</span>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:120px 1fr; gap:20px; align-items:center;">
+        <div class="mono" style="font-size:26px; font-weight:900; color:var(--orange);">v2<br><span style="font-size:16px;" class="muted">2024</span></div>
+        <div style="display:flex; gap:10px; align-items:center; font-family:'JetBrains Mono'; font-size:18px; font-weight:800;">
+          <span class="card" style="padding:6px 12px; box-shadow:4px 4px 0 var(--ink);">DataFrame</span><span style="color:var(--green);">═ pointer ═</span><span class="card dark" style="padding:6px 12px; box-shadow:4px 4px 0 var(--yellow);">engine</span>→<span class="card r" style="padding:6px 12px; box-shadow:4px 4px 0 var(--red);">Parquet</span>→<span class="card" style="padding:6px 12px; box-shadow:4px 4px 0 var(--ink);">DataFrame</span>
+          <span class="muted" style="margin-left:12px;">input 87× faster</span>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:120px 1fr; gap:20px; align-items:center;">
+        <div class="mono" style="font-size:26px; font-weight:900; color:var(--green);">v4<br><span style="font-size:16px;" class="muted">2026</span></div>
+        <div style="display:flex; gap:10px; align-items:center; font-family:'JetBrains Mono'; font-size:18px; font-weight:800;">
+          <span class="card" style="padding:6px 12px; box-shadow:4px 4px 0 var(--ink);">DataFrame</span><span style="color:var(--green);">═ pointer ═</span><span class="card dark" style="padding:6px 12px; box-shadow:4px 4px 0 var(--yellow);">engine</span><span style="color:var(--green);">═ shared buffers ═</span><span class="card" style="padding:6px 12px; box-shadow:4px 4px 0 var(--ink);">DataFrame</span>
+        </div>
+      </div>
+    </div>
+    <p class="muted" style="position:absolute; top:520px; left:70px; width:1140px; font-size:20px;">Numbers are read where NumPy keeps them. Strings still need encoding — so "minimal copy", not "zero copy" everywhere.</p>
+  </div>
+  <div class="punchbar">Three versions to remove <span class="y">every serialization step</span> we could.</div>
+  <aside class="notes">[26:30] Engineering slide, one minute. Version 1 was honest but slow: write the DataFrame to Parquet, read it in, write results to Parquet, read them back. Version 2 passed NumPy pointers straight into the engine — 87 times faster input. Version 4 closed the loop on output. Strings are the exception: Python strings have to be encoded, which we rewrote in C++. That's why the abstract says minimal-copy.</aside>
+</section>
+
+<!-- ============ 21 · MINIMAL COPY: WHAT IT BUYS ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · MINIMAL COPY</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>What fewer copies buys you</h2>
+    <p style="margin-top:12px;">10 everyday pandas tasks on 50M rows: chDB vs pandas</p>
+    <div style="position:absolute; top:230px; left:70px; right:70px; display:grid; grid-template-columns:repeat(3, 1fr); gap:34px;">
+      <div class="stat green"><div class="num">4.2×</div><div class="lab">faster (geometric mean)<br>won 10 of 10</div></div>
+      <div class="stat blue"><div class="num">2.9×</div><div class="lab">less peak memory (geomean)<br>won 10 of 10</div></div>
+      <div class="stat red"><div class="num" style="font-size:46px; line-height:1.3;">10.5 → 1.8 GB</div><div class="lab">peak RAM on a 50M × 10K JOIN<br>— fits an 8 GB laptop</div></div>
+    </div>
+    <p class="mono muted" style="position:absolute; top:520px; left:70px; font-size:15px;">AWS c6a.4xlarge (16 vCPU, 32 GB) · Python 3.14 · best of 3 · ClickHouse 26.3 webinar benchmark</p>
+  </div>
+  <div class="punchbar">The same laptop <span class="y">finishes jobs it used to crash on.</span></div>
+  <aside class="notes">[28:00] Three numbers from the benchmark we showed at the 26.3 webinar: ten typical tasks, 50 million rows. Faster on all ten, leaner on all ten. The memory number is the one customers feel: a join that needs 10.5 GB in pandas runs in 1.8 GB. On output, turning a 1M-row result into a DataFrame took 2.64 s with chDB vs 3.47 s with DuckDB in the same test.</aside>
+</section>
+
+<!-- ============ 22 · WASM ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · WEBASSEMBLY</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>ClickHouse in a browser tab</h2>
+    <div class="code" style="position:absolute; top:180px; left:70px; width:640px; font-size:16px;"><span class="kw">import</span> { AsyncChdb } <span class="kw">from</span> <span class="st">'chdb-wasm'</span>;
+
+<span class="kw">const</span> db = <span class="kw">await</span> AsyncChdb.<span class="fn">create</span>({ moduleUrl, wasmUrl });
+<span class="kw">await</span> db.<span class="fn">registerFile</span>(<span class="st">'sales.csv'</span>, fileFromInput);
+<span class="kw">const</span> r = <span class="kw">await</span> db.<span class="fn">query</span>(
+  <span class="st">"SELECT count() FROM file('sales.csv')"</span>);</div>
+    <div style="position:absolute; top:180px; left:760px; width:450px;">
+      <div class="rows">
+        <div class="row"><span class="sq ok"></span><span>Runs in a Web Worker — the page never freezes</span></div>
+        <div class="row"><span class="sq ok"></span><span>Local files read lazily — <strong>never uploaded</strong></span></div>
+        <div class="row"><span class="sq ok"></span><span>Same SQL as the server</span></div>
+        <div class="row"><span class="sq x"></span><span>~29 MB download, cached after the first visit</span></div>
+        <div class="row"><span class="sq x"></span><span>Chrome 133+ or recent Firefox</span></div>
+      </div>
+    </div>
+    <div class="card" style="position:absolute; top:470px; left:70px; width:640px; padding:12px 18px;">
+      <div class="m" style="margin-top:0;">npm i chdb-wasm (v0.4.0) · playground: wasm.chdb.io</div>
+    </div>
+  </div>
+  <div class="punchbar">Analytics apps with <span class="y">no backend to run</span> — and no data leaving the laptop.</div>
+  <aside class="notes">[29:30] The same engine compiled to WebAssembly. Runs in a worker, so the UI stays responsive. Files the user picks are read in pieces straight from disk — nothing is uploaded. Two builds: single-threaded works anywhere; multi-threaded needs special page headers. Honest costs: the compressed download is about 29 MB, and it needs a modern browser (64-bit WebAssembly memory). These slides use exactly this package.</aside>
+</section>
+
+<!-- ============ 23 · LIVE: DROP A FILE ============ -->
+<section>
+  <div class="topbar"><span class="sec live">LIVE DEMO</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Drop a file on this slide</h2>
+    <div class="drop" id="dropzone" style="top:170px; left:70px; width:360px; height:330px;">
+      <div class="big">⬇ drop CSV /<br>Parquet / JSON</div>
+      <div class="mono muted" style="font-size:15px;">read in this tab · not uploaded</div>
+      <button id="sample-btn">or load a sample</button>
+    </div>
+    <div class="demo" id="drop-demo" style="top:170px; left:480px; width:730px;">
+      <div class="ed"><textarea rows="4" spellcheck="false">SELECT country, count() AS orders,
+       round(sum(amount)) AS revenue
+FROM file('orders.parquet')
+GROUP BY country ORDER BY revenue DESC</textarea><button class="run">Run ▶</button></div>
+      <div class="out"><table><tr><th>country</th><th>orders</th><th>revenue</th></tr><tr><td colspan="3" class="muted">drop a file or load the sample, then Run</td></tr></table></div>
+      <div class="meta"><span class="tag rec">waiting</span><span class="fileinfo">no file yet</span></div>
+    </div>
+  </div>
+  <div class="engine"><i></i><span class="es">engine: idle</span></div>
+  <aside class="notes">[31:00] Drag any CSV/Parquet from the desktop onto the yellow box (have one ready in Finder). The box registers it under its file name and runs a DESCRIBE + count automatically; edit the SQL to query it. Fallback: "load a sample" fetches a 5,000-row orders.parquet from this site. Pitch: a customer can analyze a confidential file in a web page with zero server-side exposure.</aside>
+</section>
+
+<!-- ============ 24 · PANDAS API ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · PANDAS API</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Change one import</h2>
+    <div class="code" style="position:absolute; top:180px; left:70px; width:720px; font-size:20px;"><span class="line bad"><span class="cm"># import pandas as pd</span></span><span class="line l-g"><span class="kw">import</span> chdb.datastore <span class="kw">as</span> pd</span>
+orders = pd.<span class="fn">read_parquet</span>(<span class="st">"orders.parquet"</span>)
+big = orders[orders.amount &gt; <span class="st">100</span>]
+top = (big.<span class="fn">groupby</span>(<span class="st">"country"</span>).amount.<span class="fn">sum</span>()
+          .<span class="fn">sort_values</span>(ascending=<span class="kw">False</span>).<span class="fn">head</span>(<span class="st">3</span>))
+<span class="fn">print</span>(top)   <span class="cm"># runs here — as one ClickHouse query</span></div>
+    <div style="position:absolute; top:190px; left:850px; width:360px;">
+      <div class="sticker" style="transform:rotate(2deg); font-size:26px; line-height:1.3;">Same pandas code.<br>ClickHouse engine<br>underneath.</div>
+      <p class="muted" style="font-size:19px; margin-top:36px;">Result checked against real pandas, same file · datastore 4.4.0</p>
+    </div>
+  </div>
+  <div class="punchbar">Millions of people already write pandas. <span class="y">They don't have to learn SQL first.</span></div>
+  <aside class="notes">[33:00] SQL is a barrier for many data scientists and for most code an AI assistant writes. DataStore — shipped inside chDB — keeps the pandas API and swaps the engine. Nothing runs until you look at the result; then the whole chain becomes one query. I ran this exact code and compared to pandas: identical output.</aside>
+</section>
+
+<!-- ============ 25 · PANDAS API: HOW ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · PANDAS API</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>A compiler, not a wrapper</h2>
+    <div style="position:absolute; top:190px; left:70px; right:70px; display:flex; align-items:stretch; gap:16px;">
+      <div class="card p" style="flex:1;"><h3>1 · RECORD</h3><div class="t">Each pandas call is recorded, not run</div><div class="m">filter → groupby → sum → sort → head</div></div>
+      <div class="mono" style="font-size:34px; font-weight:900; align-self:center;">→</div>
+      <div class="card o" style="flex:1;"><h3>2 · COMPILE</h3><div class="t">The chain becomes one SQL query</div><div class="m">SELECT … GROUP BY … ORDER BY … LIMIT 3</div></div>
+      <div class="mono" style="font-size:34px; font-weight:900; align-self:center;">→</div>
+      <div class="card g" style="flex:1;"><h3>3 · RUN</h3><div class="t">ClickHouse runs it on all cores</div><div class="m">no SQL equivalent? → real pandas for that step</div></div>
+    </div>
+    <div class="card dark" style="position:absolute; top:450px; left:70px; width:1140px; padding:14px 22px;">
+      <div class="t" style="margin-top:0; color:#fff;">Triggers: <span class="mono" style="color:var(--yellow);">print()</span>, <span class="mono" style="color:var(--yellow);">len()</span>, <span class="mono" style="color:var(--yellow);">.columns</span>, iteration — the moment you actually need the answer.</div>
+    </div>
+  </div>
+  <aside class="notes">[34:30] Why it's fast: lazy evaluation. We record the chain, compile it to one query, and let ClickHouse optimize the whole thing — streaming, all cores, top-N instead of full sorts. Anything that has no SQL form runs as real pandas in the middle of the chain, so correctness doesn't depend on our coverage.</aside>
+</section>
+
+<!-- ============ 26 · PANDAS API: NUMBERS ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · PANDAS API</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Same API, different machine underneath</h2>
+    <div style="position:absolute; top:180px; left:70px; width:640px;">
+      <div class="label">CLICKBENCH · DATAFRAME CATEGORY · 43.77 GIB</div>
+      <div class="label muted" style="font-size:14px;">relative time, lower is better (1× = fastest possible)</div>
+      <div class="bars" style="margin-top:14px;">
+        <div class="b"><span>chDB</span><div class="fill win" style="width:3%;"></div><span class="v">×1.35</span></div>
+        <div class="b"><span>DuckDB</span><div class="fill" style="width:3.1%;"></div><span class="v">×1.40</span></div>
+        <div class="b"><span>Polars</span><div class="fill" style="width:14%;"></div><span class="v">×9.99</span></div>
+        <div class="b"><span>pandas</span><div class="fill lose" style="width:100%;"></div><span class="v">×71.18</span></div>
+      </div>
+    </div>
+    <div style="position:absolute; top:190px; left:770px; width:440px; display:grid; gap:22px;">
+      <div class="stat green"><div class="num">14 / 16</div><div class="lab">everyday ops faster than pandas<br>10M rows, Parquet → answer</div></div>
+      <div class="stat blue"><div class="num">39%</div><div class="lab">of pandas' peak memory (median)</div></div>
+    </div>
+    <p class="mono muted" style="position:absolute; top:540px; left:70px; font-size:15px;">ClickBench public results · own laptop run for PyCon JP 2026 (best of 2, results parity-checked)</p>
+  </div>
+  <div class="punchbar">Not a faster pandas. <span class="y">ClickHouse wearing pandas' clothes.</span></div>
+  <aside class="notes">[36:00] Two sources. Left: ClickBench's DataFrame category — 43 queries on 100M rows; chDB ranks first, pandas is 71 times slower than the best. Right: my own test from PyCon JP — 16 everyday operations; we win 14, and the two losses are groupby+mean variants by about 2×. Memory: a third to half of pandas. If anyone asks about the losses: in-memory value-replacement ops round-trip the data and stay with pandas.</aside>
+</section>
+
+<!-- ============ 27 · POSTGRES ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · POSTGRESQL</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>The ClickHouse engine, <span class="hl">inside Postgres</span></h2>
+    <div style="position:absolute; top:180px; left:70px; width:700px; display:grid; gap:26px;">
+      <div>
+        <div class="label" style="color:var(--blue);">QUERY ANY SOURCE FROM SQL</div>
+        <div class="code" style="font-size:17px;"><span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="fn">chdb_query</span>(<span class="st">$$</span>
+<span class="st">  SELECT * FROM s3('s3://…/file_1.csv')</span>
+<span class="st">$$</span>) <span class="kw">AS</span> (id int, months int, days int);</div>
+      </div>
+      <div>
+        <div class="label" style="color:var(--orange);">LOAD ANY FORMAT WITH COPY</div>
+        <div class="code" style="font-size:17px;"><span class="kw">LOAD</span> <span class="st">'chdb_hook'</span>;
+<span class="kw">COPY</span> times <span class="kw">FROM</span> <span class="st">'s3://…/{some,another}_prefix/file_{1..3}.csv'</span>;</div>
+      </div>
+    </div>
+    <div style="position:absolute; top:190px; left:830px; width:380px;">
+      <div class="sticker" style="transform:rotate(2deg); font-size:24px; line-height:1.3;">pg_chdb<br><span class="mono" style="font-size:18px;">github.com/ClickHouse/pg_chdb</span></div>
+      <div class="rows" style="margin-top:36px;">
+        <div class="row"><span class="sq b"></span><span>PostgreSQL 15+</span></div>
+        <div class="row"><span class="sq b"></span><span>Extension in ClickHouse Managed Postgres</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="punchbar">Postgres users get ClickHouse's readers <span class="y">without leaving psql.</span></div>
+  <aside class="notes">[37:30] Newest piece. pg_chdb embeds the chDB library inside a Postgres backend. Two entry points: chdb_query() runs any ClickHouse query and returns rows to Postgres; the chdb_hook module makes plain COPY understand S3, GCS, Azure, HTTP, globs and every ClickHouse format. It's documented as an extension of ClickHouse's Managed Postgres. Honest: it's young — each chdb_query call is isolated, so tables created in one call aren't visible in the next.</aside>
+</section>
+
+<!-- ============ 28 · POSTGRES: COMPARE ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · POSTGRESQL</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Why Postgres people care</h2>
+    <table class="cmp" style="position:absolute; top:170px; left:70px; width:1140px;">
+      <tr><th>Extension</th><th>Compression</th><th>Formats</th></tr>
+      <tr><td><b>aws_s3</b></td><td>none</td><td>TSV, CSV, Postgres binary</td></tr>
+      <tr><td><b>pg_duckdb</b></td><td>gzip, zstd, snappy*</td><td>CSV, JSON, Parquet</td></tr>
+      <tr><td><b>pg_lake</b></td><td>gzip, zstd, snappy*</td><td>CSV, JSON, Parquet</td></tr>
+      <tr class="us"><td><b>pg_chdb</b></td><td>gzip, zstd, lz4, bz2, snappy, brotli</td><td>TSV, CSV, JSON, BSON, Parquet, Arrow, ORC, Avro, Protobuf, MsgPack, XML, Prometheus … and more</td></tr>
+    </table>
+    <p class="mono muted" style="position:absolute; top:470px; left:70px; font-size:15px;">* snappy for Parquet only · source: pg_chdb docs on clickhouse.com</p>
+    <div class="sticker white" style="position:absolute; top:510px; left:70px; font-size:22px; line-height:1.35; box-shadow:6px 6px 0 var(--ink);">
+      In ClickHouse's own import benchmark (NYC Taxi, ~1M rows), pg_duckdb and pg_lake<br>took roughly 2–3× as long as pg_chdb for CSV, JSON and Parquet.
+    </div>
+  </div>
+  <aside class="notes">[39:00] The pitch to a Postgres shop: ingest from anywhere, in any format, with plain COPY. The comparison table is from the pg_chdb documentation. The speed claim is our own benchmark — say "our benchmark" when you repeat it to customers.</aside>
+</section>
+
+<!-- ============ 29 · NOT JUST PYTHON ============ -->
+<section>
+  <div class="topbar"><span class="sec">ADDED · EVERYWHERE</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Not just Python: 11 ways in</h2>
+    <div class="langs" style="margin-top:44px;">
+      <div class="lang"><img src="logos/python-logo.svg" alt=""><span>Python</span></div>
+      <div class="lang"><span class="txt">C/C++</span><span>libchdb</span></div>
+      <div class="lang"><img src="logos/nodejs-logo.svg" alt=""><span>Node.js</span></div>
+      <div class="lang"><img src="logos/go-logo.svg" alt=""><span>Go</span></div>
+      <div class="lang"><img src="logos/rust-logo.svg" alt=""><span>Rust</span></div>
+      <div class="lang"><img src="logos/java-logo.svg" alt=""><span>Java</span></div>
+      <div class="lang"><img src="logos/ruby-logo.svg" alt=""><span>Ruby</span></div>
+      <div class="lang"><img src="logos/dotnet-logo.svg" alt=""><span>.NET</span></div>
+      <div class="lang"><img src="logos/bun-logo.svg" alt=""><span>Bun</span></div>
+      <div class="lang"><img src="logos/zig-logo.svg" alt=""><span>Zig</span></div>
+      <div class="lang"><span class="txt">WASM</span><span>browser</span></div>
+      <div class="lang" style="background:var(--yellow);"><span class="txt" style="font-size:22px;">+ PG</span><span>pg_chdb</span></div>
+    </div>
+    <p class="muted" style="position:absolute; top:505px; left:70px; width:1140px; font-size:20px;">Python and C/C++ are the most mature; Java, .NET, Zig and WASM are early. Same engine under all of them.</p>
+  </div>
+  <div class="punchbar">Wherever the developer is, <span class="y">ClickHouse can be a dependency.</span></div>
+  <aside class="notes">[40:00] Quick. Every binding wraps the same C library, so features land everywhere. Maturity varies — be honest with customers about which ones are early.</aside>
+</section>
+
+<!-- ============ 30 · WHEN TO USE WHAT ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 4 · FOR THE BUSINESS</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>chDB is the on-ramp, not the replacement</h2>
+    <div style="position:absolute; top:180px; left:70px; right:70px; display:grid; grid-template-columns:1fr 1fr; gap:40px;">
+      <div class="card o">
+        <h3>CHDB · INSIDE ONE PROCESS</h3>
+        <div class="rows" style="margin-top:14px;">
+          <div class="row"><span class="sq"></span><span>notebooks · scripts · CI</span></div>
+          <div class="row"><span class="sq"></span><span>inside apps &amp; agents</span></div>
+          <div class="row"><span class="sq"></span><span>files where they already are</span></div>
+          <div class="row"><span class="sq"></span><span>browser &amp; Postgres</span></div>
+        </div>
+      </div>
+      <div class="card b">
+        <h3>CLICKHOUSE SERVER / CLOUD</h3>
+        <div class="rows" style="margin-top:14px;">
+          <div class="row"><span class="sq b"></span><span>many users at once</span></div>
+          <div class="row"><span class="sq b"></span><span>always-on dashboards &amp; APIs</span></div>
+          <div class="row"><span class="sq b"></span><span>continuous ingestion</span></div>
+          <div class="row"><span class="sq b"></span><span>data bigger than one machine</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sticker" style="position:absolute; top:520px; left:420px; transform:rotate(-1deg); font-size:26px;">Same SQL on both sides →</div>
+  </div>
+  <aside class="notes">[41:00] Part 4, for sales and marketing. chDB doesn't compete with the server or Cloud. It's where a developer first meets ClickHouse: in a notebook, a test, an agent. When the workload becomes shared, always-on or big, the same SQL moves to a server or Cloud without a rewrite. My framing: chDB widens the top of the funnel.</aside>
+</section>
+
+<!-- ============ 31 · HOW TO TALK ABOUT IT ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 4 · FOR THE BUSINESS</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Three lines for customer conversations</h2>
+    <div style="position:absolute; top:185px; left:70px; right:70px; display:grid; gap:24px;">
+      <div class="card" style="display:grid; grid-template-columns:70px 1fr 380px; gap:20px; align-items:center; padding:16px 24px;">
+        <span class="mono" style="font-size:40px; font-weight:900; color:var(--orange);">01</span>
+        <span style="font-size:28px; font-weight:900;">"ClickHouse in a pip install."</span>
+        <span class="muted" style="font-size:19px; font-weight:700;">→ data scientists, CI, app developers</span>
+      </div>
+      <div class="card" style="display:grid; grid-template-columns:70px 1fr 380px; gap:20px; align-items:center; padding:16px 24px;">
+        <span class="mono" style="font-size:40px; font-weight:900; color:var(--orange);">02</span>
+        <span style="font-size:28px; font-weight:900;">"Query files where they already are."</span>
+        <span class="muted" style="font-size:19px; font-weight:700;">→ teams with S3 / Parquet / exports</span>
+      </div>
+      <div class="card" style="display:grid; grid-template-columns:70px 1fr 380px; gap:20px; align-items:center; padding:16px 24px;">
+        <span class="mono" style="font-size:40px; font-weight:900; color:var(--orange);">03</span>
+        <span style="font-size:28px; font-weight:900;">"Same SQL from laptop to Cloud."</span>
+        <span class="muted" style="font-size:19px; font-weight:700;">→ anyone worried about lock-in or rewrites</span>
+      </div>
+    </div>
+  </div>
+  <div class="punchbar">Lead with the pain they have. <span class="y">chDB is the shortest path to "it works".</span></div>
+  <aside class="notes">[43:00] If you remember three sentences from today, these. Each one maps to an audience. Avoid over-claiming: chDB is not a multi-user server, and the browser build is new. Next slide covers what to be careful about.</aside>
+</section>
+
+<!-- ============ 32 · HONEST LIMITS ============ -->
+<section>
+  <div class="topbar"><span class="sec">HONESTY</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>What not to promise</h2>
+    <div class="rows" style="position:absolute; top:180px; left:70px; width:1140px; gap:20px;">
+      <div class="row"><span class="sq x"></span><span><b>Not a shared server.</b> One engine per process; for many users, use a server or Cloud.</span></div>
+      <div class="row"><span class="sq x"></span><span><b>Remote data is network-bound.</b> A first scan of a big S3 file takes seconds to a minute.</span></div>
+      <div class="row"><span class="sq x"></span><span><b>Browser build is young.</b> ~29 MB download, modern browsers only, remote files fetched whole.</span></div>
+      <div class="row"><span class="sq x"></span><span><b>pg_chdb is new.</b> Each <span class="mono">chdb_query()</span> call is isolated.</span></div>
+      <div class="row"><span class="sq x"></span><span><b>Pandas API isn't 100% pandas.</b> Uncovered steps fall back to pandas — correct, not always faster.</span></div>
+    </div>
+  </div>
+  <div class="punchbar">Under-promise. <span class="y">The demo does the convincing.</span></div>
+  <aside class="notes">[44:30] Five things to be careful about in front of customers. Each one is real and each has a good answer. If a remote scan is too slow: copy the data into a local MergeTree table once — in my test a 60-second remote aggregation became 19 milliseconds.</aside>
+</section>
+
+<!-- ============ 33 · TRY IT / JOIN ============ -->
+<section>
+  <div class="topbar"><span class="sec">TRY IT</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Try it in 30 seconds</h2>
+    <div class="code" style="position:absolute; top:190px; left:70px; width:640px; font-size:19px;"><span class="cm"># Python</span>
+pip install chdb
+<span class="cm"># Node.js · browser</span>
+npm i chdb   ·   npm i chdb-wasm
+<span class="cm"># no install at all</span>
+open https://wasm.chdb.io
+<span class="cm"># Postgres</span>
+github.com/ClickHouse/pg_chdb</div>
+    <div style="position:absolute; top:190px; left:790px; width:420px; text-align:center;">
+      <div class="frame-img" style="width:230px; margin:0 auto; transform:rotate(2deg);">
+        <img src="logos/qr-what-is-chdb-2026.svg" alt="QR code to these slides">
+      </div>
+      <p class="mono" style="font-size:16px; margin-top:22px;">these slides, live engine included</p>
+      <p class="mono" style="font-size:18px; margin-top:16px; font-weight:800;">github.com/chdb-io/chdb</p>
+    </div>
+  </div>
+  <div class="punchbar">Ideas, customer asks, rough edges — <span class="y">bring them to me.</span></div>
+  <aside class="notes">[46:30] Everything here is open source. The QR opens these slides with the live engine — try the drop-a-file demo at your desk. Ask: if you hear a customer story where an embedded ClickHouse would help, send it my way — that's how the CI, ML and agent use cases found us.</aside>
+</section>
+
+<!-- ============ 34 · THANKS ============ -->
+<section>
+  <div class="frame">
+    <h1 style="position:absolute; top:170px; left:70px; font-size:110px;">Thank you.</h1>
+    <div class="sticker" style="position:absolute; top:340px; left:70px; transform:rotate(-1.5deg); font-size:34px;">Questions?</div>
+    <div class="logo-pol" style="position:absolute; top:150px; right:90px; width:220px; height:220px; transform:rotate(3deg);">
+      <img src="logos/chdb-light.png" alt="chDB" style="width:170px;">
+    </div>
+    <p class="mono" style="position:absolute; top:470px; left:70px; font-size:22px;">@auxten · auxten.com · github.com/chdb-io/chdb</p>
+  </div>
+  <div class="foot"><span>What is chDB, and what can you use it for?</span><span class="y">2026-10-28</span></div>
+  <aside class="notes">[48:00] Open Q&amp;A. Likely questions: "vs DuckDB?" — same embedded shape; chDB brings the ClickHouse dialect, the widest format/source surface, and a no-rewrite path to ClickHouse Cloud. "Is it supported?" — open source, maintained by ClickHouse. "Can a customer run it in production?" — yes for single-process workloads; shared workloads belong on a server.</aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  // ---------- hub: the recurring "one engine, many homes" visual ----------
+  const HUB = {
+    u: [ ['CI PIPELINES', 'tests without a server'],
+         ['PYTHON DATA', 'SQL on DataFrames'],
+         ['MACHINE LEARNING', 'feature prep from Parquet'],
+         ['AI AGENTS', 'one SQL tool'] ],
+    w: [ ['MINIMAL-COPY', 'Pandas & Arrow in place'],
+         ['WEBASSEMBLY', 'ClickHouse in the browser'],
+         ['PANDAS API', 'change one import'],
+         ['POSTGRESQL', 'pg_chdb extension'] ],
+  };
+  const HUB_Y = [200, 322, 444, 566];
+  document.querySelectorAll('.hub').forEach(el => {
+    const on = el.dataset.on.split(',');
+    const cx = 640, cy = 430;
+    let lines = '', nodes = '';
+    ['u', 'w'].forEach(side => {
+      const left = side === 'u';
+      const x = left ? 70 : 880;
+      const color = left ? '#1565c0' : '#e65100';
+      const lit = on.includes(side);
+      HUB[side].forEach(([t, m], i) => {
+        const y = HUB_Y[i];
+        const ex = left ? x + 330 : x, ey = y + 40;
+        lines += `<path d="M ${cx} ${cy} L ${ex} ${ey}" stroke="${lit ? color : '#c9c9bf'}" stroke-width="${lit ? 6 : 4}" ${lit ? '' : 'stroke-dasharray="10 9"'} fill="none"/>`;
+        nodes += `<div class="hubnode ${lit ? 'on ' + side : 'dim'}" style="left:${x}px; top:${y}px;"><h3>${t}</h3><div class="m">${m}</div></div>`;
+      });
+    });
+    el.innerHTML =
+      `<div class="svgwrap"><svg width="1280" height="720" viewBox="0 0 1280 720">${lines}</svg></div>` +
+      `<div class="hubcol ${on.includes('u') ? '' : 'dim'}" style="left:70px; background:#1565c0; color:#fff;">WHAT PEOPLE DID</div>` +
+      `<div class="hubcol ${on.includes('w') ? '' : 'dim'}" style="right:70px; background:#e65100; color:#fff;">WHAT WE ADDED</div>` +
+      nodes +
+      `<div class="card dark hubcore"><img src="logos/chdb-light.png" alt="" style="width:54px; filter:brightness(0) invert(1); display:inline-block;"><h3 style="color:#fff;">chDB</h3><div class="m" style="text-align:center;">the ClickHouse engine</div></div>`;
+  });
+
+  // ---------- page numbers ----------
+  const pages = document.querySelectorAll('.reveal .slides > section');
+  pages.forEach((s, i) => {
+    const pg = s.querySelector('.topbar .pg');
+    if (pg) pg.textContent = String(i + 1).padStart(2, '0') + ' / ' + pages.length;
+  });
+
+  Reveal.initialize({
+    hash: true, controls: true, progress: true, slideNumber: false, center: false,
+    transition: 'none', controlsTutorial: false, width: 1280, height: 720, margin: 0.04,
+    plugins: [ RevealNotes ],
+  });
+</script>
+
+<script type="module">
+  // ---------- live chDB engine (chdb-wasm 0.4.0, single-threaded bundle) ----------
+  // The 158 MB wasm is shipped gzip'd in two parts (Cloudflare Pages caps files at 25 MiB);
+  // we fetch both, gunzip in the browser and hand the worker a blob: URL.
+  const BASE = 'vendor/chdb-wasm-0.4.0/';
+  const PARTS = ['chdb.wasm.gz.part-aa', 'chdb.wasm.gz.part-ab'];
+  const GZ_TOTAL = 28596224;
+  const eng = { db: null, version: '', state: 'idle', note: '' };
+
+  function paint() {
+    const label = {
+      idle: 'engine: idle',
+      loading: 'engine: loading ' + eng.note,
+      ready: 'engine: ready · ClickHouse ' + eng.version + ' · in this tab',
+      off: 'engine: offline · showing recorded results',
+    }[eng.state];
+    document.querySelectorAll('.engine').forEach(el => {
+      el.className = 'engine ' + eng.state;
+      el.querySelector('.es').textContent = label;
+      el.title = eng.state === 'off' ? eng.note : '';
+    });
+  }
+
+  function memory64() {
+    try { return WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 5, 3, 1, 4, 1])); }
+    catch { return false; }
+  }
+
+  let booting = null;
+  function boot() {
+    if (booting) return booting;
+    booting = (async () => {
+      if (location.protocol === 'file:') throw new Error('open over http(s) to run the engine');
+      if (!memory64()) throw new Error('this browser lacks 64-bit WebAssembly memory');
+      eng.state = 'loading'; eng.note = '0%'; paint();
+      let loaded = 0;
+      const blobs = await Promise.all(PARTS.map(async p => {
+        const resp = await fetch(BASE + p);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + p);
+        const reader = resp.body.getReader(), chunks = [];
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value); loaded += value.length;
+          eng.note = Math.min(99, Math.round(loaded * 100 / GZ_TOTAL)) + '%'; paint();
+        }
+        return new Blob(chunks);
+      }));
+      eng.note = 'unpacking'; paint();
+      const wasm = await new Response(new Blob(blobs).stream().pipeThrough(new DecompressionStream('gzip'))).blob();
+      const wasmUrl = URL.createObjectURL(new Blob([wasm], { type: 'application/wasm' }));
+      eng.note = 'starting'; paint();
+      const { AsyncChdb } = await import('./' + BASE + 'index.js');
+      eng.db = await AsyncChdb.create({ moduleUrl: new URL(BASE + 'chdb.mjs', location.href).href, wasmUrl });
+      eng.version = (await eng.db.query('SELECT version()', 'TabSeparated')).text().trim();
+      eng.state = 'ready'; paint();
+      return eng.db;
+    })().catch(e => { eng.state = 'off'; eng.note = e.message; paint(); throw e; });
+    return booting;
+  }
+
+  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const NUMERIC = /^(U?Int|Float|Decimal)/;
+
+  async function run(demo, sqlOverride) {
+    const ta = demo.querySelector('textarea'), out = demo.querySelector('.out'), meta = demo.querySelector('.meta');
+    const sql = (sqlOverride ?? ta.value).trim().replace(/;\s*$/, '');
+    let db;
+    try { db = await boot(); }
+    catch (e) { meta.innerHTML = `<span class="tag rec">recorded</span>engine unavailable: ${esc(e.message)}`; return; }
+    meta.innerHTML = '<span class="tag">running…</span>';
+    const raw = /\bFORMAT\s+\w+\s*$/i.test(sql);
+    const t0 = performance.now();
+    try {
+      const r = await db.query(sql, raw ? 'TabSeparated' : 'JSONCompact');
+      const ms = performance.now() - t0;
+      if (raw) {
+        out.innerHTML = `<pre>${esc(r.text().replace(/\n$/, ''))}</pre>`;
+      } else {
+        const j = JSON.parse(r.text());
+        const head = j.meta.map(m => `<th>${esc(m.name)}</th>`).join('');
+        const rows = j.data.slice(0, 10).map(row => '<tr>' + row.map((v, i) =>
+          `<td class="${NUMERIC.test(j.meta[i].type.replace('Nullable(', '')) ? 'n' : ''}">${esc(typeof v === 'object' ? JSON.stringify(v) : v)}</td>`).join('') + '</tr>').join('');
+        const more = j.rows > 10 ? `<tr><td colspan="${j.meta.length}" class="muted">… ${j.rows - 10} more rows</td></tr>` : '';
+        out.innerHTML = `<table><tr>${head}</tr>${rows}${more}</table>`;
+      }
+            meta.innerHTML = `<span class="tag live">live</span>${ms < 1000 ? ms.toFixed(0) + ' ms' : (ms / 1000).toFixed(1) + ' s'} · ClickHouse ${esc(eng.version)} in this tab`;
+    } catch (e) {
+      out.innerHTML = `<div class="err">${esc(e.message).slice(0, 600)}</div>`;
+      meta.innerHTML = '<span class="tag">error</span>';
+    }
+  }
+
+  document.querySelectorAll('.demo').forEach(demo => {
+    demo.querySelector('.run').addEventListener('click', () => run(demo));
+    demo.querySelector('textarea').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(demo); }
+      e.stopPropagation();
+    });
+  });
+
+  // ---------- drop-a-file demo ----------
+  const dropDemo = document.getElementById('drop-demo');
+  const zone = document.getElementById('dropzone');
+  async function useFile(file) {
+    const info = dropDemo.querySelector('.fileinfo') || dropDemo.querySelector('.meta');
+    let db;
+    try { db = await boot(); }
+    catch (e) { dropDemo.querySelector('.meta').innerHTML = `<span class="tag rec">offline</span>engine unavailable: ${esc(e.message)}`; return; }
+    const name = file.name.replace(/'/g, '');
+    await db.registerFile(name, file);
+    const n = JSON.parse((await db.query(`SELECT count() FROM file('${name}')`, 'JSONCompact')).text()).data[0][0];
+    const cols = JSON.parse((await db.query(`DESCRIBE file('${name}')`, 'JSONCompact')).text()).data.map(r => r[0]);
+    dropDemo.querySelector('textarea').value = name === 'orders.parquet'
+      ? dropDemo.querySelector('textarea').value
+      : `SELECT * FROM file('${name}') LIMIT 8`;
+    await run(dropDemo);
+    const meta = dropDemo.querySelector('.meta');
+    meta.innerHTML += `<br>${esc(name)} · ${file.size >= 1e6 ? (file.size / 1e6).toFixed(1) + ' MB' : Math.ceil(file.size / 1e3) + ' KB'} · ${Number(n).toLocaleString()} rows · ${cols.length} columns: ${esc(cols.slice(0, 6).join(', '))}${cols.length > 6 ? ' …' : ''}`;
+  }
+  ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('over'); }));
+  zone.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) useFile(f); });
+  document.getElementById('sample-btn').addEventListener('click', async () => {
+    const blob = await (await fetch('../demos/pyconid/orders.parquet')).blob();
+    useFile(new File([blob], 'orders.parquet'));
+  });
+
+  paint();
+  // Start the download right away so the engine is warm by the first demo slide.
+  boot().catch(() => {});
+</script>
+</body>
+</html>
