@@ -160,7 +160,8 @@
   .demo .out th { text-align: left; background: var(--ink); color: var(--yellow); padding: 5px 10px; font-weight: 800; }
   .demo .out td { padding: 4px 10px; border-bottom: 2px solid #ececdf; white-space: nowrap; max-width: 360px; overflow: hidden; text-overflow: ellipsis; }
   .demo .out td.n { text-align: right; }
-  .demo .out pre { margin: 0; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; white-space: pre; }
+  .demo .out pre { overflow-x: auto; line-height: 1.2; margin: 0; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; white-space: pre; }
+  .demo[data-format] .out pre { font-size: 15px; line-height: 1.15; }
   .demo .out .err { color: var(--red); font-family: "JetBrains Mono", monospace; font-size: 16px; white-space: pre-wrap; }
   .demo .meta { margin-top: 10px; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 700; color: #55554f; }
   .demo .meta .tag { display: inline-block; padding: 2px 8px; border: 2.5px solid var(--ink); margin-right: 8px; background: #fff; }
@@ -554,10 +555,12 @@ tool = ChDBTool(read_only=<span class="kw">True</span>,
   <div class="topbar"><span class="sec live">LIVE DEMO</span><span class="pg"></span></div>
   <div class="frame">
     <h2>Query a file on S3 — from this tab</h2>
-    <div class="demo" style="top:180px; left:70px; width:1140px;">
+    <div class="demo" data-format="PrettyCompactNoEscapes" style="top:180px; left:70px; width:1140px;">
       <div class="ed"><textarea rows="3" spellcheck="false">SELECT count() AS rows
 FROM url('https://datasets-documentation.s3.eu-west-3.amazonaws.com/house_parquet/house_0.parquet')</textarea><button class="run">Run ▶</button></div>
-      <div class="out"><table><tr><th>rows</th></tr><tr><td class="n" style="text-align:left;">2772030</td></tr></table></div>
+      <div class="out"><pre>   ┌────rows─┐
+1. │ 2772030 │ -- 2.77 million
+   └─────────┘</pre></div>
       <div class="meta"><span class="tag rec">recorded</span>725 ms · Parquet footer only · laptop Chrome, 2026-10-26</div>
     </div>
     <div class="card" style="position:absolute; top:520px; left:70px; width:1140px; padding:12px 18px;">
@@ -1107,13 +1110,15 @@ github.com/ClickHouse/pg_chdb</div>
     try { db = await boot(); }
     catch (e) { meta.innerHTML = `<span class="tag rec">recorded</span>engine unavailable: ${esc(e.message)}`; return; }
     meta.innerHTML = '<span class="tag">running…</span>';
-    const raw = /\bFORMAT\s+\w+\s*$/i.test(sql);
+    // An explicit FORMAT in the SQL wins; otherwise a demo can ask for a text format via data-format.
+    const explicit = /\bFORMAT\s+\w+\s*$/i.test(sql);
+    const raw = explicit || !!demo.dataset.format;
     const t0 = performance.now();
     try {
-      const r = await db.query(sql, raw ? 'TabSeparated' : 'JSONCompact');
+      const r = await db.query(sql, explicit ? 'TabSeparated' : (demo.dataset.format || 'JSONCompact'));
       const ms = performance.now() - t0;
       if (raw) {
-        out.innerHTML = `<pre>${esc(r.text().replace(/\n$/, ''))}</pre>`;
+        out.innerHTML = `<pre>${esc(r.text().replace(/\x1b\[[0-9;]*m/g, '').replace(/\n$/, ''))}</pre>`;
       } else {
         const j = JSON.parse(r.text());
         const head = j.meta.map(m => `<th>${esc(m.name)}</th>`).join('');
