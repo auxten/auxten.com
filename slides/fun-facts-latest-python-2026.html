@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fun Facts About the Latest Python - 5-minute lightning talk</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11/build/styles/github.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fbfbf8;
+    --ink: #161616;
+    --muted: #4b525b;
+    --faint: #eef1f4;
+    --border: #e2e6eb;
+    --yellow: #fadb14;
+    --orange: #e65100;
+    --blue: #1565c0;
+    --green: #2e7d32;
+    --red: #c62828;
+    --dark: #1f2328;
+    --code: #f6f8fa;
+  }
+
+  html, body, .reveal, .reveal .slides, .reveal .slides section { background: var(--paper); }
+
+  .reveal {
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 30px;
+  }
+
+  .reveal .slides section {
+    box-sizing: border-box;
+    height: 720px;
+    padding: 0;
+    text-align: left;
+    overflow: hidden;
+  }
+
+  .reveal .slides section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(90deg, rgba(22,22,22,0.035) 1px, transparent 1px),
+      linear-gradient(rgba(22,22,22,0.035) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.28;
+    pointer-events: none;
+  }
+
+  .frame { position: absolute; inset: 0; box-sizing: border-box; padding: 78px 54px 54px; }
+
+  .topbar {
+    position: absolute; top: 34px; left: 54px; right: 54px;
+    display: flex; align-items: center; justify-content: space-between;
+    color: var(--muted); font-size: 20px; font-weight: 800; z-index: 3;
+  }
+  .topbar .right { display: flex; align-items: center; gap: 10px; }
+  .meter { width: 170px; height: 6px; overflow: hidden; border-radius: 999px; background: #e7e9ee; }
+  .meter span { display: block; height: 100%; background: var(--orange); }
+
+  h1, h2, h3, p { margin: 0; }
+  h1 { color: var(--ink); font-size: 62px; font-weight: 900; line-height: 1.02; letter-spacing: -0.5px; }
+  h2 { color: var(--ink); font-size: 54px; font-weight: 900; line-height: 1.04; letter-spacing: -0.5px; }
+  h3 { color: var(--ink); font-size: 28px; font-weight: 900; line-height: 1.1; }
+  p  { color: var(--muted); font-size: 27px; font-weight: 700; line-height: 1.32; }
+
+  .orange { color: var(--orange); }
+  .blue { color: var(--blue); }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .muted { color: var(--muted); }
+  .mono { font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace; }
+  em { font-style: italic; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; height: 100%; }
+  .grid2 > * { min-width: 0; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  .card {
+    box-sizing: border-box; background: #fff; border: 2px solid var(--border);
+    border-radius: 10px; padding: 24px; box-shadow: 0 14px 36px rgba(20,20,20,0.08);
+  }
+  .card.yellow { background: #fff8d7; border-color: #f0d74a; }
+  .card.blue { background: #eef6ff; border-color: #86bdf2; color: var(--blue); }
+  .card.green { background: #eff9ef; border-color: #9ad59c; color: var(--green); }
+  .card.red { background: #fff0f0; border-color: #f1a2a2; color: var(--red); }
+  .card.dark { background: var(--dark); border-color: var(--dark); color: #fff; }
+  .card p { font-size: 23px; line-height: 1.28; }
+
+  .need-list { display: grid; gap: 12px; margin-top: 18px; }
+  .need-list div {
+    display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: center;
+    color: var(--ink); font-size: 22px; font-weight: 800; line-height: 1.18;
+  }
+  .card.dark .need-list div { color: #f3f4f6; }
+  .dot { width: 13px; height: 13px; border-radius: 999px; background: var(--orange); }
+  .x { color: var(--red); font-weight: 900; font-size: 22px; line-height: 1; }
+  .ok { color: var(--green); font-weight: 900; font-size: 22px; line-height: 1; }
+
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 42px;
+    border: 2px solid var(--blue); border-radius: 999px; padding: 0 18px;
+    color: var(--blue); background: #fff; font-size: 22px; font-weight: 900; white-space: nowrap;
+  }
+  .pill.green { border-color: var(--green); color: var(--green); }
+  .pill.orange { border-color: var(--orange); color: var(--orange); }
+  .pill.red { border-color: var(--red); color: var(--red); }
+
+  .flow { display: flex; align-items: center; gap: 16px; }
+  .arrow { color: #9aa2ad; font-size: 36px; font-weight: 900; }
+
+  .logo { display: block; object-fit: contain; max-width: 100%; max-height: 100%; box-shadow: none !important; border: 0 !important; margin: 0 !important; }
+  .logo-row { display: flex; gap: 24px; align-items: center; }
+
+  pre { width: 100%; margin: 0 !important; border-radius: 10px; box-shadow: 0 10px 26px rgba(20,20,20,0.10); }
+  .reveal pre code {
+    box-sizing: border-box; max-height: none; padding: 22px 26px; border-radius: 10px;
+    color: var(--ink); background: var(--code); border: 2px solid var(--border);
+    font-family: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+    font-size: 19px; font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; line-height: 1.4;
+  }
+  pre.small code { font-size: 16px; line-height: 1.34; }
+
+  /* simple horizontal bar chart */
+  .bars { display: grid; gap: 12px; }
+  .bar-row { display: grid; grid-template-columns: 240px 1fr 110px; align-items: center; gap: 14px; }
+  .bar-row .label { font-size: 20px; font-weight: 900; color: var(--ink); }
+  .bar-row .val { font-size: 20px; font-weight: 900; color: var(--muted); text-align: right; }
+  .bar-track { height: 28px; background: #eef1f4; border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; background: var(--blue); }
+  .bar-fill.orange { background: var(--orange); }
+  .bar-fill.green { background: var(--green); }
+  .bar-fill.red { background: var(--red); }
+
+  .reveal .controls, .reveal .progress { color: var(--orange); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- 01 — Title + hook -->
+<section>
+  <div class="topbar"><span>Lightning talk &middot; 5 min</span><span class="right"></span></div>
+  <div class="frame">
+    <div class="grid2" style="grid-template-columns: 0.56fr 0.44fr;">
+      <div>
+        <div class="logo-row" style="margin-bottom: 26px;">
+          <img class="logo" src="logos/python-logo.svg" alt="Python logo" style="width:74px;height:74px;">
+        </div>
+        <h1>Fun facts about<br><span class="orange">the latest Python</span></h1>
+        <p style="margin-top:22px;font-size:28px;color:var(--ink);">30 years to kill one lock &mdash; and what finally worked.</p>
+        <p style="margin-top:18px;font-size:24px;">Auxten Wang &middot; Oct 2026</p>
+      </div>
+      <div class="card dark" style="padding:28px 26px;">
+        <p class="mono" style="font-size:19px;color:#7ee787;line-height:1.7;">$ python3.15t -c "import sys; \<br>&nbsp;&nbsp;print(sys._is_gil_enabled())"</p>
+        <p class="mono" style="font-size:44px;font-weight:900;color:#fff;margin-top:18px;">False</p>
+        <p style="font-size:21px;font-weight:900;color:#c8ced6;margin-top:18px;">Python threads finally run bytecode <span class="orange">in parallel</span>. It took 30 years.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 — Fun fact #1: the 30-year graveyard -->
+<section>
+  <div class="topbar"><span>Fun fact #1</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>Killing the GIL: a 30-year graveyard</h2>
+    <svg viewBox="0 0 1170 260" style="width:100%;margin-top:30px;" font-family="Inter, sans-serif">
+      <line x1="40" y1="150" x2="1130" y2="150" stroke="#e2e6eb" stroke-width="6"/>
+      <line x1="40" y1="150" x2="900" y2="150" stroke="#c62828" stroke-width="6" stroke-dasharray="2 10"/>
+      <line x1="900" y1="150" x2="1130" y2="150" stroke="#2e7d32" stroke-width="6"/>
+      <g text-anchor="middle" font-weight="800">
+        <circle cx="130" cy="150" r="16" fill="#c62828"/>
+        <text x="130" y="105" font-size="40" font-weight="900" fill="#161616">1996</text>
+        <text x="130" y="200" font-size="21" fill="#4b525b">free-threading patch</text>
+        <text x="130" y="228" font-size="19" fill="#c62828">&#10007; 2&times; slower</text>
+        <circle cx="400" cy="150" r="16" fill="#c62828"/>
+        <text x="400" y="105" font-size="40" font-weight="900" fill="#161616">2007</text>
+        <text x="400" y="200" font-size="21" fill="#4b525b">python-safethread</text>
+        <text x="400" y="228" font-size="19" fill="#c62828">&#10007; too restrictive</text>
+        <circle cx="660" cy="150" r="16" fill="#c62828"/>
+        <text x="660" y="105" font-size="40" font-weight="900" fill="#161616">2016</text>
+        <text x="660" y="200" font-size="21" fill="#4b525b">Gilectomy</text>
+        <text x="660" y="228" font-size="19" fill="#c62828">&#10007; 19&times; slower</text>
+        <circle cx="900" cy="150" r="16" fill="#2e7d32"/>
+        <text x="900" y="105" font-size="40" font-weight="900" fill="#161616">2021</text>
+        <text x="900" y="200" font-size="21" fill="#4b525b">nogil fork</text>
+        <text x="900" y="228" font-size="19" fill="#2e7d32">&#10003; PEP 703</text>
+        <circle cx="1090" cy="150" r="16" fill="#e65100"/>
+        <text x="1090" y="105" font-size="40" font-weight="900" fill="#e65100">2026</text>
+        <text x="1090" y="200" font-size="21" fill="#4b525b">3.14t &rarr; 3.15t</text>
+        <text x="1090" y="228" font-size="19" fill="#e65100">you are here</text>
+      </g>
+    </svg>
+    <div class="card dark" style="margin-top:30px;padding:20px 24px;font-size:25px;font-weight:900;line-height:1.3;">
+      Guido's bar (2007): remove the GIL <span class="orange">only if single-threaded performance does not decrease</span>.<br>
+      <span style="color:#9aa2ad;">Gilectomy made every refcount atomic &mdash; and ran <span class="red">19&times; slower</span> on 7 cores than one.</span>
+    </div>
+    <p style="margin-top:18px;font-size:20px;color:var(--green);font-weight:900;">Bonus fact: the 1996 patch left one survivor &mdash; <span class="mono">PyThreadState</span> is still in CPython today.</p>
+  </div>
+</section>
+
+<!-- 03 — Fun fact #2: the black magic -->
+<section>
+  <div class="topbar"><span>Fun fact #2</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>The black magic that makes it cheap</h2>
+    <div class="grid4" style="margin-top:26px;">
+      <div class="card" style="min-height:270px;">
+        <h3 class="blue" style="font-size:23px;">Biased refcounting</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <rect x="5" y="10" width="100" height="90" rx="8" fill="#eef6ff" stroke="#86bdf2" stroke-width="2.5"/>
+          <text x="55" y="48" text-anchor="middle" font-size="15" font-weight="800" fill="#1565c0">owner</text>
+          <text x="55" y="78" text-anchor="middle" font-size="20" font-weight="900" fill="#1565c0">++</text>
+          <rect x="115" y="10" width="100" height="90" rx="8" fill="#fff0f0" stroke="#f1a2a2" stroke-width="2.5"/>
+          <text x="165" y="48" text-anchor="middle" font-size="15" font-weight="800" fill="#c62828">others</text>
+          <text x="165" y="78" text-anchor="middle" font-size="15" font-weight="900" fill="#c62828">atomic</text>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;">Two counters. The hot one never leaves its core.</p>
+      </div>
+      <div class="card" style="min-height:270px;">
+        <h3 class="green" style="font-size:23px;">Immortal objects</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <text x="110" y="55" text-anchor="middle" font-size="30" font-weight="900" font-family="monospace" fill="#2e7d32">None True 42</text>
+          <text x="110" y="95" text-anchor="middle" font-size="26" font-weight="900" fill="#2e7d32">refcnt = &#8734;</text>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;"><span class="mono">None</span>'s refcount is literally <strong>infinity</strong> &mdash; the hottest objects aren't counted at all.</p>
+      </div>
+      <div class="card" style="min-height:270px;">
+        <h3 style="font-size:23px;color:var(--orange);">Per-object locks</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <rect x="45" y="30" width="130" height="70" rx="8" fill="#fff8d7" stroke="#f0d74a" stroke-width="2.5"/>
+          <text x="110" y="73" text-anchor="middle" font-size="17" font-weight="800" font-family="monospace" fill="#161616">dict / list</text>
+          <rect x="88" y="8" width="44" height="34" rx="6" fill="#e65100"/>
+          <rect x="98" y="0" width="24" height="16" rx="8" fill="none" stroke="#e65100" stroke-width="5"/>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;">Mutations lock <em>one object</em>, not the world.</p>
+      </div>
+      <div class="card" style="min-height:270px;">
+        <h3 style="font-size:23px;color:var(--dark);">Lock-free reads</h3>
+        <svg viewBox="0 0 220 110" style="width:100%;margin-top:14px;" font-family="Inter, sans-serif">
+          <g font-weight="900" font-family="monospace" text-anchor="middle">
+            <text x="110" y="35" font-size="19" fill="#2e7d32">d[k]&nbsp; d[k]&nbsp; d[k]</text>
+            <text x="110" y="68" font-size="17" fill="#2e7d32">no lock taken</text>
+          </g>
+          <text x="110" y="92" text-anchor="middle" font-size="13" font-weight="800" fill="#4b525b">memory reclaimed only when</text>
+          <text x="110" y="108" text-anchor="middle" font-size="13" font-weight="800" fill="#4b525b">readers are done (QSBR)</text>
+        </svg>
+        <p style="margin-top:12px;font-size:18px;"><span class="mono">dict</span>/<span class="mono">list</span> reads stay wait-free on the hot path.</p>
+      </div>
+    </div>
+    <div class="card dark" style="margin-top:24px;padding:18px 22px;font-size:25px;font-weight:900;line-height:1.22;">
+      Single-thread tax: <span class="red">~40%</span> in 3.13t &rarr; <span class="orange">~5&ndash;10%</span> in 3.14t/3.15t &mdash; where Gilectomy cost <span class="red">19&times;</span>.
+    </div>
+  </div>
+</section>
+
+<!-- 04 — Fun fact #3: the GIL comes back silently -->
+<section>
+  <div class="topbar"><span>Fun fact #3</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>The GIL can come back &mdash; silently</h2>
+    <div class="need-list" style="margin-top:22px;gap:14px;">
+      <div><span class="x">&#10007;</span><span><strong>One bad import poisons the well.</strong> Any un-opted-in C extension &rarr; CPython quietly <em>turns the GIL back on</em> for the whole process.</span></div>
+      <div><span class="x">&#10007;</span><span><strong>"Thread-safe because GIL" is now a data race.</strong> Every global, cache and lazy init loses its silent protection.</span></div>
+    </div>
+    <pre class="small" style="margin-top:20px !important;"><code class="language-text">$ python3.14t -c "import _chdb"   # us, before we opted in
+RuntimeWarning: The global interpreter lock (GIL) has been enabled to load
+module '_chdb', which has not declared that it can run safely without the GIL.</code></pre>
+    <p style="margin-top:14px;font-size:21px;color:var(--ink);">This got us too: our own "no-GIL benchmark" spent a day <strong>measuring the GIL</strong>.</p>
+    <div class="card yellow" style="margin-top:16px;padding:18px 22px;font-size:23px;font-weight:900;line-height:1.3;color:var(--ink);">
+      Ecosystem: <span class="orange">~61%</span> of the top 360 compiled PyPI packages ship free-threaded wheels (Jul 2026) &mdash; but <span class="mono">grpcio</span>/<span class="mono">protobuf</span> don't, so much of the AI stack silently runs GIL-on. Trust nothing: check <span class="mono">sys._is_gil_enabled()</span>.
+    </div>
+  </div>
+</section>
+
+<!-- 05 — Real numbers from the chDB port -->
+<section>
+  <div class="topbar"><span>Measured, not vibes</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>Real numbers from porting chDB</h2>
+    <p style="margin-top:12px;font-size:23px;">The win, isolated: a 5M-row object-dtype scan that must read <em>one PyObject per value</em> &mdash; exactly where the GIL used to serialize every thread.</p>
+    <div class="bars" style="margin-top:28px;">
+      <div class="bar-row" style="grid-template-columns:360px 1fr 120px;"><span class="label">stock 3.14 &middot; 16 threads</span><div class="bar-track"><div class="bar-fill red" style="width:100%"></div></div><span class="val">0.22 s</span></div>
+      <div class="bar-row" style="grid-template-columns:360px 1fr 120px;margin-top:14px;"><span class="label">3.14t &middot; 16 threads</span><div class="bar-track"><div class="bar-fill green" style="width:36%"></div></div><span class="val">0.08 s</span></div>
+    </div>
+    <p style="margin-top:16px;font-size:21px;color:var(--ink);">On stock 3.14, adding threads made it <span class="red" style="font-weight:900;">slower</span> (0.13 &rarr; 0.22 s). On 3.14t the same threads make it <span class="green" style="font-weight:900;">2.6&times; faster</span>.</p>
+    <div class="card dark" style="margin-top:20px;padding:18px 22px;font-size:24px;font-weight:900;line-height:1.3;">
+      Honest part: the biggest win in the whole port was <span class="orange">Arrow zero-copy</span> (219 &rarr; 20 s), not no-GIL. Free-threading fixes what zero-copy can't reach &mdash; <em>running actual Python in parallel</em>.
+    </div>
+    <p style="margin-top:16px;font-size:16px;color:var(--muted);">chdb-core 26.5.1 <span class="mono">cp314t</span> wheel, CPython 3.14.6 vs 3.14.6t, 56-vCPU Xeon E5-2690v4, min of 6 runs.</p>
+  </div>
+</section>
+
+<!-- 06 — Meanwhile in 3.15 -->
+<section>
+  <div class="topbar"><span>Lightning round</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>Meanwhile in 3.15 <span class="muted" style="font-size:30px;">(released 9 Oct 2026)</span></h2>
+    <div class="grid2" style="margin-top:26px;height:auto;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch;">
+      <div class="card">
+        <h3 class="orange" style="font-size:25px;">Lazy imports &middot; PEP 810</h3>
+        <pre class="small" style="margin-top:12px !important;box-shadow:none;"><code class="language-python">lazy import json  # resolved on first use</code></pre>
+        <p style="margin-top:12px;font-size:19px;">Big-app startup stops paying for imports it never runs.</p>
+      </div>
+      <div class="card">
+        <h3 class="blue" style="font-size:25px;">UTF-8 by default &middot; PEP 686</h3>
+        <pre class="small" style="margin-top:12px !important;box-shadow:none;"><code class="language-python">open("data.txt")  # UTF-8 everywhere, finally</code></pre>
+        <p style="margin-top:12px;font-size:19px;"><span class="mono">open()</span> stops guessing your encoding from the OS locale.</p>
+      </div>
+      <div class="card">
+        <h3 class="green" style="font-size:25px;">frozendict, a new builtin</h3>
+        <pre class="small" style="margin-top:12px !important;box-shadow:none;"><code class="language-python">cfg = frozendict(a=1)  # immutable dict</code></pre>
+        <p style="margin-top:12px;font-size:19px;">What <span class="mono">tuple</span> is to <span class="mono">list</span> &mdash; and handy for sharing across threads.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:25px;color:var(--dark);">Stable ABI for 3.15t &middot; PEP 803</h3>
+        <pre class="small" style="margin-top:12px !important;box-shadow:none;"><code class="language-text">abi3t  # one wheel, both builds</code></pre>
+        <p style="margin-top:12px;font-size:19px;">Extension authors stop doubling their CI matrix for free-threading.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 — Close -->
+<section>
+  <div class="topbar"><span>Your move</span><span class="right"></span></div>
+  <div class="frame">
+    <h2>Try it tonight &mdash; nothing to port</h2>
+    <pre style="margin-top:24px !important;"><code class="language-bash">uv python install 3.15t      # 1 · a second Python, side by side
+python3.15t -m pytest        # 2 · run YOUR tests, unchanged
+python3.15t -c "import sys, yourapp; print(sys._is_gil_enabled())"
+                             # 3 · trust, but verify</code></pre>
+    <p style="margin-top:20px;font-size:23px;color:var(--ink);">Your existing <span class="mono">ThreadPoolExecutor</span> code doesn't change &mdash; it just starts scaling.</p>
+    <div class="card dark" style="margin-top:22px;padding:22px 26px;font-size:28px;font-weight:900;line-height:1.3;">
+      The GIL was <span class="orange">an amnesty, not a feature</span>.<br>
+      <span style="color:#9aa2ad;font-size:23px;">3.15t revokes it. The bugs it exposes were already yours.</span>
+    </div>
+    <p style="margin-top:20px;font-size:19px;color:var(--muted);">Read more: <span class="mono">py-free-threading.github.io</span> &middot; PEP 703 &middot; 779 &middot; 810 &middot; the long version: <span class="mono">auxten.com/slides/chdb-nogil-pydata-yerevan-2026.html</span></p>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+  // Auto page numbers + progress meters — slides can be added/removed freely.
+  function renumber() {
+    const secs = document.querySelectorAll('.reveal .slides section');
+    const total = secs.length;
+    secs.forEach((sec, i) => {
+      const right = sec.querySelector('.topbar .right');
+      if (right) right.innerHTML = '<span class="meter"><span style="width:' +
+        (100 * (i + 1) / total).toFixed(1) + '%"></span></span>' +
+        String(i + 1).padStart(2, '0') + ' / ' + total;
+    });
+  }
+  renumber();
+
+  Reveal.initialize({
+    hash: true,
+    controls: true,
+    progress: true,
+    slideNumber: "c/t",
+    transition: "fade",
+    transitionSpeed: "fast",
+    width: 1280,
+    height: 720,
+    margin: 0,
+    minScale: 0.2,
+    maxScale: 4,
+    controlsTutorial: false,
+    plugins: [RevealHighlight]
+  });
+</script>
+</body>
+</html>
