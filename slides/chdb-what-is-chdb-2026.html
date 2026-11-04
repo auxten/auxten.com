@@ -168,7 +168,7 @@
   .demo .meta .tag.live { background: var(--green); color: #fff; border-color: var(--green); }
   .demo .meta .tag.rec { background: #ececdf; }
 
-  .engine { position: absolute; right: 70px; bottom: 30px; z-index: 6; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 800;
+  .engine { position: absolute; right: 70px; bottom: 30px; z-index: 6; cursor: pointer; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 800;
     background: #fff; border: 3px solid var(--ink); padding: 5px 12px; display: flex; align-items: center; gap: 8px; }
   .engine i { width: 12px; height: 12px; border: 2.5px solid var(--ink); background: #bdbdb4; display: inline-block; }
   .engine.ready i { background: var(--green); }
@@ -1047,18 +1047,25 @@ github.com/ClickHouse/pg_chdb</div>
   const PARTS = ['chdb.wasm.gz.part-aa', 'chdb.wasm.gz.part-ab'];
   const GZ_TOTAL = 28596224;
   const eng = { db: null, version: '', state: 'idle', note: '' };
+  // Boot trace for remote debugging: clicking the engine chip copies a report (see report()).
+  const diag = { t0: 0, stage: 'not started', steps: [], bytes: 0, error: null };
+  function step(name) {
+    diag.stage = name;
+    diag.steps.push(((performance.now() - diag.t0) / 1000).toFixed(1) + 's ' + name);
+    console.info('[chdb-deck] ' + name);
+  }
 
   function paint() {
     const label = {
       idle: 'engine: idle',
       loading: 'engine: loading ' + eng.note,
       ready: 'engine: ready · ClickHouse ' + eng.version + ' · in this tab',
-      off: 'engine: offline · showing recorded results',
+      off: 'engine: offline · click to copy diagnostics',
     }[eng.state];
     document.querySelectorAll('.engine').forEach(el => {
       el.className = 'engine ' + eng.state;
       el.querySelector('.es').textContent = label;
-      el.title = eng.state === 'off' ? eng.note : '';
+      el.title = eng.state === 'off' ? diag.stage + ': ' + eng.note : 'click to copy diagnostics';
     });
   }
 
@@ -1067,12 +1074,23 @@ github.com/ClickHouse/pg_chdb</div>
     catch { return false; }
   }
 
+  // try/catch_all: native wasm exception handling, which the chdb build needs.
+  const EH_PROBE = [0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 8, 1, 6, 0, 6, 64, 25, 11, 11];
+  function probe(bytes) {
+    try { return WebAssembly.validate(new Uint8Array(bytes)); }
+    catch (e) { return 'error: ' + e.message; }
+  }
+
   let booting = null;
   function boot() {
     if (booting) return booting;
     booting = (async () => {
+      diag.t0 = performance.now();
+      step('feature check');
       if (location.protocol === 'file:') throw new Error('open over http(s) to run the engine');
+      if (typeof WebAssembly === 'undefined') throw new Error('WebAssembly is disabled in this browser');
       if (!memory64()) throw new Error('this browser lacks 64-bit WebAssembly memory');
+      step('download');
       eng.state = 'loading'; eng.note = '0%'; paint();
       let loaded = 0;
       const blobs = await Promise.all(PARTS.map(async p => {
@@ -1082,23 +1100,66 @@ github.com/ClickHouse/pg_chdb</div>
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
-          chunks.push(value); loaded += value.length;
+          chunks.push(value); loaded += value.length; diag.bytes = loaded;
           eng.note = Math.min(99, Math.round(loaded * 100 / GZ_TOTAL)) + '%'; paint();
         }
         return new Blob(chunks);
       }));
+      step('unpack');
       eng.note = 'unpacking'; paint();
       const wasm = await new Response(new Blob(blobs).stream().pipeThrough(new DecompressionStream('gzip'))).blob();
       const wasmUrl = URL.createObjectURL(new Blob([wasm], { type: 'application/wasm' }));
+      step('start worker (' + wasm.size + ' bytes wasm)');
       eng.note = 'starting'; paint();
       const { AsyncChdb } = await import('./' + BASE + 'index.js');
-      eng.db = await AsyncChdb.create({ moduleUrl: new URL(BASE + 'chdb.mjs', location.href).href, wasmUrl });
+      // A worker that fails to load never answers; don't wait forever.
+      eng.db = await Promise.race([
+        AsyncChdb.create({ moduleUrl: new URL(BASE + 'chdb.mjs', location.href).href, wasmUrl }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('engine worker did not start within 90 s')), 90000)),
+      ]);
+      step('first query');
       eng.version = (await eng.db.query('SELECT version()', 'TabSeparated')).text().trim();
+      step('ready');
       eng.state = 'ready'; paint();
       return eng.db;
-    })().catch(e => { eng.state = 'off'; eng.note = e.message; paint(); throw e; });
+    })().catch(e => {
+      diag.error = (e && (e.stack || e.message)) || String(e);
+      console.error('[chdb-deck] engine failed during "' + diag.stage + '"', e);
+      eng.state = 'off'; eng.note = (e && e.message) || String(e); paint(); throw e;
+    });
     return booting;
   }
+
+  async function report() {
+    const lines = [
+      'chDB deck diagnostics · ' + new Date().toISOString(),
+      'page: ' + location.href,
+      'ua: ' + navigator.userAgent,
+    ];
+    try {
+      const h = await navigator.userAgentData?.getHighEntropyValues(['fullVersionList', 'platformVersion', 'architecture']);
+      if (h) lines.push('browser: ' + h.fullVersionList.map(b => b.brand + ' ' + b.version).join(', ') +
+        ' · ' + navigator.userAgentData.platform + ' ' + h.platformVersion + ' ' + h.architecture);
+    } catch {}
+    lines.push(
+      `engine: ${eng.state} · stage: ${diag.stage} · downloaded ${diag.bytes} / ${GZ_TOTAL} bytes`,
+      'steps: ' + (diag.steps.join(' → ') || 'none'),
+      'error: ' + (diag.error || 'none'),
+      `WebAssembly: ${typeof WebAssembly} · memory64: ${memory64()} · exceptions: ${probe(EH_PROBE)} · BigInt64Array: ${typeof BigInt64Array}`,
+      `DecompressionStream: ${typeof DecompressionStream} · Worker: ${typeof Worker} · crossOriginIsolated: ${self.crossOriginIsolated}`,
+      `cores: ${navigator.hardwareConcurrency} · deviceMemory: ${navigator.deviceMemory ?? '?'} GB · network: ${navigator.connection?.effectiveType ?? '?'}`,
+    );
+    return lines.join('\n');
+  }
+
+  document.querySelectorAll('.engine').forEach(el => el.addEventListener('click', async () => {
+    const text = await report();
+    console.log(text);
+    const label = el.querySelector('.es'), before = label.textContent;
+    try { await navigator.clipboard.writeText(text); label.textContent = 'diagnostics copied — paste them to Auxten'; }
+    catch { window.prompt('Copy these diagnostics:', text); }
+    setTimeout(() => { label.textContent = before; }, 4000);
+  }));
 
   const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const NUMERIC = /^(U?Int|Float|Decimal)/;
@@ -1108,7 +1169,7 @@ github.com/ClickHouse/pg_chdb</div>
     const sql = (sqlOverride ?? ta.value).trim().replace(/;\s*$/, '');
     let db;
     try { db = await boot(); }
-    catch (e) { meta.innerHTML = `<span class="tag rec">recorded</span>engine unavailable: ${esc(e.message)}`; return; }
+    catch (e) { meta.innerHTML = `<span class="tag rec">recorded</span>engine unavailable: ${esc(e.message)} · click the engine chip (bottom right) to copy diagnostics`; return; }
     meta.innerHTML = '<span class="tag">running…</span>';
     // An explicit FORMAT in the SQL wins; otherwise a demo can ask for a text format via data-format.
     const explicit = /\bFORMAT\s+\w+\s*$/i.test(sql);
@@ -1149,7 +1210,7 @@ github.com/ClickHouse/pg_chdb</div>
     const info = dropDemo.querySelector('.fileinfo') || dropDemo.querySelector('.meta');
     let db;
     try { db = await boot(); }
-    catch (e) { dropDemo.querySelector('.meta').innerHTML = `<span class="tag rec">offline</span>engine unavailable: ${esc(e.message)}`; return; }
+    catch (e) { dropDemo.querySelector('.meta').innerHTML = `<span class="tag rec">offline</span>engine unavailable: ${esc(e.message)} · click the engine chip (bottom right) to copy diagnostics`; return; }
     const name = file.name.replace(/'/g, '');
     await db.registerFile(name, file);
     const n = JSON.parse((await db.query(`SELECT count() FROM file('${name}')`, 'JSONCompact')).text()).data[0][0];
