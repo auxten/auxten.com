@@ -174,6 +174,19 @@
   .engine.ready i { background: var(--green); }
   .engine.loading i { background: var(--yellow); }
   .engine.off i { background: var(--red); }
+  .demo .meta button.why, .demo .meta a.why { all: unset; cursor: pointer; color: var(--red); text-decoration: underline; }
+
+  /* Diagnostics panel: lives outside the scaled slide so it stays readable at any window size. */
+  .diag { position: fixed; right: 16px; bottom: 16px; z-index: 100; width: min(760px, calc(100vw - 32px)); max-height: 75vh;
+    display: none; flex-direction: column; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    font-family: "JetBrains Mono", monospace; color: var(--ink); }
+  .diag.open { display: flex; }
+  .diag header { display: flex; align-items: center; gap: 10px; background: var(--ink); color: var(--yellow); padding: 8px 12px; font-weight: 800; font-size: 14px; }
+  .diag header span { flex: 1; }
+  .diag button { font: inherit; font-weight: 800; font-size: 13px; border: 2.5px solid var(--ink); background: var(--yellow); color: var(--ink); padding: 3px 10px; cursor: pointer; }
+  .diag .hint { padding: 12px 14px; font-family: "Inter", sans-serif; font-size: 15px; font-weight: 600; line-height: 1.45; border-bottom: 3px solid var(--ink); background: #fffbe6; }
+  .diag .hint a { color: var(--red); font-weight: 800; word-break: break-all; }
+  .diag pre { margin: 0; padding: 12px 14px; overflow: auto; font-size: 12px; line-height: 1.45; white-space: pre-wrap; word-break: break-all; }
 
   .drop { position: absolute; z-index: 3; border: 5px dashed var(--ink); background: #fffbe6; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center; gap: 12px; }
@@ -1060,12 +1073,12 @@ github.com/ClickHouse/pg_chdb</div>
       idle: 'engine: idle',
       loading: 'engine: loading ' + eng.note,
       ready: 'engine: ready · ClickHouse ' + eng.version + ' · in this tab',
-      off: 'engine: offline · click to copy diagnostics',
+      off: 'engine: offline · click for details',
     }[eng.state];
     document.querySelectorAll('.engine').forEach(el => {
       el.className = 'engine ' + eng.state;
       el.querySelector('.es').textContent = label;
-      el.title = eng.state === 'off' ? diag.stage + ': ' + eng.note : 'click to copy diagnostics';
+      el.title = eng.state === 'off' ? diag.stage + ': ' + eng.note : 'click for engine diagnostics';
     });
   }
 
@@ -1152,16 +1165,57 @@ github.com/ClickHouse/pg_chdb</div>
     return lines.join('\n');
   }
 
-  document.querySelectorAll('.engine').forEach(el => el.addEventListener('click', async () => {
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  // What went wrong, in words a viewer can act on without reading the raw report.
+  const ONLINE = 'https://auxten.com/slides/chdb-what-is-chdb-2026.html';
+  function hint() {
+    const online = ONLINE + location.hash;
+    if (location.protocol === 'file:')
+      return `You are viewing a downloaded copy of the deck. The engine can't load from a local file. Open the online version instead: <a href="${esc(online)}">${esc(online)}</a>`;
+    const s = diag.stage;
+    if (eng.state === 'ready') return 'The engine is running in this tab. Nothing is wrong.';
+    if (eng.state !== 'off') return 'The engine is still loading (about 29 MB the first time). Wait for the chip to turn green.';
+    if (s === 'feature check') return `This browser can't run the engine: ${esc(eng.note)}. It needs a recent Chrome, Edge, Firefox or Safari with WebAssembly enabled.`;
+    if (s === 'download') return 'Downloading the engine (about 29 MB from auxten.com) failed. A proxy, VPN, firewall or ad blocker may be blocking it. Try another network or an Incognito window.';
+    if (s === 'unpack') return 'The engine downloaded but could not be unpacked. The tab probably ran out of memory: close other tabs and reload.';
+    return 'The engine downloaded but did not start. A browser extension or a company browser policy may be blocking it. Try an Incognito window with extensions off.';
+  }
+
+  const panel = document.createElement('div');
+  panel.className = 'diag';
+  panel.innerHTML = '<header><span>engine diagnostics</span><button class="copy">copy</button><button class="close">close</button></header><div class="hint"></div><pre></pre>';
+  document.body.appendChild(panel);
+  // Keep reveal.js from treating keys and clicks inside the panel as slide navigation.
+  panel.addEventListener('keydown', e => e.stopPropagation());
+  panel.querySelector('.close').addEventListener('click', () => panel.classList.remove('open'));
+  panel.querySelector('.copy').addEventListener('click', async e => {
+    const text = panel.querySelector('pre').textContent;
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'copied'; }
+    catch {
+      const r = document.createRange(); r.selectNodeContents(panel.querySelector('pre'));
+      getSelection().removeAllRanges(); getSelection().addRange(r);
+      e.target.textContent = 'selected — press Cmd+C';
+    }
+    setTimeout(() => { e.target.textContent = 'copy'; }, 3000);
+  });
+  async function showDiag() {
     const text = await report();
     console.log(text);
-    const label = el.querySelector('.es'), before = label.textContent;
-    try { await navigator.clipboard.writeText(text); label.textContent = 'diagnostics copied — paste them to Auxten'; }
-    catch { window.prompt('Copy these diagnostics:', text); }
-    setTimeout(() => { label.textContent = before; }, 4000);
-  }));
+    panel.querySelector('.hint').innerHTML = hint();
+    panel.querySelector('pre').textContent = text;
+    panel.classList.add('open');
+  }
+  document.querySelectorAll('.engine').forEach(el => el.addEventListener('click', showDiag));
+  document.addEventListener('click', e => { if (e.target.closest('button.why')) { e.preventDefault(); showDiag(); } });
 
-  const esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  function unavailable(e, tag) {
+    const why = location.protocol === 'file:'
+      ? `this is a downloaded copy · <a class="why" href="${esc(ONLINE + location.hash)}">open the online deck</a> to run it live`
+      : `engine unavailable: ${esc(e.message)} · <button class="why">show details</button>`;
+    showDiag();
+    return `<span class="tag rec">${tag}</span>${why}`;
+  }
   const NUMERIC = /^(U?Int|Float|Decimal)/;
 
   async function run(demo, sqlOverride) {
@@ -1169,7 +1223,7 @@ github.com/ClickHouse/pg_chdb</div>
     const sql = (sqlOverride ?? ta.value).trim().replace(/;\s*$/, '');
     let db;
     try { db = await boot(); }
-    catch (e) { meta.innerHTML = `<span class="tag rec">recorded</span>engine unavailable: ${esc(e.message)} · click the engine chip (bottom right) to copy diagnostics`; return; }
+    catch (e) { meta.innerHTML = unavailable(e, 'recorded'); return; }
     meta.innerHTML = '<span class="tag">running…</span>';
     // An explicit FORMAT in the SQL wins; otherwise a demo can ask for a text format via data-format.
     const explicit = /\bFORMAT\s+\w+\s*$/i.test(sql);
@@ -1210,7 +1264,7 @@ github.com/ClickHouse/pg_chdb</div>
     const info = dropDemo.querySelector('.fileinfo') || dropDemo.querySelector('.meta');
     let db;
     try { db = await boot(); }
-    catch (e) { dropDemo.querySelector('.meta').innerHTML = `<span class="tag rec">offline</span>engine unavailable: ${esc(e.message)} · click the engine chip (bottom right) to copy diagnostics`; return; }
+    catch (e) { dropDemo.querySelector('.meta').innerHTML = unavailable(e, 'offline'); return; }
     const name = file.name.replace(/'/g, '');
     await db.registerFile(name, file);
     const n = JSON.parse((await db.query(`SELECT count() FROM file('${name}')`, 'JSONCompact')).text()).data[0][0];
