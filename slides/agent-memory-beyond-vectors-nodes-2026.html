@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Memory Beyond Vectors: Queryable Context Graphs for Reliable AI Systems — NODES 2026</title>
+<meta name="description" content="Slides for Auxten Wang's NODES 2026 talk: why vector similarity is not enough for agent memory, and how a queryable context graph over an event log (ClickHouse, chDB, Neo4j) makes a data agent's answers traceable and correctable.">
+<meta property="og:title" content="Agent Memory Beyond Vectors — NODES 2026">
+<meta property="og:description" content="Queryable context graphs for reliable AI systems. Slides by Auxten Wang.">
+<meta property="og:type" content="article">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400..700&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#0B0E14;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0}
+#stage section{position:absolute;left:0;top:0;width:1920px;height:1080px;box-sizing:border-box;overflow:hidden;font-size:32px;line-height:1.4;visibility:hidden;opacity:0;transition:opacity .25s}
+#stage section.on{visibility:visible;opacity:1}
+#stage section *{box-sizing:border-box}
+#stage h1,#stage h2,#stage h3,#stage p,#stage ul{margin:0}
+#stage h1{font-size:96px;font-weight:600;line-height:1.1}
+#stage h2{font-size:64px;font-weight:600;line-height:1.15}
+#stage h3{font-size:44px;font-weight:600;line-height:1.2}
+#stage ul{padding-left:1.1em}
+#stage table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0;overflow:hidden;line-height:1.4}
+#stage th,#stage td{padding:.35em .6em;text-align:left;vertical-align:top;border-top:1px solid rgba(27,33,48,.14)}
+#stage tr:first-child th,#stage tr:first-child td{border-top:none}
+#stage th{font-weight:600}
+#stage aside.notes{display:none}
+#stage x-shape{display:block;flex:none}
+#stage x-shape[kind="arrow-right"]{clip-path:polygon(0 30%,62% 30%,62% 0,100% 50%,62% 100%,62% 70%,0 70%)}
+#stage svg.conn{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;overflow:visible}
+#hud{position:fixed;right:14px;bottom:10px;font:13px Inter,system-ui,sans-serif;color:#8A93A6;opacity:.75;user-select:none}
+#hud a{color:#8A93A6}
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:34%;overflow:auto;background:rgba(11,14,20,.94);color:#E6E9EF;font:18px/1.5 Inter,system-ui,sans-serif;padding:16px 24px 34px;display:none}
+body.shownotes #notes{display:block}
+@media print{html,body{overflow:visible;height:auto;background:#fff}#hud,#notes{display:none!important}#stage{position:static;transform:none!important}#stage section{position:relative;visibility:visible;opacity:1;page-break-after:always;break-after:page}@page{size:1920px 1080px;margin:0}}
+</style>
+</head>
+<body>
+<div id="stage">
+<section id="cover" data-transition="fade" style="background:#12161F;color:#F6F4EE;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="display:flex;flex-direction:column;gap:32px;width:1080px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#F4B740">NODES 2026 · AI Engineering</p>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:600;line-height:1.02;color:#F6F4EE">Agent Memory Beyond Vectors</h1>
+<p style="font-size:44px;line-height:1.25;color:#B9C0CC">Queryable context graphs for reliable AI systems</p>
+</div>
+<p style="font-size:32px;color:#F6F4EE"><b>Auxten Wang</b> · ClickHouse</p>
+<svg aria-label="Abstract graph of connected nodes, one highlighted" width="560" height="640" viewBox="0 0 560 640" style="position:absolute;right:128px;top:200px;width:560px;height:640px">
+<g stroke="#3A4356" stroke-width="3" fill="none">
+<line x1="80" y1="120" x2="300" y2="60"/>
+<line x1="300" y1="60" x2="480" y2="200"/>
+<line x1="80" y1="120" x2="220" y2="300"/>
+<line x1="300" y1="60" x2="220" y2="300"/>
+<line x1="220" y1="300" x2="420" y2="420"/>
+<line x1="480" y1="200" x2="420" y2="420"/>
+<line x1="220" y1="300" x2="120" y2="500"/>
+<line x1="120" y1="500" x2="320" y2="580"/>
+<line x1="420" y1="420" x2="320" y2="580"/>
+</g>
+<line x1="220" y1="300" x2="480" y2="200" stroke="#F4B740" stroke-width="3" stroke-dasharray="10 10"/>
+<g fill="#1F2636" stroke="#5B6680" stroke-width="3">
+<circle cx="80" cy="120" r="18"/>
+<circle cx="300" cy="60" r="18"/>
+<circle cx="480" cy="200" r="18"/>
+<circle cx="420" cy="420" r="18"/>
+<circle cx="120" cy="500" r="18"/>
+<circle cx="320" cy="580" r="18"/>
+</g>
+<circle cx="220" cy="300" r="30" fill="#F4B740"/>
+</svg>
+<aside class="notes">Hi everyone, I'm Auxten. I work on ClickHouse and chDB, and for the past year I've been building memory for AI agents that I use every day. This talk is about one lesson from that work: the hard part of agent memory is not storing things or finding similar things. It's knowing which memory is still true, where it came from, and being able to ask the memory system questions when something goes wrong. In the next 25 minutes: one failure, a model for fixing it, the write and read paths, and a few queries you can steal.</aside>
+</section>
+<section id="wrong-answer" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The problem</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">A confident wrong answer</h2>
+</div>
+<div style="display:flex;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:24px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:20px;padding:40px">
+<p style="font-size:24px;font-weight:600;color:#5F6676">Mon Nov 2, 09:14 · finance analyst asks the data agent</p>
+<p style="align-self:end;max-width:560px;font-size:30px;line-height:1.35;background:#E3E8F4;color:#12161F;padding:20px 28px;border-radius:20px">What was net revenue in APAC last month?</p>
+<p style="max-width:640px;font-size:30px;line-height:1.35;background:#12161F;color:#F6F4EE;padding:20px 28px;border-radius:20px">October net revenue in APAC was $4.87M, up 12% from September.</p>
+<p style="font-size:30px;line-height:1.35;color:#9A4A00"><b>Wrong.</b> $4.87M is gross sales. Net was $4.21M: $655K of refunds were never subtracted.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#5F6676">What was in memory</p>
+<div style="display:flex;flex-direction:column;gap:8px;background:#EFEDE6;border:2px dashed #A3A8B3;border-radius:16px;padding:28px">
+<p style="font-size:24px;color:#5F6676">Sep 2 · saved from an early chat · similarity 0.86</p>
+<p style="font-size:30px;line-height:1.35;color:#3A4150">“Revenue = SUM(orders.amount).”</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:28px">
+<p style="font-size:24px;color:#8A5A00">Oct 28 · finance review · similarity 0.60</p>
+<p style="font-size:30px;line-height:1.35;color:#12161F">“Net revenue = orders − refunds.”</p>
+</div>
+<p style="font-size:30px;line-height:1.35;color:#12161F">Both were recalled. The old note ranked first: it looked <i>more similar</i>.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Illustrative example · fictional company and data</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">2</p>
+<aside class="notes">Let me start with a failure. The company and the data are fictional, but the failure pattern is one I've hit in my own agents. Picture an online retailer with a data agent connected to its warehouse. Monday morning, November 2nd, a finance analyst asks: what was net revenue in APAC last month? The agent answers confidently: 4.87 million, up 12 percent. That's wrong. 4.87 million is gross sales. The real net number was 4.21 million, because 655 thousand dollars of refunds were never subtracted. The interesting part is on the right. The correct definition was in memory. Finance had corrected it five days earlier: net revenue is orders minus refunds. But there was also an older note, saved from an early chat in September: revenue is the sum of order amounts. At answer time, vector recall ranked the old note higher, 0.86 against 0.60, because it was a closer text match for the question. So the memory existed, and the store had even recorded that the new definition replaced the old one. Recall never looked at that. It only looked at similarity.</aside>
+</section>
+<section id="typical-memory" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The problem</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">How most agent memory works today</h2>
+</div>
+<div style="display:flex;align-items:center;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">1</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Chats and tool output</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">2</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Chunk and embed</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">3</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Vector index</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">4</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Top-k by similarity</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">5</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Paste into the prompt</p>
+</div>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#E3E8F4;border-radius:16px;padding:36px">
+<h3 style="font-size:40px;font-weight:600;color:#1D3F9E">Good at</h3>
+<p style="font-size:30px;line-height:1.35;color:#12161F">Finding text that talks about the same thing as the question.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F8E6D4;border-radius:16px;padding:36px">
+<h3 style="font-size:40px;font-weight:600;color:#8A3F00">Blind to</h3>
+<p style="font-size:30px;line-height:1.35;color:#12161F">Which of two similar facts is current, whose fact it is, and where it came from.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">3</p>
+<aside class="notes">Why does that happen? Because most agent memory today is this pipeline. Take chats and tool output, chunk and embed them, put them in a vector index, retrieve the top k by similarity, and paste them into the prompt. This is a good pipeline for one job: finding text that talks about the same thing as the question. But look at what it can't see. It doesn't know that one fact replaced another. It doesn't know which project or team a fact belongs to. And it doesn't know where a fact came from, so when the answer is wrong, there's nothing to follow back. Similarity is the only signal it has.</aside>
+</section>
+<section id="four-questions" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The problem</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Four questions a vector index can’t answer</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:14px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:36px">
+<h3 style="font-size:40px;font-weight:600;color:#12161F">Is it still true?</h3>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">A newer decision replaced it. Both texts still look relevant.</p>
+<p style="align-self:start;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;background:#12161F;color:#F4B740;padding:6px 16px;border-radius:8px">SUPERSEDES</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:36px">
+<h3 style="font-size:40px;font-weight:600;color:#12161F">Does it contradict another?</h3>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">Two memories look alike but make different claims. Both score high.</p>
+<p style="align-self:start;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;background:#12161F;color:#F4B740;padding:6px 16px;border-radius:8px">CONFLICTS_WITH</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:36px">
+<h3 style="font-size:40px;font-weight:600;color:#12161F">Does it apply here?</h3>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">A fact from another project, team or user is still close in meaning.</p>
+<p style="align-self:start;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;background:#12161F;color:#F4B740;padding:6px 16px;border-radius:8px">SCOPED_TO</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:36px">
+<h3 style="font-size:40px;font-weight:600;color:#12161F">Where did it come from?</h3>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">Without a link to the source, you can’t audit it or fix it.</p>
+<p style="align-self:start;font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;background:#12161F;color:#F4B740;padding:6px 16px;border-radius:8px">DERIVED_FROM</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">4</p>
+<aside class="notes">I find it useful to turn this into four questions. Is this memory still true, or did something replace it? Does it contradict another memory? Does it apply here, to this project, this team, this user? And where did it come from? A vector index can't answer any of these, because they're not about meaning. They're about relationships between memories, and between memories and the things that produced them. Each question maps to one kind of edge: supersedes, conflicts with, scoped to, derived from. Keep those four edges in mind; the rest of the talk is about storing them, using them at recall time, and querying them.</aside>
+</section>
+<section id="statement" data-transition="fade" style="background:#12161F;color:#F6F4EE;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:48px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#F4B740">The model</p>
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:600;line-height:1.05;color:#F6F4EE">Similarity is not truth.</h1>
+<p style="width:1300px;font-size:44px;line-height:1.3;color:#B9C0CC">A vector index tells you what looks related. A memory system also has to tell you what is <span style="color:#F4B740">still true</span>, <span style="color:#F4B740">for whom</span>, and <span style="color:#F4B740">why</span>.</p>
+<aside class="notes">So here's the one sentence I want you to take away: similarity is not truth. A vector index tells you what looks related. A memory system also has to tell you what is still true, for whom, and why. Vectors are still useful. We'll keep them. But they become one component, the candidate finder, rather than the whole memory system. The rest comes from structure: an event history, and a graph of beliefs with explicit relationships.</aside>
+</section>
+<section id="context-graph" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The model</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">A context graph for one question</h2>
+<div style="position:absolute;left:128px;top:280px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#2557D6">QUESTION</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Net revenue in APAC last month?</p>
+</div>
+<div style="position:absolute;left:576px;top:280px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#2557D6">TOOL CALL</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">run_sql, query q-1042</p>
+</div>
+<div style="position:absolute;left:1024px;top:280px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#2557D6">TABLE VERSION</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">stg.orders<br>Nov 2 load</p>
+</div>
+<div style="position:absolute;left:576px;top:500px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#2557D6">ANSWER</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">$4.87M (wrong)</p>
+</div>
+<div style="position:absolute;left:1024px;top:500px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#2557D6">REVIEW · OCT 28</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Finance: exclude refunds</p>
+</div>
+<div style="position:absolute;left:1472px;top:500px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#8A5A00">MEMORY · ACTIVE</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Net revenue excludes refunds</p>
+</div>
+<div style="position:absolute;left:1024px;top:720px;width:320px;height:160px;display:flex;flex-direction:column;gap:6px;background:#EFEDE6;border:2px dashed #A3A8B3;border-radius:16px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#5F6676">OLD MEMORY</p>
+<p style="font-size:30px;line-height:1.3;color:#3A4150">Revenue = sum of order amount</p>
+</div>
+<x-connector x1="448" y1="360" x2="576" y2="360" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="896" y1="360" x2="1024" y2="360" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="736" y1="440" x2="736" y2="500" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="1472" y1="580" x2="1344" y2="580" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="736" y1="660" x2="1024" y2="800" route="vh" head="end" style="color:#D9741A;border-width:3px"></x-connector>
+<x-connector x1="1632" y1="660" x2="1344" y2="800" route="vh" head="end" style="color:#8A5A00;border-width:3px"></x-connector>
+<p style="position:absolute;left:448px;top:318px;width:128px;font-size:24px;color:#4A5160;text-align:center">triggered</p>
+<p style="position:absolute;left:896px;top:318px;width:128px;font-size:24px;color:#4A5160;text-align:center">read</p>
+<p style="position:absolute;left:752px;top:454px;width:200px;font-size:24px;color:#4A5160">produced</p>
+<p style="position:absolute;left:1344px;top:512px;width:128px;font-size:24px;line-height:1.2;color:#4A5160;text-align:center">derived from</p>
+<p style="position:absolute;left:752px;top:700px;width:240px;font-size:24px;font-weight:600;color:#B85C0A">recalled</p>
+<p style="position:absolute;left:1648px;top:700px;width:144px;font-size:24px;color:#8A5A00">supersedes</p>
+<div style="position:absolute;left:128px;top:500px;width:420px;height:380px;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;align-items:center;gap:16px"><div style="width:32px;height:32px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:8px"></div><p style="font-size:24px;color:#4A5160">Event: what happened</p></div>
+<div style="display:flex;align-items:center;gap:16px"><div style="width:32px;height:32px;background:#FFF4DA;border:2px solid #E0A526;border-radius:8px"></div><p style="font-size:24px;color:#4A5160">Memory: what we believe</p></div>
+<div style="display:flex;align-items:center;gap:16px"><div style="width:32px;height:32px;background:#EFEDE6;border:2px dashed #A3A8B3;border-radius:8px"></div><p style="font-size:24px;color:#4A5160">Superseded, kept for history</p></div>
+<p style="font-size:30px;line-height:1.3;font-weight:600;color:#12161F">Every node and every edge is queryable.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">6</p>
+<aside class="notes">I call that structure a context graph: the events around an answer, the beliefs behind it, and the edges between them. Here it is for our one question. White boxes are events, things that happened: the question triggered a tool call, and the tool call read a table version and produced an answer. The review box is the Finance review from October 28th. The yellow box is a memory, something we now believe: net revenue excludes refunds. It is derived from that review, so we always know where it came from. And it supersedes the old memory, the dashed one, which we keep for history but never serve as current. The orange edge is the one that caused the bug: the answer recalled the old memory. With this graph, that is not a mystery any more. It's an edge you can query.</aside>
+</section>
+<section id="solution" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The model</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">From team knowledge to a graph the agent can use</h2>
+<div style="position:absolute;left:128px;top:270px;width:380px;height:110px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#EFE8F7;border:2px solid #7A4FB5;border-radius:14px;padding:12px 20px">
+<p style="font-size:26px;font-weight:600;line-height:1.25;color:#12161F">Team chat</p>
+<p style="font-size:24px;line-height:1.25;color:#5B2E9E">Subscribed Slack channels</p>
+</div>
+<div style="position:absolute;left:128px;top:394px;width:380px;height:110px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#E3E8F4;border:2px solid #2557D6;border-radius:14px;padding:12px 20px">
+<p style="font-size:26px;font-weight:600;line-height:1.25;color:#12161F">Docs and wikis</p>
+<p style="font-size:24px;line-height:1.25;color:#1D3F9E">Google Drive, Notion</p>
+</div>
+<div style="position:absolute;left:128px;top:518px;width:380px;height:110px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:14px;padding:12px 20px">
+<p style="font-size:26px;font-weight:600;line-height:1.25;color:#12161F">Data platform</p>
+<p style="font-size:24px;line-height:1.25;color:#4A5160">pipeline runs, query log</p>
+</div>
+<div style="position:absolute;left:564px;top:270px;width:380px;height:358px;display:flex;flex-direction:column;gap:8px;background:#FFF4DA;border:3px solid #E0A526;border-radius:16px;padding:20px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;line-height:1.2;color:#12161F">ClickHouse</p>
+<p style="font-size:24px;line-height:1.25;color:#6B4A00">1 · Land everything as rows, append-only</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.35;color:#12161F">raw.chat_messages<br>raw.docs<br>raw.pipeline_events<br>agent.events<br>warehouse tables</p>
+</div>
+<div style="position:absolute;left:1000px;top:270px;width:380px;height:358px;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:16px;padding:20px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:600;line-height:1.2;color:#12161F">Extraction agent</p>
+<p style="font-size:24px;line-height:1.25;color:#4A5160">2 · Scheduled, every few minutes</p>
+<ul style="font-size:24px;line-height:1.3;color:#12161F">
+<li>Reads only new rows</li>
+<li>Versions, lineage: from pipeline events</li>
+<li>Incidents, decisions: a model reads the text</li>
+<li>Every fact links to its source</li>
+</ul>
+</div>
+<div style="position:absolute;left:1436px;top:270px;width:356px;height:358px;display:flex;flex-direction:column;gap:8px;background:#FFF4DA;border:3px solid #E0A526;border-radius:16px;padding:20px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:36px;font-weight:600;line-height:1.2;color:#12161F">Neo4j</p>
+<p style="font-size:24px;line-height:1.25;color:#6B4A00">3 · The context graph</p>
+<p style="font-size:24px;line-height:1.35;color:#12161F">Message, Doc, Incident<br>Table, TableVersion<br>ToolCall, Answer<br>Memory, Scope<br>+ vector index on text</p>
+</div>
+<x-connector x1="508" y1="325" x2="564" y2="325" head="end" style="color:#5F6676;border-width:4px"></x-connector>
+<x-connector x1="508" y1="449" x2="564" y2="449" head="end" style="color:#5F6676;border-width:4px"></x-connector>
+<x-connector x1="508" y1="573" x2="564" y2="573" head="end" style="color:#5F6676;border-width:4px"></x-connector>
+<x-connector x1="944" y1="449" x2="1000" y2="449" head="end" style="color:#5F6676;border-width:4px"></x-connector>
+<x-connector x1="1380" y1="449" x2="1436" y2="449" head="end" style="color:#5F6676;border-width:4px"></x-connector>
+<div style="position:absolute;left:128px;top:690px;width:380px;height:226px;display:flex;flex-direction:column;justify-content:center;gap:6px;background:#12161F;border-radius:16px;padding:20px 24px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:600;line-height:1.2;color:#F6F4EE">People</p>
+<p style="font-size:24px;line-height:1.25;color:#B9C0CC">ask in chat; answers and corrections come back to the same thread</p>
+</div>
+<div style="position:absolute;left:564px;top:690px;width:1228px;height:226px;display:flex;flex-direction:row;align-items:center;gap:24px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:16px;padding:14px 24px">
+<div style="width:330px;display:flex;flex-direction:column;gap:6px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:600;line-height:1.2;color:#12161F">4 · Data agent</p>
+<p style="font-size:24px;line-height:1.25;color:#4A5160">Recall and check in the graph, run SQL on the warehouse, then work on the result locally:</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:4px;background:#FFF4DA;border:3px solid #E0A526;border-radius:12px;padding:10px 20px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:30px;font-weight:600;line-height:1.2;color:#12161F">chDB · a SQL engine inside the agent process</p>
+<div style="display:flex;flex-direction:row;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600;line-height:1.2;color:#12161F">Uploaded files</p>
+<p style="font-size:24px;line-height:1.2;color:#6B4A00">Query the CSV or Parquet a person drops in chat</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600;line-height:1.2;color:#12161F">Join</p>
+<p style="font-size:24px;line-height:1.2;color:#6B4A00">Join those files with rows from the warehouse</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<p style="font-size:24px;font-weight:600;line-height:1.2;color:#12161F">Follow-ups</p>
+<p style="font-size:24px;line-height:1.2;color:#6B4A00">Re-slice the same result, no new warehouse query</p>
+</div>
+</div>
+</div>
+</div>
+<x-connector x1="508" y1="803" x2="564" y2="803" head="both" style="color:#5F6676;border-width:4px"></x-connector>
+<x-connector x1="754" y1="628" x2="754" y2="690" head="both" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="1614" y1="628" x2="1614" y2="690" head="both" style="color:#5F6676;border-width:3px"></x-connector>
+<p style="position:absolute;left:770px;top:644px;width:230px;font-size:24px;color:#4A5160">SQL, event log</p>
+<p style="position:absolute;left:1290px;top:644px;width:308px;font-size:24px;color:#4A5160;text-align:right">recall, checks, commits</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Every source is optional · start with one channel and the pipeline, add the rest later</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">7</p>
+<aside class="notes">That was the graph for one question. Where do those nodes come from in a real team? Here is the whole pipeline on one page. Start on the left, with where a team's knowledge already lives: team chat, where the data team announces problems and fixes; docs and wikis, where someone writes up what happened; and the data platform itself, with its pipeline runs and query log. Step one: land everything as rows. Connectors copy new messages, document versions and pipeline events into append-only tables. Any columnar store you already run will do; mine is ClickHouse, so the warehouse and the agent's event log are already there. Nothing is interpreted at this stage, so you can re-read the raw rows later with a better model. Step two: an extraction agent runs every few minutes and reads only the new rows. Table versions and lineage are not guessed by a model: each pipeline run reports what it read and what it wrote. The model is only used for text: which tables does this message mention? Is it an incident, a fix, a decision? Every fact links back to its source row, and when the model isn't sure, a person reviews it. Step three: the results go into the context graph, in Neo4j, with a vector index on the text. One important rule: extraction creates evidence and links. It does not create memories. Promoting something to memory is a deliberate step, and that's the next slide. Step four: the data agent. Before each answer it recalls memories and checks data health in the graph, then runs SQL on the warehouse. It tags every query with the answer id, so the query log shows which tables each answer read. And inside the agent sits chDB, which is ClickHouse as an in-process library. The next slide shows what it does there. Every source here is optional: start with one channel and your pipeline.</aside>
+</section>
+<section id="chdb-join" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The model</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Inside the agent: one query, three sources</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="width:500px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:4px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:14px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;line-height:1.25;color:#4A5160">IN MEMORY</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.3;color:#12161F">Python(refunds)</p>
+<p style="font-size:24px;line-height:1.25;color:#4A5160">rows the agent just fetched from the warehouse</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#EFE8F7;border:2px solid #7A4FB5;border-radius:14px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;line-height:1.25;color:#5B2E9E">UPLOADED IN CHAT</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.3;color:#12161F">file('supplier_returns.csv')</p>
+<p style="font-size:24px;line-height:1.25;color:#4A5160">a spreadsheet someone dropped in the thread</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px;background:#E3E8F4;border:2px solid #2557D6;border-radius:14px;padding:16px 20px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;line-height:1.25;color:#1D3F9E">REMOTE FILE</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.3;color:#12161F">url('…/sku_categories.parquet')</p>
+<p style="font-size:24px;line-height:1.25;color:#4A5160">a reference file on shared storage</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;justify-content:center;background:#1B2130;border-radius:20px;padding:36px 40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.6;color:#E6E9EF;white-space:nowrap"><span style="color:#F4B740">SELECT</span> c.category,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;sum(w.refund_amount) <span style="color:#F4B740">AS</span> warehouse_refunds,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;sum(u.amount)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#F4B740">AS</span> supplier_returns<br><span style="color:#F4B740">FROM</span> Python(refunds) <span style="color:#F4B740">AS</span> w<br><span style="color:#F4B740">JOIN</span> <span style="color:#C9B3F0">file('supplier_returns.csv')</span> <span style="color:#F4B740">AS</span> u <span style="color:#F4B740">USING</span> (order_id)<br><span style="color:#F4B740">JOIN</span> <span style="color:#9DB8F5">url('https://…/sku_categories.parquet')</span> <span style="color:#F4B740">AS</span> c <span style="color:#F4B740">USING</span> (sku)<br><span style="color:#F4B740">GROUP BY</span> c.category <span style="color:#F4B740">ORDER BY</span> warehouse_refunds <span style="color:#F4B740">DESC</span></p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.3;color:#12161F">No temp table in the warehouse. No load step. No extra service. <b>chDB runs this inside the agent’s own process.</b></p>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">chDB = ClickHouse as an in-process library · pip install chdb · fictional file names</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">8</p>
+<aside class="notes">Let me zoom into that chDB box for one slide, because "in-process SQL" is abstract. Here is one query the agent runs. The operations lead has dropped a spreadsheet of supplier returns into the chat and asked: do these match our refund numbers? The agent has three things to combine. First, the rows it just fetched from the warehouse. They are a DataFrame in the agent's memory, and chDB reads it directly as a table. Second, the CSV file the person uploaded. Third, a Parquet file on shared storage that maps products to categories. One SQL statement joins all three and gives the answer by category. chDB is ClickHouse packaged as a library: you pip install it, and it runs inside the agent's process. So there is no temporary table to create in the warehouse, no load step, and no extra service to operate. When the follow-up question comes, the agent just runs another query on the same local data. And for the context graph, this is one more tool call: its SQL and the files it read are recorded like any other.</aside>
+</section>
+<section id="write-path" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Write path</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Nothing becomes memory by accident</h2>
+</div>
+<div style="display:flex;gap:48px">
+<div style="width:540px;display:flex;flex-direction:column;gap:20px">
+<h3 style="font-size:40px;font-weight:600;color:#12161F">Two ways in</h3>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#8A5A00">1 · Agent commits</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">A conclusion it decided is worth keeping</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#8A5A00">2 · Person imports</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Docs and rules they already trust</p>
+</div>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">Everything else goes to the event log. It is <b>evidence</b>, not memory.</p>
+</div>
+<table style="flex:1;font-size:28px;color:#12161F;border:2px solid #DCD8CC;border-radius:16px;background:#FDFCF9">
+<tr style="background:#ECE9E0"><th style="width:20%">Operation</th><th style="width:36%">Meaning</th><th style="width:44%">In the graph</th></tr>
+<tr><td><b>Add</b></td><td>A new belief</td><td>New Memory node</td></tr>
+<tr><td><b>Revise</b></td><td>Better information arrived</td><td>New node + SUPERSEDES edge; old one kept</td></tr>
+<tr><td><b>Retract</b></td><td>Stop believing it, say why</td><td>Status retracted, reason stored</td></tr>
+<tr><td><b>Pin</b></td><td>This one is authoritative</td><td>Conflicting writes are rejected</td></tr>
+<tr><td><b>Refuse</b></td><td>Never store this pattern</td><td>Blocklist checked on write and recall</td></tr>
+</table>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">9</p>
+<aside class="notes">Let's start with writes, because most memory bugs are created at write time. My rule is: nothing becomes memory by accident. There are only two ways in. Either the agent explicitly commits a conclusion it has decided is worth keeping, or a person imports documents they already trust, like project rules. Everything else, raw chats and tool output, goes to the event log. That's evidence. You can search it and audit it, but it never gets injected into a prompt as memory. Then, instead of only "add", memory gets five operations. The first three, add, revise and retract, come from belief revision, an old idea from logic. Pin and refuse are two practical additions. Notice that revise doesn't overwrite. It creates a new node and a supersedes edge, so history is never lost. That edge is exactly what recall ignored in our opening example.</aside>
+</section>
+<section id="conflict-check" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Write path</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Catch contradictions at write time</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="width:920px;background:#1B2130;border-radius:20px;padding:40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#E6E9EF;white-space:nowrap"><span style="color:#F4B740">def</span> commit(new):<br>&#160;&#160;&#160;&#160;peers = vector_search(new.embedding,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;scope=(new.project, new.kind),<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;min_cosine=0.92)<br>&#160;&#160;&#160;&#160;<span style="color:#F4B740">for</span> peer <span style="color:#F4B740">in</span> peers:<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#F4B740">if</span> normalize(peer.text) == normalize(new.text):<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#F4B740">return</span> merge(peer, new)<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#F4B740">if</span> peer.pinned:<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#F4B740">raise</span> Rejected(peer)<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;link(new, <span style="color:#8FD3A8">"CONFLICTS_WITH"</span>, peer)<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;mark_conflicted(new, peer)<br>&#160;&#160;&#160;&#160;<span style="color:#F4B740">return</span> save(new)</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:24px 28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">Same claim</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Merge, append to history</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:24px 28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">Pinned peer</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Reject; edit the pinned one on purpose</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:24px 28px">
+<p style="font-size:24px;font-weight:600;color:#8A5A00">Close meaning, different claim</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Link both, ask someone to resolve</p>
+</div>
+</div>
+</div>
+<p style="font-size:32px;line-height:1.3;color:#12161F">Here vectors do what they are good at: <b>detecting</b>, not judging.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">10</p>
+<aside class="notes">The second write-time rule: the store should never silently hold two contradictory memories about the same thing. So every commit runs a check. Look for existing memories in the same scope that are very close in meaning; in my implementation the threshold is a cosine of 0.92. If the normalized text is the same, it's the same belief: merge and add a history row. If the close neighbour is pinned, reject the write; if you want to change a pinned memory, you edit it explicitly. Otherwise, the meanings are close but the claims differ, so we link both with a conflicts-with edge and surface it to the agent or a person to resolve. Notice where vectors appear here: as a detector of possible duplicates and contradictions. They're good at that. They're just not the judge. And to be fair: this check would not have caught our opening pair, whose wording is too different. Those two were linked by an explicit revise.</aside>
+</section>
+<section id="read-path" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Read path</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Vectors propose, the graph decides</h2>
+</div>
+<div style="display:flex;align-items:center;gap:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">1 · Vector search</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Top 50 candidates by meaning</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#8A5A00">2 · Graph filter</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Drop superseded, retracted, out of scope</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#8A5A00">3 · Expand</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Pull sources and linked facts</p>
+</div>
+<x-shape kind="arrow-right" style="width:48px;height:24px;background:#8A93A6"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:16px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">4 · Return a trace</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Why each item was kept or dropped</p>
+</div>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#ECE9E0;border-radius:16px;padding:32px">
+<h3 style="font-size:32px;font-weight:600;color:#12161F">Conflicts are shown, not hidden</h3>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">A conflicted memory comes back with a warning attached.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#ECE9E0;border-radius:16px;padding:32px">
+<h3 style="font-size:32px;font-weight:600;color:#12161F">Fail open</h3>
+<p style="font-size:30px;line-height:1.35;color:#4A5160">If recall is slow (about 5 s), the agent goes on without memory.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">11</p>
+<aside class="notes">Now reads. The read path has four steps. First, vector search proposes candidates by meaning, say the top 50. Second, the graph filters them: anything superseded or retracted is dropped, anything outside the current project or team scope is dropped, refused patterns are dropped, and pinned memories rank first. Third, expand: pull the source of each memory and closely linked facts, so the agent sees context, not isolated sentences. Fourth, return a trace that says why each candidate was kept or dropped. Two practical details. Conflicts are shown, not hidden: a conflicted memory still comes back, but with a warning, so the agent can ask instead of guessing. And recall should fail open: if it takes more than about five seconds, the agent continues without memory rather than hanging.</aside>
+</section>
+<section id="recall-cypher" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Read path</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Recall is one graph query</h2>
+</div>
+<div style="background:#1B2130;border-radius:20px;padding:28px 40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.45;color:#E6E9EF;white-space:nowrap"><span style="color:#8A93A6">// Recall: the vector index proposes, the graph decides</span><br><span style="color:#F4B740">CALL</span> db.index.vector.queryNodes(<span style="color:#8FD3A8">'memory_embedding'</span>, 50, $embedding) <span style="color:#F4B740">YIELD</span> node <span style="color:#F4B740">AS</span> m, score<br><span style="color:#F4B740">WHERE</span> m.status = <span style="color:#8FD3A8">'active'</span> <span style="color:#F4B740">AND NOT EXISTS</span> { (:Memory)-[:SUPERSEDES]-&gt;(m) }<br>&#160;&#160;<span style="color:#F4B740">AND EXISTS</span> { (m)-[:SCOPED_TO]-&gt;(:Scope {id: $scope}) }<br><span style="color:#F4B740">RETURN</span> m.text, coalesce(m.pinned, false) <span style="color:#F4B740">AS</span> pinned, score,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;[(m)-[:DERIVED_FROM]-&gt;(src) | src.ref] <span style="color:#F4B740">AS</span> sources<br><span style="color:#F4B740">ORDER BY</span> pinned <span style="color:#F4B740">DESC</span>, score <span style="color:#F4B740">DESC LIMIT</span> 8</p>
+</div>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:28px 32px">
+<h3 style="font-size:32px;font-weight:600;color:#12161F">Check before answering</h3>
+<p style="font-size:28px;line-height:1.35;color:#3A4150">For every table the SQL will read: take its current version, walk up to three hops upstream, and look for a version with a known incident.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFF4DA;border:2px solid #E0A526;border-radius:16px;padding:28px 32px">
+<h3 style="font-size:32px;font-weight:600;color:#12161F">If something is found</h3>
+<p style="font-size:28px;line-height:1.35;color:#12161F">The agent still answers, and <b>says so in the answer</b> instead of presenting the number as final.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Cypher on Neo4j 5 · vector index on Memory.embedding</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">12</p>
+<aside class="notes">Let me make recall and checks concrete, because this is the step most diagrams skip. Recall is one graph query, and it is the only one I'll show in full here. Memories are nodes with a text and an embedding, and Neo4j has a vector index on that embedding. So one query does both jobs: the vector index returns the fifty nearest memories with a score, and then the WHERE clause applies the rules from the previous slide. The memory is active, nothing supersedes it, and it is in scope. Then we return its sources, and order by pinned first, then score. One caveat: this filters after the vector search. In a large store, fetch more than fifty, and fetch the pinned definitions for the scope directly. Then the check, in words. Before answering, the agent takes the tables its SQL is about to read, looks up their current versions, walks upstream up to three hops, and asks: was any of this built from a version with a known incident? I'll show where versions and incidents come from in a few slides. If the answer is yes, the agent doesn't refuse and doesn't guess. It answers, and it says so.</aside>
+</section>
+<section id="recall-trace" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Read path</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">The trace for our opening question</h2>
+</div>
+<table style="font-size:28px;color:#12161F;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px">
+<tr style="background:#ECE9E0"><th style="width:38%">Candidate memory</th><th style="width:13%;text-align:right">Similarity</th><th style="width:16%">Scope</th><th style="width:17%">Status</th><th style="width:16%">Result</th></tr>
+<tr><td>Revenue = sum of order amount</td><td style="text-align:right">0.86</td><td>this project</td><td>superseded</td><td style="color:#9A4A00"><b>Dropped</b></td></tr>
+<tr><td>Revenue includes sales tax</td><td style="text-align:right">0.84</td><td>another team</td><td>active</td><td style="color:#9A4A00"><b>Dropped</b></td></tr>
+<tr><td>Report APAC in USD at the month-end rate</td><td style="text-align:right">0.80</td><td>this project</td><td>active</td><td style="color:#1D3F9E"><b>Kept, #2</b></td></tr>
+<tr style="background:#FFF4DA"><td>Net revenue excludes refunds</td><td style="text-align:right">0.60</td><td>this project</td><td>active, pinned</td><td style="color:#1D3F9E"><b>Kept, #1</b></td></tr>
+</table>
+<p style="font-size:32px;line-height:1.35;color:#12161F">The two most similar memories were both wrong for this question. <b>The filter fixed the answer, not the ranking.</b></p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Illustrative numbers, fictional data · raw cosine; Neo4j reports (1 + cosine) / 2 as its score</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">13</p>
+<aside class="notes">Here's the trace for our opening question, with illustrative numbers. Sorted by similarity, the top candidate is the old revenue note, 0.86. It's dropped because it's superseded. The second is a revenue definition that belongs to another team's project, 0.84; dropped because it's out of scope. The currency rule, 0.80, is kept. And the pinned Finance definition, the least similar of the four at 0.60, is kept and ranked first, because it's pinned. These are close to the real numbers you'll see in a screenshot later. Look at what happened: the two most similar memories were both wrong for this question. Better embeddings alone would not fix that, because the information that says they're wrong isn't in the text. It's in the edges. And the trace itself is the debugging tool: when someone asks why the agent used a memory, you show them this table.</aside>
+</section>
+<section id="why-query" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 1</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Why did the agent say that?</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="width:960px;display:flex;flex-direction:column;gap:22px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:32px 36px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#5F6676">One graph query walks four paths</p>
+<div style="display:flex;gap:24px;align-items:center">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:48px;font-weight:600;line-height:1;color:#2557D6">1</p>
+<p style="flex:1;font-size:28px;line-height:1.3;color:#12161F">From the answer to its tool call: the SQL, and the table versions it read</p>
+</div>
+<div style="display:flex;gap:24px;align-items:center">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:48px;font-weight:600;line-height:1;color:#2557D6">2</p>
+<p style="flex:1;font-size:28px;line-height:1.3;color:#12161F">From the answer to the memories it recalled</p>
+</div>
+<div style="display:flex;gap:24px;align-items:center">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:48px;font-weight:600;line-height:1;color:#2557D6">3</p>
+<p style="flex:1;font-size:28px;line-height:1.3;color:#12161F">From each memory to anything newer that supersedes it</p>
+</div>
+<div style="display:flex;gap:24px;align-items:center">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:48px;font-weight:600;line-height:1;color:#2557D6">4</p>
+<p style="flex:1;font-size:28px;line-height:1.3;color:#12161F">From each memory to where it came from</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#5F6676">Result</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F"><b>recalled</b> Revenue = sum of order amount</p>
+<p style="font-size:26px;line-height:1.3;color:#9A4A00"><b>status</b> superseded</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F"><b>replaced_by</b> Net revenue excludes refunds</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F"><b>came_from</b> chat, Sep 2</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F"><b>sql</b> SELECT sum(amount) FROM stg.orders …</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F"><b>tables</b> stg.orders (no refunds table)</p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.35;color:#12161F">Diagnosis in one query: <b>the answer used a superseded memory.</b> Fix the recall filter, not the prompt.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Fictional data</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">14</p>
+<aside class="notes">Query one, the one you'll run most: why did the agent say that? I call it the provenance query. Start from the answer, go back to the tool call that produced it, the memories it recalled, whether anything newer supersedes those memories, where each memory came from, and which table versions the tool call read. The result for our example: it recalled "revenue equals sum of order amount", whose status is superseded, replaced by the Finance definition, originally from a chat on September 2nd. And the SQL it wrote is a plain sum over stg.orders; it never touched a refunds table. That's a diagnosis in one query. Without this, the usual reaction is to tweak the prompt and hope. With it, you know the fix is in the recall filter. This is the kind of thing I mean by queryable memory: memory you can ask questions about, not just retrieve from.</aside>
+</section>
+<section id="lineage" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 2</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">The same graph holds your data lineage</h2>
+<svg aria-label="Lineage edges from source tables through staging and marts to agent answers, a memory and a dashboard. Edges downstream of sales.refunds are highlighted." width="1664" height="356" viewBox="0 0 1664 356" style="position:absolute;left:128px;top:316px;width:1664px;height:356px">
+<g fill="none" stroke="#A3A8B3" stroke-width="3">
+<path d="M356,48 L436,48"/>
+<path d="M356,308 L436,308"/>
+<path d="M792,48 L872,48"/>
+<path d="M792,48 C832,48 832,243 872,243"/>
+<path d="M792,308 C832,308 832,243 872,243"/>
+</g>
+<g fill="none" stroke="#D9741A" stroke-width="5">
+<path d="M356,178 L436,178"/>
+<path d="M792,178 C832,178 832,48 872,48"/>
+<path d="M792,178 C832,178 832,243 872,243"/>
+<path d="M1228,48 L1308,48"/>
+<path d="M1228,243 C1268,243 1268,48 1308,48"/>
+<path d="M1228,243 C1268,243 1268,308 1308,308"/>
+<path d="M1486,96 L1486,130"/>
+</g>
+</svg>
+<p style="position:absolute;left:128px;top:270px;width:356px;font-size:24px;font-weight:600;letter-spacing:2px;color:#5F6676">SOURCES</p>
+<p style="position:absolute;left:564px;top:270px;width:356px;font-size:24px;font-weight:600;letter-spacing:2px;color:#5F6676">STAGING</p>
+<p style="position:absolute;left:1000px;top:270px;width:356px;font-size:24px;font-weight:600;letter-spacing:2px;color:#5F6676">MARTS</p>
+<p style="position:absolute;left:1436px;top:270px;width:356px;font-size:24px;font-weight:600;letter-spacing:2px;color:#5F6676">USED BY</p>
+<div style="position:absolute;left:128px;top:316px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">sales.orders</p>
+<p style="font-size:24px;line-height:1.25;color:#5F6676">from the shop database</p>
+</div>
+<div style="position:absolute;left:128px;top:446px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">sales.refunds</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">payment provider export</p>
+</div>
+<div style="position:absolute;left:128px;top:576px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">finance.fx_rates</p>
+<p style="font-size:24px;line-height:1.25;color:#5F6676">daily rates</p>
+</div>
+<div style="position:absolute;left:564px;top:316px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">stg.orders</p>
+<p style="font-size:24px;line-height:1.25;color:#5F6676">cleaned, deduplicated</p>
+</div>
+<div style="position:absolute;left:564px;top:446px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">stg.refunds</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">matched to orders</p>
+</div>
+<div style="position:absolute;left:564px;top:576px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #C9CED8;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">stg.fx_month_end</p>
+<p style="font-size:24px;line-height:1.25;color:#5F6676">one rate per month</p>
+</div>
+<div style="position:absolute;left:1000px;top:316px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">mart.refund_rate</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">by category, daily</p>
+</div>
+<div style="position:absolute;left:1000px;top:511px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;font-weight:600;line-height:1.25;color:#12161F">mart.net_revenue</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">by market, daily</p>
+</div>
+<div style="position:absolute;left:1436px;top:316px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#12161F">3 agent answers</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">asked Oct 4 to Oct 6</p>
+</div>
+<div style="position:absolute;left:1436px;top:446px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#12161F">1 memory</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">learned from an answer</p>
+</div>
+<div style="position:absolute;left:1436px;top:576px;width:356px;height:96px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:12px 20px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#12161F">Finance dashboard</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">weekly APAC view</p>
+</div>
+<div style="position:absolute;left:128px;top:716px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:16px">
+<div style="width:480px;display:flex;flex-direction:column;gap:4px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:18px 24px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#12161F">sales.refunds · version 41</p>
+<p style="font-size:24px;line-height:1.25;color:#7A3C00">Oct 3–4: 212 of 1,348 rows</p>
+</div>
+<div style="width:170px;display:flex;flex-direction:column;align-items:center;gap:8px">
+<p style="font-size:24px;font-weight:600;color:#2557D6;text-align:center">replaced by</p>
+<x-shape kind="arrow-right" style="width:72px;height:32px;background:#2557D6"></x-shape>
+</div>
+<div style="width:480px;display:flex;flex-direction:column;gap:4px;background:#E3E8F4;border:3px solid #2557D6;border-radius:14px;padding:18px 24px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#12161F">sales.refunds · version 42</p>
+<p style="font-size:24px;line-height:1.25;color:#1D3F9E">Backfill: Oct 6, 14:20 UTC</p>
+</div>
+<p style="flex:1;font-size:28px;line-height:1.3;color:#12161F"><b>Orange</b> = everything downstream of the bad version.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1500px;font-size:24px;color:#5F6676">Version = one published pipeline run of a table · edges come from pipeline run events · fictional data</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">15</p>
+<aside class="notes">So far the problem was a stale memory. The second problem is stale data, and it is a separate story, from a month earlier. A data agent doesn't only depend on memories. It depends on tables, and tables depend on other tables. So the same graph should hold your data lineage. Here's the fictional warehouse behind our agent. On the left, three sources: orders from the shop database, refunds from the payment provider's export, and FX rates from finance. They flow into staging models, then into two marts: refund rate by category, and net revenue by market. On the right is who uses them: agent answers, memories learned from those answers, and a finance dashboard. Now the incident. On October 3rd and 4th, the payment provider split its export into several pages, and the ingestion job quietly loaded only the first page: 212 of 1,348 refund rows. Nobody noticed for two days. On October 6th the data team published a backfill, a new version of the table that replaces the bad one. A version here is simply one published pipeline run, and these edges come from the pipeline's own run events, not from a model's guess. Everything in orange is downstream of the bad version. This is the picture the data team has in their heads. The point is to put it where the agent can query it.</aside>
+</section>
+<section id="lineage-feeds" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 2</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">One incident, as the graph sees it</h2>
+<x-connector x1="448" y1="490" x2="576" y2="490" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="448" y1="646" x2="1024" y2="646" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="736" y1="392" x2="736" y2="432" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="896" y1="490" x2="1024" y2="490" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="1184" y1="588" x2="1184" y2="548" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="896" y1="306" x2="1472" y2="306" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="1472" y1="362" x2="1184" y2="432" route="hv" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="1632" y1="432" x2="1632" y2="392" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<x-connector x1="1632" y1="588" x2="1632" y2="548" head="end" style="color:#5F6676;border-width:3px"></x-connector>
+<p style="position:absolute;left:448px;top:452px;width:128px;font-size:24px;color:#4A5160;text-align:center">reports</p>
+<p style="position:absolute;left:560px;top:608px;width:352px;font-size:24px;color:#4A5160;text-align:center">announces</p>
+<p style="position:absolute;left:752px;top:396px;width:140px;font-size:24px;color:#4A5160">describes</p>
+<p style="position:absolute;left:896px;top:452px;width:128px;font-size:24px;color:#4A5160;text-align:center">affects</p>
+<p style="position:absolute;left:1200px;top:552px;width:140px;font-size:24px;color:#4A5160">replaces</p>
+<p style="position:absolute;left:1000px;top:268px;width:360px;font-size:24px;color:#4A5160;text-align:center">mentions</p>
+<p style="position:absolute;left:1200px;top:384px;width:160px;font-size:24px;color:#4A5160">built from</p>
+<p style="position:absolute;left:1648px;top:396px;width:100px;font-size:24px;color:#4A5160">reads</p>
+<p style="position:absolute;left:1456px;top:552px;width:160px;font-size:24px;color:#4A5160;text-align:right">derived from</p>
+<div style="position:absolute;left:128px;top:432px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#EFE8F7;border:2px solid #7A4FB5;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#5B2E9E">CHAT · Oct 6, 09:10</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">#data-eng: “Refund counts look low.”</p>
+</div>
+<div style="position:absolute;left:128px;top:588px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#EFE8F7;border:2px solid #7A4FB5;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#5B2E9E">CHAT · Oct 6, 14:20</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">#data-eng: “Backfill is live.”</p>
+</div>
+<div style="position:absolute;left:576px;top:276px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#E3E8F4;border:2px solid #2557D6;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#1D3F9E">DOC · Google Drive</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">Refunds backfill: cause and fix</p>
+</div>
+<div style="position:absolute;left:576px;top:432px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF1E3;border:3px solid #D9741A;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#7A3C00">INCIDENT · INC-2317</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">Refunds incomplete,<br>Oct 3–4</p>
+</div>
+<div style="position:absolute;left:1024px;top:432px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#4A5160">TABLE VERSION</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">sales.refunds v41<br>212 of 1,348 rows</p>
+</div>
+<div style="position:absolute;left:1024px;top:588px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#4A5160">TABLE VERSION</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">sales.refunds v42<br>backfill, Oct 6</p>
+</div>
+<div style="position:absolute;left:1472px;top:276px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FDFCF9;border:2px solid #8A93A6;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#4A5160">TABLE VERSION</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">mart.refund_rate<br>Oct 5 build</p>
+</div>
+<div style="position:absolute;left:1472px;top:432px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF4DA;border:2px solid #E0A526;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#8A5A00">AGENT ANSWER · Oct 5</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">Refund rate by category, for Ops</p>
+</div>
+<div style="position:absolute;left:1472px;top:588px;width:320px;height:116px;display:flex;flex-direction:column;justify-content:center;gap:2px;background:#FFF4DA;border:2px solid #E0A526;border-radius:14px;padding:10px 18px">
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#8A5A00">MEMORY</p>
+<p style="font-size:24px;line-height:1.25;color:#12161F">“Outdoor refund rate is about 2.6%”</p>
+</div>
+<div style="position:absolute;left:128px;top:752px;width:1664px;display:flex;flex-direction:row;align-items:center;gap:40px;background:#12161F;border-radius:16px;padding:24px 36px">
+<div style="width:560px;display:flex;flex-direction:column;gap:6px">
+<p style="font-size:24px;color:#D9C8F2">Purple: from chat</p>
+<p style="font-size:24px;color:#B9C9F2">Blue: from the shared drive</p>
+<p style="font-size:24px;color:#F4D48A">White and yellow: warehouse and agent</p>
+</div>
+<p style="flex:1;font-size:32px;line-height:1.3;color:#F6F4EE">Each tool knew one piece. <span style="color:#F4B740"><b>The graph is where the message, the doc, the table and the answer meet.</b></span></p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Fictional example · every node keeps a link to its source row or file</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">16</p>
+<aside class="notes">Now the same incident, the way the graph sees it after the extraction agent has done its work. Follow it from the left. October 6th, in the morning, someone writes in the data engineering channel: refund counts look low. The extraction agent links that message to an incident: refunds incomplete for October 3rd and 4th. The incident affects one specific version of the refunds table, version 41. That afternoon the team posts again: backfill is live. That message announces version 42, which replaces version 41. Then somebody writes it up, in a document in the shared drive. The document describes the incident and mentions the refund-rate mart by name, so we link it too. And the October 5th build of that mart was built from the bad version. On the right is the agent's side: on October 5th it answered a question from operations by reading that build, and a memory was derived from that answer. Now think about where these facts lived before. The messages were in chat. The write-up was in a drive folder. The versions were in the pipeline. The answer was in the agent's log. Each tool knew one piece. The graph is where they meet. So the database holds the facts, the team's writing holds the reasons, and the graph holds the connections.</aside>
+</section>
+<section id="blast-radius" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 2</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">What did the bad data touch?</h2>
+</div>
+<div style="background:#1B2130;border-radius:20px;padding:36px 40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.55;color:#E6E9EF;white-space:nowrap"><span style="color:#F4B740">MATCH</span> (:Incident {id: <span style="color:#8FD3A8">'INC-2317'</span>})-[:AFFECTS]-&gt;(bad:TableVersion)<br><span style="color:#F4B740">MATCH</span> (bad)&lt;-[:BUILT_FROM*0..3]-(v:TableVersion)&lt;-[:READ]-(call:ToolCall)<br><span style="color:#F4B740">MATCH</span> (call)-[:PRODUCED]-&gt;(a:Answer)<br><span style="color:#F4B740">OPTIONAL MATCH</span> (m:Memory)-[:DERIVED_FROM]-&gt;(a)<br><span style="color:#F4B740">RETURN</span> a.asked_at, a.question, a.asked_by, collect(<span style="color:#F4B740">DISTINCT</span> m.text) <span style="color:#F4B740">AS</span> memories_to_review</p>
+</div>
+<table style="font-size:26px;color:#12161F;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px">
+<tr style="background:#ECE9E0"><th style="width:10%">Asked</th><th style="width:36%">Question</th><th style="width:18%">Asked by</th><th style="width:36%">Memory learned from it</th></tr>
+<tr><td>Oct 4</td><td>APAC net revenue, week to date</td><td>Regional finance</td><td>none</td></tr>
+<tr style="background:#FFF1E3"><td>Oct 5</td><td>Refund rate by category, last 7 days</td><td>Operations</td><td><b>“Outdoor refund rate is about 2.6%”</b></td></tr>
+<tr><td>Oct 6</td><td>Top products by net revenue, last 7 days</td><td>Merchandising</td><td>none</td></tr>
+</table>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Three answers to re-run, three people to tell, and <b>one memory to retract</b>.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Fictional results</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">17</p>
+<aside class="notes">So here is query two, the blast-radius query: what did the bad data touch? Start from the incident, find the bad table version, then walk downstream: every version built from it, up to three hops, staging and marts. Then every tool call that read one of those versions, the answers those calls produced, and any memory derived from those answers. That star in the second line is a variable-length path, and it's the reason I'd reach for a graph database here. You can write this as a recursive query in SQL. It works; here it is one line. The result: three answers, between October 4th and 6th, all given before anyone had noticed the problem. The first and the last are one-off answers. The middle row is the dangerous one: operations asked for refund rate by category, and then asked the agent to remember it. "Outdoor refund rate is about 2.6 percent." With the full data it's closer to three and a half. A wrong number in a chat is gone in a day. A wrong number in memory keeps coming back. So the action list writes itself: three answers to re-run, three people to tell, and one memory to retract. A vector search for "refunds" finds text about refunds. It does not find the answers that depended on this table.</aside>
+</section>
+<section id="chat-loop" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 2</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Close the loop where people asked</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="width:940px;display:flex;flex-direction:column;gap:12px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:20px;padding:28px">
+<p style="font-size:24px;font-weight:600;color:#5F6676"># ops-analytics · thread</p>
+<div style="display:flex;flex-direction:column">
+<p style="font-size:24px;font-weight:600;color:#12161F">Operations lead · Oct 5, 10:02</p>
+<p style="font-size:24px;color:#3A4150">@data-agent refund rate by category, last 7 days?</p>
+</div>
+<div style="display:flex;flex-direction:column">
+<p style="font-size:24px;font-weight:600;color:#2557D6">Data agent</p>
+<p style="font-size:24px;color:#3A4150">Outdoor 2.6% · Home 2.8% · Apparel 4.1%</p>
+<p style="font-size:24px;color:#5F6676">Source: mart.refund_rate, refreshed 06:10 · <u>Why this answer?</u></p>
+</div>
+<div style="display:flex;flex-direction:column">
+<p style="font-size:24px;font-weight:600;color:#12161F">Operations lead</p>
+<p style="font-size:24px;color:#3A4150">Thanks. Remember the Outdoor number as our baseline.</p>
+</div>
+<div style="display:flex;flex-direction:column">
+<p style="font-size:24px;font-weight:600;color:#2557D6">Data agent</p>
+<p style="font-size:24px;color:#3A4150">Saved for the Ops team: “Outdoor refund rate is about 2.6%.”</p>
+</div>
+<div style="display:flex;flex-direction:column;background:#FFF1E3;border:2px solid #D9741A;border-radius:12px;padding:10px 16px">
+<p style="font-size:24px;font-weight:600;color:#7A3C00">Data agent · Oct 6, 14:35</p>
+<p style="font-size:24px;color:#12161F">Correction: this answer used incomplete refunds data (INC-2317).</p>
+<p style="font-size:24px;color:#12161F">After the backfill, Outdoor is <b>3.4%</b>, not 2.6%.</p>
+<p style="font-size:24px;color:#12161F">I retracted the saved baseline. <u>See what changed</u></p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-size:32px;font-weight:600;color:#12161F">What each chat event becomes</h3>
+<table style="font-size:24px;color:#12161F;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px">
+<tr style="background:#ECE9E0"><th style="width:44%">In chat</th><th style="width:56%">In the system</th></tr>
+<tr><td>Mention</td><td>Question, answer and SQL in the log</td></tr>
+<tr><td>“Why this answer?”</td><td>The provenance query, as a reply</td></tr>
+<tr><td>“Remember this”</td><td>A memory, scoped to the team</td></tr>
+<tr><td>Reply, thumbs-down</td><td>Feedback linked to the answer</td></tr>
+<tr style="background:#FFF1E3"><td>Data fixed, marts rebuilt</td><td>A correction in every affected thread</td></tr>
+</table>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Generic chat mock-up · the same events exist in Slack and similar tools</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">18</p>
+<aside class="notes">And this is where the blast-radius query pays off for the business. October 5th, the operations lead asks the agent for refund rate by category. The agent answers, with its source and when that table was refreshed, and a "why this answer" link, which is simply the provenance query from a few slides ago, returned as a reply. The operations lead says: remember the Outdoor number as our baseline. That is an explicit commit: a memory, scoped to the ops team, derived from this answer. Now the important message, in orange. The next day the data team publishes the backfill and the marts are rebuilt. The blast-radius query runs, finds this answer, and the agent comes back to this same thread: this answer used incomplete refunds data; after the backfill, Outdoor is 3.4 percent, not 2.6; and I've retracted the saved baseline. Nobody had to remember who asked what. On the right is the whole integration: five chat events, five rows. Look at the last one: fixed data becomes a correction in every affected thread. That last row is the difference between an agent people try and an agent people trust.</aside>
+</section>
+<section id="event-analytics" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 3</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Is memory helping or hurting?</h2>
+</div>
+<div style="display:flex;gap:40px">
+<div style="width:940px;background:#1B2130;border-radius:20px;padding:40px">
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:24px;line-height:1.55;color:#E6E9EF;white-space:nowrap"><span style="color:#F4B740">SELECT</span> toStartOfWeek(ts, 1) <span style="color:#F4B740">AS</span> week,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;count() <span style="color:#F4B740">AS</span> answers,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;avgIf(corrected, used_memory) <span style="color:#F4B740">AS</span> with_mem,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;avgIf(corrected, <span style="color:#F4B740">NOT</span> used_memory) <span style="color:#F4B740">AS</span> without,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;countIf(has(recalled_status,<br>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;<span style="color:#8FD3A8">'superseded'</span>)) <span style="color:#F4B740">AS</span> stale<br><span style="color:#F4B740">FROM</span> agent.answers<br><span style="color:#F4B740">GROUP BY</span> week <span style="color:#F4B740">ORDER BY</span> week</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#5F6676">Result</p>
+<table style="font-size:24px;color:#12161F;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px">
+<tr style="background:#ECE9E0"><th style="width:20%">Week</th><th style="width:18%;text-align:right">Count</th><th style="width:19%;text-align:right">With</th><th style="width:25%;text-align:right">Without</th><th style="width:18%;text-align:right">Stale</th></tr>
+<tr><td>Oct 12</td><td style="text-align:right">412</td><td style="text-align:right">6.1%</td><td style="text-align:right">9.8%</td><td style="text-align:right">14</td></tr>
+<tr><td>Oct 19</td><td style="text-align:right">438</td><td style="text-align:right">5.4%</td><td style="text-align:right">10.1%</td><td style="text-align:right">11</td></tr>
+<tr><td>Oct 26</td><td style="text-align:right">447</td><td style="text-align:right">5.8%</td><td style="text-align:right">9.9%</td><td style="text-align:right">12</td></tr>
+<tr style="background:#FFF4DA"><td>Nov 2</td><td style="text-align:right">451</td><td style="text-align:right">3.2%</td><td style="text-align:right">9.6%</td><td style="text-align:right">1</td></tr>
+</table>
+<p style="font-size:24px;line-height:1.35;color:#4A5160">With / Without: share of answers later corrected. The recall filter shipped Nov 2, after our opening answer.</p>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.35;color:#12161F">Plain analytics over the event log. <b>Before a change ships, replay last month’s confirmed questions with and without it.</b></p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Illustrative numbers · plain SQL over the event log · agent.answers is a view over agent.events</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">19</p>
+<aside class="notes">Query three is not a graph query at all, and that's the point. Once every answer is in the event log with a few flags, such as whether it used memory, whether it was later corrected, and the status of what it recalled, the question "is memory helping or hurting?" becomes a GROUP BY. On the right are illustrative results. Look at two columns. "With" and "without" are the share of answers that someone later corrected, with memory and without it. In this made-up table memory helps: around 6 percent against 10. That comparison is not causal, because questions that use memory are different questions. But look at "stale": in mid October, eleven to fourteen answers a week were built on a superseded memory, exactly like our opening example. After the recall filter shipped on November 2nd, stale drops to one, our Monday-morning answer, and the correction rate with memory falls to about 3 percent. I run this on ClickHouse; on a laptop the same SQL runs in chDB over Parquet files. One more habit: before any change to memory ships, replay last month's questions that people confirmed, with and without the change, and compare. That replay is the real test. A memory layer has to beat no memory on your own questions; bad memory is worse than none.</aside>
+</section>
+<section id="what-to-store" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Putting it together</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">What goes where</h2>
+</div>
+<table style="font-size:30px;color:#12161F;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px">
+<tr style="background:#ECE9E0"><th style="width:31%">What</th><th style="width:23%">Event log</th><th style="width:23%">Context graph</th><th style="width:23%">Vector index</th></tr>
+<tr><td><b>Tool calls, SQL, results</b></td><td>Everything</td><td>Links, for provenance</td><td>No</td></tr>
+<tr><td><b>Corrections, feedback</b></td><td>Everything</td><td>Promoted to memory</td><td>Memory text only</td></tr>
+<tr><td><b>Decisions, definitions</b></td><td>When made</td><td>Yes, with scope</td><td>Yes</td></tr>
+<tr><td><b>Table lineage, data incidents</b></td><td>When they happen</td><td>Yes, versioned</td><td>No</td></tr>
+<tr><td><b>Raw chat transcripts</b></td><td>Kept cold</td><td>As evidence, never as memory</td><td>No</td></tr>
+<tr><td><b>Secrets, personal data</b></td><td>Redacted</td><td>No</td><td>No</td></tr>
+</table>
+<p style="font-size:32px;line-height:1.35;color:#12161F">Log everything cheaply. <b>Promote little, on purpose.</b> Embed only what you promoted.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">20</p>
+<aside class="notes">If you want one cheat sheet, this is it. I won't read every row. Three to notice. Tool calls, SQL and results: log all of it, but in the graph they appear only as links, and you don't embed them. Decisions and definitions: these are the core of memory, with an explicit scope, and they're what you embed. Raw chat transcripts: they can enter the graph as evidence, linked to what they mention, but they are never promoted to memory automatically. The short version: log everything cheaply, promote little and on purpose, and embed only what you promoted.</aside>
+</section>
+<section id="dashboard" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Putting it together</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Make recall visible to people, too</h2>
+</div>
+<div style="display:flex;gap:48px">
+<img src="agent-memory-beyond-vectors-nodes-2026/recall-lab.png" alt="Recall Lab screen of the ClickMem dashboard. The query net revenue in APAC last month returns four memories; the pinned net revenue definition is ranked first at cosine 0.596, above an FX rule at 0.796." style="width:1008px;height:630px;object-fit:contain;background:#FFFFFF;border:2px solid #DCD8CC;border-radius:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<p style="font-size:24px;font-weight:600;color:#8A5A00">Pinned wins</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">The finance definition ranks #1 at 0.596, above a 0.796 match.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">Filtered out</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">The old revenue note and the other team’s note never appear.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<p style="font-size:24px;font-weight:600;color:#2557D6">Explained</p>
+<p style="font-size:30px;line-height:1.3;color:#12161F">Each hit shows its type, scope, privacy and score.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1300px;font-size:24px;color:#5F6676">Screenshot: ClickMem (open source), Recall Lab · fictional demo data</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">21</p>
+<aside class="notes">And this is the same kind of trace as a person sees it. It's a screenshot from ClickMem, an open-source memory layer I've been building around these ideas, on a fresh store with fictional demo data. Same question. The pinned finance definition is first with a cosine of 0.596, above an FX rule at 0.796. The old revenue note and the other team's note don't show up at all. And every hit shows its type, scope and score. Agents get the trace through the API; people get this page.</aside>
+</section>
+<section id="three-stores" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Design choices</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Three kinds of question, three engines</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#FFF4DA;border:3px solid #E0A526;border-radius:16px;padding:28px 32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#8A5A00">WHAT HAPPENED</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.15;color:#12161F">Columnar store</p>
+<p style="font-size:24px;line-height:1.25;color:#8A5A00">here: ClickHouse</p>
+<p style="font-size:28px;line-height:1.3;color:#12161F">Raw messages, docs, pipeline events, every agent step.</p>
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#8A5A00">Why it fits</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F">Compresses column by column, so keeping everything is cheap. Aggregates fast.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#E3E8F4;border:3px solid #2557D6;border-radius:16px;padding:28px 32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#1D3F9E">HOW THINGS CONNECT</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.15;color:#12161F">Graph database</p>
+<p style="font-size:24px;line-height:1.25;color:#1D3F9E">here: Neo4j</p>
+<p style="font-size:28px;line-height:1.3;color:#12161F">Supersedes, scope, source, lineage.</p>
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#1D3F9E">Why it fits</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F">The answer is a path: why did it say that, what did the bad data touch.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:10px;background:#EFE8F7;border:3px solid #7A4FB5;border-radius:16px;padding:28px 32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:1px;color:#5B2E9E">WHAT SOUNDS RELATED</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:40px;font-weight:600;line-height:1.15;color:#12161F">Vector index</p>
+<p style="font-size:24px;line-height:1.25;color:#5B2E9E">here: inside the graph</p>
+<p style="font-size:28px;line-height:1.3;color:#12161F">Text that means the same in different words.</p>
+<p style="font-size:24px;font-weight:600;line-height:1.25;color:#5B2E9E">Why it fits</p>
+<p style="font-size:26px;line-height:1.3;color:#12161F">Fuzzy search proposes candidates. It does not decide.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;background:#12161F;border-radius:16px;padding:22px 36px">
+<p style="font-size:32px;line-height:1.3;color:#F6F4EE">Each engine does one job well. <span style="color:#F4B740"><b>Pick the store by the question it has to answer.</b></span></p>
+<p style="font-size:24px;line-height:1.3;color:#B9C0CC">And inside the agent: chDB, the same SQL engine in-process, for files and local results.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Any columnar store, graph database or vector index you already run can play these roles</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">22</p>
+<aside class="notes">Before the takeaways, one word on why there are three kinds of storage in this design, because it is not for the sake of having many boxes. Each one answers a different kind of question. What happened? That is a columnar store, in my case ClickHouse. Raw messages, documents, pipeline events and every agent step go there. It compresses column by column, so keeping everything is cheap, and questions like "is memory helping" are a GROUP BY. How do things connect? That is the graph, here Neo4j. Supersedes, scope, source and lineage are all relationships, and the answers we wanted, why did it say that, what did the bad data touch, are paths. What sounds related? That is the vector index, which here lives inside the graph. It is fuzzy search: it finds text that means the same in different words. It proposes candidates; it does not decide. So pick the store by the question it has to answer.</aside>
+</section>
+<section id="takeaways" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Takeaways</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1.1;color:#12161F">Four things to take home</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;gap:28px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:28px 32px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1;color:#2557D6">1</p>
+<p style="font-size:32px;line-height:1.35;color:#12161F">Vectors <b>find candidates</b>. They don’t decide what is true.</p>
+</div>
+<div style="display:flex;gap:28px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:28px 32px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1;color:#2557D6">2</p>
+<p style="font-size:32px;line-height:1.35;color:#12161F">Give memory <b>edges</b>: supersedes, conflicts with, derived from, scoped to. Connect them to <b>data lineage</b>.</p>
+</div>
+<div style="display:flex;gap:28px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:28px 32px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1;color:#2557D6">3</p>
+<p style="font-size:32px;line-height:1.35;color:#12161F">Log everything; <b>promote to memory on purpose</b>, never by accident.</p>
+</div>
+<div style="display:flex;gap:28px;background:#FDFCF9;border:2px solid #DCD8CC;border-radius:16px;padding:28px 32px">
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:600;line-height:1;color:#2557D6">4</p>
+<p style="font-size:32px;line-height:1.35;color:#12161F">Make <b>“why did it say that?”</b> one query away, and replay before you trust.</p>
+</div>
+</div>
+<div style="background:#12161F;border-radius:16px;padding:22px 36px">
+<p style="font-size:30px;line-height:1.3;color:#F6F4EE">Strong models make agents easy to build: almost everyone gets to 80. <span style="color:#F4B740"><b>An agent a business can rely on needs 90, and that gap is a reliable data foundation, not a bigger model.</b></span></p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
+<p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">23</p>
+<aside class="notes">Four things to take home. One: vectors find candidates; they don't decide what's true. Two: give memory edges. Supersedes, conflicts with, derived from, scoped to. Those four edges answer the four questions a vector index can't. And connect them to your data lineage, so that when a table is fixed, you know which answers and which memories to fix with it. Three: log everything, but promote to memory on purpose, never by accident. Four: make "why did the agent say that?" one query away, and replay real questions before you trust any memory layer, including mine. One more thought before I close. Strong models have made agents much easier to build. Almost anyone can get to 80 points now. But the difference between a good agent and a poor one may be just that: 80 against 90. And the last ten points, the ones that make an agent reproducible and fit for a business, do not come from a bigger model. They come from a reliable data foundation under it: the log, the graph, the lineage, the replay. If you remember one sentence, make it this one: similarity is not truth. The agent in our Monday-morning example had the right memory. It needed a graph to know it.</aside>
+</section>
+<section id="thanks" data-transition="fade" style="background:#12161F;color:#F6F4EE;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="display:flex;flex-direction:column;gap:24px">
+<h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:600;line-height:1.05;color:#F6F4EE">Thank you</h1>
+<p style="font-size:44px;color:#B9C0CC">Questions?</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<p style="font-size:32px;color:#F6F4EE"><span style="color:#F4B740">github.com/auxten/clickmem</span> · the memory layer from the screenshot</p>
+<p style="font-size:32px;color:#F6F4EE"><span style="color:#F4B740">github.com/chdb-io/chdb</span> · ClickHouse as an in-process library</p>
+<p style="font-size:32px;color:#B9C0CC"><span style="color:#F6F4EE"><b>Auxten Wang</b></span> · ClickHouse</p>
+</div>
+<aside class="notes">That's it. Thank you. Both projects from the talk are open source, and the links are on the slide. I'm happy to take questions.</aside>
+</section>
+</div>
+<div id="notes"></div>
+<div id="hud"><span id="pos"></span> · ← → to navigate · N for speaker notes · <a href="/">auxten.com</a></div>
+<script>
+(function(){
+var stage=document.getElementById('stage'),S=[].slice.call(stage.querySelectorAll('section')),cur=0;
+// draw <x-connector> elements as SVG lines with arrow heads
+var NS='http://www.w3.org/2000/svg';
+S.forEach(function(sec){
+  var cs=[].slice.call(sec.querySelectorAll('x-connector'));if(!cs.length)return;
+  cs.forEach(function(c){
+    var x1=+c.getAttribute('x1'),y1=+c.getAttribute('y1'),x2=+c.getAttribute('x2'),y2=+c.getAttribute('y2');
+    var w=parseFloat(c.style.borderWidth)||2,col=c.style.color||'#000',head=c.getAttribute('head')||'end',route=c.getAttribute('route')||'straight';
+    var dash=c.style.borderStyle==='dashed';
+    var pts=[[x1,y1]];
+    if(route==='hv')pts.push([x2,y1]);else if(route==='vh')pts.push([x1,y2]);
+    pts.push([x2,y2]);
+    var L=w*4,H=w*2.2;
+    function cut(a,b){var dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;return[b[0]-dx/d*L*.9,b[1]-dy/d*L*.9]}
+    function tri(a,b){var dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d,bx=b[0]-ux*L,by=b[1]-uy*L;
+      var p=document.createElementNS(NS,'polygon');p.setAttribute('points',b[0]+','+b[1]+' '+(bx-uy*H)+','+(by+ux*H)+' '+(bx+uy*H)+','+(by-ux*H));p.setAttribute('fill',col);return p}
+    var svg=document.createElementNS(NS,'svg');svg.setAttribute('class','conn');svg.setAttribute('viewBox','0 0 1920 1080');
+    var n=pts.length,heads=[];
+    if(head==='end'||head==='both'){heads.push(tri(pts[n-2],pts[n-1]));pts[n-1]=cut(pts[n-2],pts[n-1])}
+    if(head==='both'){heads.push(tri(pts[1],pts[0]));pts[0]=cut(pts[1],pts[0])}
+    var pl=document.createElementNS(NS,'polyline');pl.setAttribute('points',pts.map(function(p){return p.join(',')}).join(' '));
+    pl.setAttribute('fill','none');pl.setAttribute('stroke',col);pl.setAttribute('stroke-width',w);if(dash)pl.setAttribute('stroke-dasharray',(w*3)+' '+(w*2));
+    svg.appendChild(pl);heads.forEach(function(h){svg.appendChild(h)});
+    c.parentNode.replaceChild(svg,c);
+  });
+});
+function fit(){var W=document.documentElement.clientWidth,H=document.documentElement.clientHeight,k=Math.min(W/1920,H/1080);stage.style.transform='translate('+(W-1920*k)/2+'px,'+(H-1080*k)/2+'px) scale('+k+')'}
+if(window.ResizeObserver)new ResizeObserver(fit).observe(document.documentElement);
+function show(i,push){fit();cur=Math.max(0,Math.min(S.length-1,i));S.forEach(function(s,j){s.classList.toggle('on',j===cur)});
+  document.getElementById('pos').textContent=(cur+1)+' / '+S.length;
+  var a=S[cur].querySelector('aside.notes');document.getElementById('notes').textContent=a?a.textContent:'';
+  if(push!==false)history.replaceState(null,'','#'+(cur+1))}
+addEventListener('resize',fit);fit();
+addEventListener('keydown',function(e){
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  var k=e.key;
+  if(k==='ArrowRight'||k==='ArrowDown'||k==='PageDown'||k===' '||k==='Enter'){show(cur+1);e.preventDefault()}
+  else if(k==='ArrowLeft'||k==='ArrowUp'||k==='PageUp'||k==='Backspace'){show(cur-1);e.preventDefault()}
+  else if(k==='Home')show(0);else if(k==='End')show(S.length-1);
+  else if(k==='n'||k==='N'||k==='s'||k==='S')document.body.classList.toggle('shownotes');
+  else if(k==='f'||k==='F'){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
+});
+stage.addEventListener('click',function(e){if(e.target.closest('a'))return;show(cur+(e.clientX<document.documentElement.clientWidth*.3?-1:1))});
+var tx=null;addEventListener('touchstart',function(e){tx=e.touches[0].clientX},{passive:true});
+addEventListener('touchend',function(e){if(tx===null)return;var d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>40)show(cur+(d<0?1:-1));tx=null});
+addEventListener('hashchange',function(){var n=parseInt(location.hash.slice(1),10);if(n)show(n-1,false)});
+show((parseInt(location.hash.slice(1),10)||1)-1,false);
+})();
+</script>
+</body>
+</html>
