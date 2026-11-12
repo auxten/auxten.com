@@ -26,15 +26,12 @@ html,body{margin:0;height:100%;background:#0B0E14;overflow:hidden}
 #stage th,#stage td{padding:.35em .6em;text-align:left;vertical-align:top;border-top:1px solid rgba(27,33,48,.14)}
 #stage tr:first-child th,#stage tr:first-child td{border-top:none}
 #stage th{font-weight:600}
-#stage aside.notes{display:none}
 #stage x-shape{display:block;flex:none}
 #stage x-shape[kind="arrow-right"]{clip-path:polygon(0 30%,62% 30%,62% 0,100% 50%,62% 100%,62% 70%,0 70%)}
 #stage svg.conn{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;overflow:visible}
 #hud{position:fixed;right:14px;bottom:10px;font:13px Inter,system-ui,sans-serif;color:#8A93A6;opacity:.75;user-select:none}
 #hud a{color:#8A93A6}
-#notes{position:fixed;left:0;right:0;bottom:0;max-height:34%;overflow:auto;background:rgba(11,14,20,.94);color:#E6E9EF;font:18px/1.5 Inter,system-ui,sans-serif;padding:16px 24px 34px;display:none}
-body.shownotes #notes{display:block}
-@media print{html,body{overflow:visible;height:auto;background:#fff}#hud,#notes{display:none!important}#stage{position:static;transform:none!important}#stage section{position:relative;visibility:visible;opacity:1;page-break-after:always;break-after:page}@page{size:1920px 1080px;margin:0}}
+body.shownotes @media print{html,body{overflow:visible;height:auto;background:#fff}#hud{display:none!important}#stage{position:static;transform:none!important}#stage section{position:relative;visibility:visible;opacity:1;page-break-after:always;break-after:page}@page{size:1920px 1080px;margin:0}}
 </style>
 </head>
 <body>
@@ -69,7 +66,6 @@ body.shownotes #notes{display:block}
 </g>
 <circle cx="220" cy="300" r="30" fill="#F4B740"/>
 </svg>
-<aside class="notes">Hi everyone, I'm Auxten. I work on ClickHouse and chDB, and for the past year I've been building memory for AI agents that I use every day. This talk is about one lesson from that work: the hard part of agent memory is not storing things or finding similar things. It's knowing which memory is still true, where it came from, and being able to ask the memory system questions when something goes wrong. In the next 25 minutes: one failure, a model for fixing it, the write and read paths, and a few queries you can steal.</aside>
 </section>
 <section id="wrong-answer" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -98,7 +94,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Illustrative example · fictional company and data</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">2</p>
-<aside class="notes">Let me start with a failure. The company and the data are fictional, but the failure pattern is one I've hit in my own agents. Picture an online retailer with a data agent connected to its warehouse. Monday morning, November 2nd, a finance analyst asks: what was net revenue in APAC last month? The agent answers confidently: 4.87 million, up 12 percent. That's wrong. 4.87 million is gross sales. The real net number was 4.21 million, because 655 thousand dollars of refunds were never subtracted. The interesting part is on the right. The correct definition was in memory. Finance had corrected it five days earlier: net revenue is orders minus refunds. But there was also an older note, saved from an early chat in September: revenue is the sum of order amounts. At answer time, vector recall ranked the old note higher, 0.86 against 0.60, because it was a closer text match for the question. So the memory existed, and the store had even recorded that the new definition replaced the old one. Recall never looked at that. It only looked at similarity.</aside>
 </section>
 <section id="typical-memory" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -143,7 +138,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">3</p>
-<aside class="notes">Why does that happen? Because most agent memory today is this pipeline. Take chats and tool output, chunk and embed them, put them in a vector index, retrieve the top k by similarity, and paste them into the prompt. This is a good pipeline for one job: finding text that talks about the same thing as the question. But look at what it can't see. It doesn't know that one fact replaced another. It doesn't know which project or team a fact belongs to. And it doesn't know where a fact came from, so when the answer is wrong, there's nothing to follow back. Similarity is the only signal it has.</aside>
 </section>
 <section id="four-questions" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -174,13 +168,11 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">4</p>
-<aside class="notes">I find it useful to turn this into four questions. Is this memory still true, or did something replace it? Does it contradict another memory? Does it apply here, to this project, this team, this user? And where did it come from? A vector index can't answer any of these, because they're not about meaning. They're about relationships between memories, and between memories and the things that produced them. Each question maps to one kind of edge: supersedes, conflicts with, scoped to, derived from. Keep those four edges in mind; the rest of the talk is about storing them, using them at recall time, and querying them.</aside>
 </section>
 <section id="statement" data-transition="fade" style="background:#12161F;color:#F6F4EE;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:center;gap:48px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#F4B740">The model</p>
 <h1 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:120px;font-weight:600;line-height:1.05;color:#F6F4EE">Similarity is not truth.</h1>
 <p style="width:1300px;font-size:44px;line-height:1.3;color:#B9C0CC">A vector index tells you what looks related. A memory system also has to tell you what is <span style="color:#F4B740">still true</span>, <span style="color:#F4B740">for whom</span>, and <span style="color:#F4B740">why</span>.</p>
-<aside class="notes">So here's the one sentence I want you to take away: similarity is not truth. A vector index tells you what looks related. A memory system also has to tell you what is still true, for whom, and why. Vectors are still useful. We'll keep them. But they become one component, the candidate finder, rather than the whole memory system. The rest comes from structure: an event history, and a graph of beliefs with explicit relationships.</aside>
 </section>
 <section id="context-graph" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The model</p>
@@ -233,7 +225,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">6</p>
-<aside class="notes">I call that structure a context graph: the events around an answer, the beliefs behind it, and the edges between them. Here it is for our one question. White boxes are events, things that happened: the question triggered a tool call, and the tool call read a table version and produced an answer. The review box is the Finance review from October 28th. The yellow box is a memory, something we now believe: net revenue excludes refunds. It is derived from that review, so we always know where it came from. And it supersedes the old memory, the dashed one, which we keep for history but never serve as current. The orange edge is the one that caused the bug: the answer recalled the old memory. With this graph, that is not a mystery any more. It's an edge you can query.</aside>
 </section>
 <section id="solution" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">The model</p>
@@ -309,7 +300,6 @@ body.shownotes #notes{display:block}
 <p style="position:absolute;left:1290px;top:644px;width:308px;font-size:24px;color:#4A5160;text-align:right">recall, checks, commits</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Every source is optional · start with one channel and the pipeline, add the rest later</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">7</p>
-<aside class="notes">That was the graph for one question. Where do those nodes come from in a real team? Here is the whole pipeline on one page. Start on the left, with where a team's knowledge already lives: team chat, where the data team announces problems and fixes; docs and wikis, where someone writes up what happened; and the data platform itself, with its pipeline runs and query log. Step one: land everything as rows. Connectors copy new messages, document versions and pipeline events into append-only tables. Any columnar store you already run will do; mine is ClickHouse, so the warehouse and the agent's event log are already there. Nothing is interpreted at this stage, so you can re-read the raw rows later with a better model. Step two: an extraction agent runs every few minutes and reads only the new rows. Table versions and lineage are not guessed by a model: each pipeline run reports what it read and what it wrote. The model is only used for text: which tables does this message mention? Is it an incident, a fix, a decision? Every fact links back to its source row, and when the model isn't sure, a person reviews it. Step three: the results go into the context graph, in Neo4j, with a vector index on the text. One important rule: extraction creates evidence and links. It does not create memories. Promoting something to memory is a deliberate step, and that's the next slide. Step four: the data agent. Before each answer it recalls memories and checks data health in the graph, then runs SQL on the warehouse. It tags every query with the answer id, so the query log shows which tables each answer read. And inside the agent sits chDB, which is ClickHouse as an in-process library. The next slide shows what it does there. Every source here is optional: start with one channel and your pipeline.</aside>
 </section>
 <section id="chdb-join" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -341,7 +331,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:30px;line-height:1.3;color:#12161F">No temp table in the warehouse. No load step. No extra service. <b>chDB runs this inside the agent’s own process.</b></p>
 <p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">chDB = ClickHouse as an in-process library · pip install chdb · fictional file names</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">8</p>
-<aside class="notes">Let me zoom into that chDB box for one slide, because "in-process SQL" is abstract. Here is one query the agent runs. The operations lead has dropped a spreadsheet of supplier returns into the chat and asked: do these match our refund numbers? The agent has three things to combine. First, the rows it just fetched from the warehouse. They are a DataFrame in the agent's memory, and chDB reads it directly as a table. Second, the CSV file the person uploaded. Third, a Parquet file on shared storage that maps products to categories. One SQL statement joins all three and gives the answer by category. chDB is ClickHouse packaged as a library: you pip install it, and it runs inside the agent's process. So there is no temporary table to create in the warehouse, no load step, and no extra service to operate. When the follow-up question comes, the agent just runs another query on the same local data. And for the context graph, this is one more tool call: its SQL and the files it read are recorded like any other.</aside>
 </section>
 <section id="write-path" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -372,7 +361,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">9</p>
-<aside class="notes">Let's start with writes, because most memory bugs are created at write time. My rule is: nothing becomes memory by accident. There are only two ways in. Either the agent explicitly commits a conclusion it has decided is worth keeping, or a person imports documents they already trust, like project rules. Everything else, raw chats and tool output, goes to the event log. That's evidence. You can search it and audit it, but it never gets injected into a prompt as memory. Then, instead of only "add", memory gets five operations. The first three, add, revise and retract, come from belief revision, an old idea from logic. Pin and refuse are two practical additions. Notice that revise doesn't overwrite. It creates a new node and a supersedes edge, so history is never lost. That edge is exactly what recall ignored in our opening example.</aside>
 </section>
 <section id="conflict-check" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -401,7 +389,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:32px;line-height:1.3;color:#12161F">Here vectors do what they are good at: <b>detecting</b>, not judging.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">10</p>
-<aside class="notes">The second write-time rule: the store should never silently hold two contradictory memories about the same thing. So every commit runs a check. Look for existing memories in the same scope that are very close in meaning; in my implementation the threshold is a cosine of 0.92. If the normalized text is the same, it's the same belief: merge and add a history row. If the close neighbour is pinned, reject the write; if you want to change a pinned memory, you edit it explicitly. Otherwise, the meanings are close but the claims differ, so we link both with a conflicts-with edge and surface it to the agent or a person to resolve. Notice where vectors appear here: as a detector of possible duplicates and contradictions. They're good at that. They're just not the judge. And to be fair: this check would not have caught our opening pair, whose wording is too different. Those two were linked by an explicit revise.</aside>
 </section>
 <section id="read-path" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -441,7 +428,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">11</p>
-<aside class="notes">Now reads. The read path has four steps. First, vector search proposes candidates by meaning, say the top 50. Second, the graph filters them: anything superseded or retracted is dropped, anything outside the current project or team scope is dropped, refused patterns are dropped, and pinned memories rank first. Third, expand: pull the source of each memory and closely linked facts, so the agent sees context, not isolated sentences. Fourth, return a trace that says why each candidate was kept or dropped. Two practical details. Conflicts are shown, not hidden: a conflicted memory still comes back, but with a warning, so the agent can ask instead of guessing. And recall should fail open: if it takes more than about five seconds, the agent continues without memory rather than hanging.</aside>
 </section>
 <section id="recall-cypher" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -463,7 +449,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Cypher on Neo4j 5 · vector index on Memory.embedding</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">12</p>
-<aside class="notes">Let me make recall and checks concrete, because this is the step most diagrams skip. Recall is one graph query, and it is the only one I'll show in full here. Memories are nodes with a text and an embedding, and Neo4j has a vector index on that embedding. So one query does both jobs: the vector index returns the fifty nearest memories with a score, and then the WHERE clause applies the rules from the previous slide. The memory is active, nothing supersedes it, and it is in scope. Then we return its sources, and order by pinned first, then score. One caveat: this filters after the vector search. In a large store, fetch more than fifty, and fetch the pinned definitions for the scope directly. Then the check, in words. Before answering, the agent takes the tables its SQL is about to read, looks up their current versions, walks upstream up to three hops, and asks: was any of this built from a version with a known incident? I'll show where versions and incidents come from in a few slides. If the answer is yes, the agent doesn't refuse and doesn't guess. It answers, and it says so.</aside>
 </section>
 <section id="recall-trace" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -480,7 +465,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:32px;line-height:1.35;color:#12161F">The two most similar memories were both wrong for this question. <b>The filter fixed the answer, not the ranking.</b></p>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Illustrative numbers, fictional data · raw cosine; Neo4j reports (1 + cosine) / 2 as its score</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">13</p>
-<aside class="notes">Here's the trace for our opening question, with illustrative numbers. Sorted by similarity, the top candidate is the old revenue note, 0.86. It's dropped because it's superseded. The second is a revenue definition that belongs to another team's project, 0.84; dropped because it's out of scope. The currency rule, 0.80, is kept. And the pinned Finance definition, the least similar of the four at 0.60, is kept and ranked first, because it's pinned. These are close to the real numbers you'll see in a screenshot later. Look at what happened: the two most similar memories were both wrong for this question. Better embeddings alone would not fix that, because the information that says they're wrong isn't in the text. It's in the edges. And the trace itself is the debugging tool: when someone asks why the agent used a memory, you show them this table.</aside>
 </section>
 <section id="why-query" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -520,7 +504,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:30px;line-height:1.35;color:#12161F">Diagnosis in one query: <b>the answer used a superseded memory.</b> Fix the recall filter, not the prompt.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Fictional data</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">14</p>
-<aside class="notes">Query one, the one you'll run most: why did the agent say that? I call it the provenance query. Start from the answer, go back to the tool call that produced it, the memories it recalled, whether anything newer supersedes those memories, where each memory came from, and which table versions the tool call read. The result for our example: it recalled "revenue equals sum of order amount", whose status is superseded, replaced by the Finance definition, originally from a chat on September 2nd. And the SQL it wrote is a plain sum over stg.orders; it never touched a refunds table. That's a diagnosis in one query. Without this, the usual reaction is to tweak the prompt and hope. With it, you know the fix is in the recall filter. This is the kind of thing I mean by queryable memory: memory you can ask questions about, not just retrieve from.</aside>
 </section>
 <section id="lineage" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 2</p>
@@ -608,7 +591,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1500px;font-size:24px;color:#5F6676">Version = one published pipeline run of a table · edges come from pipeline run events · fictional data</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">15</p>
-<aside class="notes">So far the problem was a stale memory. The second problem is stale data, and it is a separate story, from a month earlier. A data agent doesn't only depend on memories. It depends on tables, and tables depend on other tables. So the same graph should hold your data lineage. Here's the fictional warehouse behind our agent. On the left, three sources: orders from the shop database, refunds from the payment provider's export, and FX rates from finance. They flow into staging models, then into two marts: refund rate by category, and net revenue by market. On the right is who uses them: agent answers, memories learned from those answers, and a finance dashboard. Now the incident. On October 3rd and 4th, the payment provider split its export into several pages, and the ingestion job quietly loaded only the first page: 212 of 1,348 refund rows. Nobody noticed for two days. On October 6th the data team published a backfill, a new version of the table that replaces the bad one. A version here is simply one published pipeline run, and these edges come from the pipeline's own run events, not from a model's guess. Everything in orange is downstream of the bad version. This is the picture the data team has in their heads. The point is to put it where the agent can query it.</aside>
 </section>
 <section id="lineage-feeds" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:12px">
 <p style="font-size:24px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#2557D6">Queryable memory · 2</p>
@@ -677,7 +659,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Fictional example · every node keeps a link to its source row or file</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">16</p>
-<aside class="notes">Now the same incident, the way the graph sees it after the extraction agent has done its work. Follow it from the left. October 6th, in the morning, someone writes in the data engineering channel: refund counts look low. The extraction agent links that message to an incident: refunds incomplete for October 3rd and 4th. The incident affects one specific version of the refunds table, version 41. That afternoon the team posts again: backfill is live. That message announces version 42, which replaces version 41. Then somebody writes it up, in a document in the shared drive. The document describes the incident and mentions the refund-rate mart by name, so we link it too. And the October 5th build of that mart was built from the bad version. On the right is the agent's side: on October 5th it answered a question from operations by reading that build, and a memory was derived from that answer. Now think about where these facts lived before. The messages were in chat. The write-up was in a drive folder. The versions were in the pipeline. The answer was in the agent's log. Each tool knew one piece. The graph is where they meet. So the database holds the facts, the team's writing holds the reasons, and the graph holds the connections.</aside>
 </section>
 <section id="blast-radius" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -696,7 +677,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:30px;line-height:1.3;color:#12161F">Three answers to re-run, three people to tell, and <b>one memory to retract</b>.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Fictional results</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">17</p>
-<aside class="notes">So here is query two, the blast-radius query: what did the bad data touch? Start from the incident, find the bad table version, then walk downstream: every version built from it, up to three hops, staging and marts. Then every tool call that read one of those versions, the answers those calls produced, and any memory derived from those answers. That star in the second line is a variable-length path, and it's the reason I'd reach for a graph database here. You can write this as a recursive query in SQL. It works; here it is one line. The result: three answers, between October 4th and 6th, all given before anyone had noticed the problem. The first and the last are one-off answers. The middle row is the dangerous one: operations asked for refund rate by category, and then asked the agent to remember it. "Outdoor refund rate is about 2.6 percent." With the full data it's closer to three and a half. A wrong number in a chat is gone in a day. A wrong number in memory keeps coming back. So the action list writes itself: three answers to re-run, three people to tell, and one memory to retract. A vector search for "refunds" finds text about refunds. It does not find the answers that depended on this table.</aside>
 </section>
 <section id="chat-loop" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:36px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -744,7 +724,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Generic chat mock-up · the same events exist in Slack and similar tools</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">18</p>
-<aside class="notes">And this is where the blast-radius query pays off for the business. October 5th, the operations lead asks the agent for refund rate by category. The agent answers, with its source and when that table was refreshed, and a "why this answer" link, which is simply the provenance query from a few slides ago, returned as a reply. The operations lead says: remember the Outdoor number as our baseline. That is an explicit commit: a memory, scoped to the ops team, derived from this answer. Now the important message, in orange. The next day the data team publishes the backfill and the marts are rebuilt. The blast-radius query runs, finds this answer, and the agent comes back to this same thread: this answer used incomplete refunds data; after the backfill, Outdoor is 3.4 percent, not 2.6; and I've retracted the saved baseline. Nobody had to remember who asked what. On the right is the whole integration: five chat events, five rows. Look at the last one: fixed data becomes a correction in every affected thread. That last row is the difference between an agent people try and an agent people trust.</aside>
 </section>
 <section id="event-analytics" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -770,7 +749,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:30px;line-height:1.35;color:#12161F">Plain analytics over the event log. <b>Before a change ships, replay last month’s confirmed questions with and without it.</b></p>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Illustrative numbers · plain SQL over the event log · agent.answers is a view over agent.events</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">19</p>
-<aside class="notes">Query three is not a graph query at all, and that's the point. Once every answer is in the event log with a few flags, such as whether it used memory, whether it was later corrected, and the status of what it recalled, the question "is memory helping or hurting?" becomes a GROUP BY. On the right are illustrative results. Look at two columns. "With" and "without" are the share of answers that someone later corrected, with memory and without it. In this made-up table memory helps: around 6 percent against 10. That comparison is not causal, because questions that use memory are different questions. But look at "stale": in mid October, eleven to fourteen answers a week were built on a superseded memory, exactly like our opening example. After the recall filter shipped on November 2nd, stale drops to one, our Monday-morning answer, and the correction rate with memory falls to about 3 percent. I run this on ClickHouse; on a laptop the same SQL runs in chDB over Parquet files. One more habit: before any change to memory ships, replay last month's questions that people confirmed, with and without the change, and compare. That replay is the real test. A memory layer has to beat no memory on your own questions; bad memory is worse than none.</aside>
 </section>
 <section id="what-to-store" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -789,7 +767,6 @@ body.shownotes #notes{display:block}
 <p style="font-size:32px;line-height:1.35;color:#12161F">Log everything cheaply. <b>Promote little, on purpose.</b> Embed only what you promoted.</p>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">20</p>
-<aside class="notes">If you want one cheat sheet, this is it. I won't read every row. Three to notice. Tool calls, SQL and results: log all of it, but in the graph they appear only as links, and you don't embed them. Decisions and definitions: these are the core of memory, with an explicit scope, and they're what you embed. Raw chat transcripts: they can enter the graph as evidence, linked to what they mention, but they are never promoted to memory automatically. The short version: log everything cheaply, promote little and on purpose, and embed only what you promoted.</aside>
 </section>
 <section id="dashboard" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -815,7 +792,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1300px;font-size:24px;color:#5F6676">Screenshot: ClickMem (open source), Recall Lab · fictional demo data</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">21</p>
-<aside class="notes">And this is the same kind of trace as a person sees it. It's a screenshot from ClickMem, an open-source memory layer I've been building around these ideas, on a fresh store with fictional demo data. Same question. The pinned finance definition is first with a cosine of 0.596, above an FX rule at 0.796. The old revenue note and the other team's note don't show up at all. And every hit shows its type, scope and score. Agents get the trace through the API; people get this page.</aside>
 </section>
 <section id="three-stores" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -854,7 +830,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1400px;font-size:24px;color:#5F6676">Any columnar store, graph database or vector index you already run can play these roles</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">22</p>
-<aside class="notes">Before the takeaways, one word on why there are three kinds of storage in this design, because it is not for the sake of having many boxes. Each one answers a different kind of question. What happened? That is a columnar store, in my case ClickHouse. Raw messages, documents, pipeline events and every agent step go there. It compresses column by column, so keeping everything is cheap, and questions like "is memory helping" are a GROUP BY. How do things connect? That is the graph, here Neo4j. Supersedes, scope, source and lineage are all relationships, and the answers we wanted, why did it say that, what did the bad data touch, are paths. What sounds related? That is the vector index, which here lives inside the graph. It is fuzzy search: it finds text that means the same in different words. It proposes candidates; it does not decide. So pick the store by the question it has to answer.</aside>
 </section>
 <section id="takeaways" data-transition="fade" style="background:#F6F4EE;color:#1B2130;font-family:Inter, Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:32px">
 <div style="display:flex;flex-direction:column;gap:12px">
@@ -884,7 +859,6 @@ body.shownotes #notes{display:block}
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1200px;font-size:24px;color:#5F6676">Agent Memory Beyond Vectors · Auxten Wang</p>
 <p style="position:absolute;right:128px;bottom:64px;width:120px;font-size:24px;color:#5F6676;text-align:right">23</p>
-<aside class="notes">Four things to take home. One: vectors find candidates; they don't decide what's true. Two: give memory edges. Supersedes, conflicts with, derived from, scoped to. Those four edges answer the four questions a vector index can't. And connect them to your data lineage, so that when a table is fixed, you know which answers and which memories to fix with it. Three: log everything, but promote to memory on purpose, never by accident. Four: make "why did the agent say that?" one query away, and replay real questions before you trust any memory layer, including mine. One more thought before I close. Strong models have made agents much easier to build. Almost anyone can get to 80 points now. But the difference between a good agent and a poor one may be just that: 80 against 90. And the last ten points, the ones that make an agent reproducible and fit for a business, do not come from a bigger model. They come from a reliable data foundation under it: the log, the graph, the lineage, the replay. If you remember one sentence, make it this one: similarity is not truth. The agent in our Monday-morning example had the right memory. It needed a graph to know it.</aside>
 </section>
 <section id="thanks" data-transition="fade" style="background:#12161F;color:#F6F4EE;font-family:Inter, Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between">
 <div style="display:flex;flex-direction:column;gap:24px">
@@ -896,11 +870,9 @@ body.shownotes #notes{display:block}
 <p style="font-size:32px;color:#F6F4EE"><span style="color:#F4B740">github.com/chdb-io/chdb</span> · ClickHouse as an in-process library</p>
 <p style="font-size:32px;color:#B9C0CC"><span style="color:#F6F4EE"><b>Auxten Wang</b></span> · ClickHouse</p>
 </div>
-<aside class="notes">That's it. Thank you. Both projects from the talk are open source, and the links are on the slide. I'm happy to take questions.</aside>
 </section>
 </div>
-<div id="notes"></div>
-<div id="hud"><span id="pos"></span> · ← → to navigate · N for speaker notes · <a href="/">auxten.com</a></div>
+<div id="hud"><span id="pos"></span> · ← → to navigate · <a href="/">auxten.com</a></div>
 <script>
 (function(){
 var stage=document.getElementById('stage'),S=[].slice.call(stage.querySelectorAll('section')),cur=0;
@@ -933,7 +905,6 @@ function fit(){var W=document.documentElement.clientWidth,H=document.documentEle
 if(window.ResizeObserver)new ResizeObserver(fit).observe(document.documentElement);
 function show(i,push){fit();cur=Math.max(0,Math.min(S.length-1,i));S.forEach(function(s,j){s.classList.toggle('on',j===cur)});
   document.getElementById('pos').textContent=(cur+1)+' / '+S.length;
-  var a=S[cur].querySelector('aside.notes');document.getElementById('notes').textContent=a?a.textContent:'';
   if(push!==false)history.replaceState(null,'','#'+(cur+1))}
 addEventListener('resize',fit);fit();
 addEventListener('keydown',function(e){
@@ -942,7 +913,6 @@ addEventListener('keydown',function(e){
   if(k==='ArrowRight'||k==='ArrowDown'||k==='PageDown'||k===' '||k==='Enter'){show(cur+1);e.preventDefault()}
   else if(k==='ArrowLeft'||k==='ArrowUp'||k==='PageUp'||k==='Backspace'){show(cur-1);e.preventDefault()}
   else if(k==='Home')show(0);else if(k==='End')show(S.length-1);
-  else if(k==='n'||k==='N'||k==='s'||k==='S')document.body.classList.toggle('shownotes');
   else if(k==='f'||k==='F'){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}
 });
 stage.addEventListener('click',function(e){if(e.target.closest('a'))return;show(cur+(e.clientX<document.documentElement.clientWidth*.3?-1:1))});
