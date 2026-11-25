@@ -235,7 +235,9 @@
   #hybrid .out, #live .out, #trace .out { padding:8px 10px; }
   #hybrid .out td { padding:3px 8px; white-space:normal; max-width:none; line-height:1.22; vertical-align:top; }
   #hybrid .out table { font-size:15.5px; }
-  #hybrid tr.stale td { color:var(--red); text-decoration:line-through; } #hybrid tr.hit td { background:#e8f5e9; }
+  #hybrid tr.stale td { color:var(--red); }
+  #hybrid tr.stale td:last-child { text-decoration:line-through; }
+  #hybrid tr.stale td:first-child::after { content:"OLD"; display:table; margin-top:2px; background:var(--red); color:#fff; font-size:11px; font-weight:800; padding:0 5px; } #hybrid tr.hit td { background:#e8f5e9; }
   #live .out td, #trace .out td { max-width:560px; }
   #context .ctx pre { white-space:pre-wrap; font-size:14.4px; line-height:1.36; }
   .demo textarea, .code, .mono, .demo .out { font-variant-ligatures:none; }
@@ -985,7 +987,7 @@ WHERE tokens_so_far <= 120`;
     $('hybrid', 'v').innerHTML = table(['dist', 'memory'], v.data.map(r => [r[2], r[3]]), (_, i) => stale(v.data[i]));
     $('hybrid', 't').innerHTML = table(['hits', 'memory'], t.data.map(r => [r[2], r[3]]), (_, i) => stale(t.data[i]));
     $('hybrid', 'f').innerHTML = table(['kind', 'date', 'memory'], f.data.map(r => r.slice(1)), (_, i) => i ? '' : 'hit');
-    metaOf('hybrid').innerHTML = `<span class="tag live">live</span>${ms.toFixed(0)} ms · exact search over 312 memories · red = superseded`;
+    metaOf('hybrid').innerHTML = `<span class="tag live">live</span>${ms.toFixed(0)} ms · 312 memories · struck out = no longer true (superseded)`;
     await log('hybrid', n, ms, f.data.map(r => r[0]));
   }
   async function runContext(sql, n) {
