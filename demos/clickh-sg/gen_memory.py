@@ -5,7 +5,7 @@ Qwen/Qwen3-Embedding-0.6B, first 128 dimensions, re-normalised. Text is syntheti
 
   memory.parquet    id, kind, status, ts, ref, text, emb
   questions.parquet id, question, words, emb   (preset questions; the browser cannot embed text)
-  orders.parquet    20,000 synthetic orders: order_id, market, promised, delivered, amount
+  orders.csv        6,000 synthetic orders: order_id, market, promised, delivered
 
 Run: HF_HUB_OFFLINE=1 python gen_memory.py
 """
@@ -75,6 +75,19 @@ Q = [
  (4, "What do I need before I write the Vietnam readout for Priya?", ["Vietnam", "Priya", "readout"]),
 ]
 
+def write_orders(path, n=6000):
+    rng = np.random.default_rng(26)
+    market = rng.choice(["SG", "VN", "MY", "TH", "ID"], n, p=[.28, .2, .2, .17, .15])
+    promised = np.datetime64("2026-11-01") + rng.integers(0, 24, n).astype("timedelta64[D]")
+    p_late = np.vectorize({"SG": .06, "VN": .14, "MY": .08, "TH": .09, "ID": .11}.get)(market)
+    late = rng.random(n) < p_late
+    delivered = promised + np.where(late, rng.integers(1, 5, n), -rng.integers(0, 2, n)).astype("timedelta64[D]")
+    with open(path, "w") as f:
+        f.write("order_id,market,promised,delivered\n")
+        for i in range(n):
+            f.write(f"{i + 1},{market[i]},{promised[i]},{delivered[i]}\n")
+
+
 if __name__ == "__main__":
     from sentence_transformers import SentenceTransformer
     model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B", device="cpu")
@@ -96,15 +109,6 @@ if __name__ == "__main__":
     pq.write_table(table(
         id=([q[0] for q in Q], pa.uint8()), question=([q[1] for q in Q], pa.string()),
         words=([q[2] for q in Q], strs), emb=(list(qv), f32)), "questions.parquet", compression="zstd")
-    rng = np.random.default_rng(26)
-    n = 20000
-    market = rng.choice(["SG", "VN", "MY", "TH", "ID"], n, p=[.28, .2, .2, .17, .15])
-    promised = np.datetime64("2026-11-01") + rng.integers(0, 24, n).astype("timedelta64[D]")
-    p_late = np.vectorize({"SG": .06, "VN": .14, "MY": .08, "TH": .09, "ID": .11}.get)(market)
-    late = rng.random(n) < p_late
-    delivered = promised + np.where(late, rng.integers(1, 5, n), -rng.integers(0, 2, n)).astype("timedelta64[D]")
-    pq.write_table(table(
-        order_id=(np.arange(1, n + 1), pa.uint32()), market=(list(market), pa.string()),
-        promised=(promised.astype("datetime64[D]"), pa.date32()), delivered=(delivered.astype("datetime64[D]"), pa.date32()),
-        amount=(np.round(rng.gamma(2.2, 28, n), 2), pa.float64())), "orders.parquet", compression="zstd")
+    # CSV on purpose: the site's HEAD responses carry no Content-Length, which url() needs for Parquet.
+    write_orders("orders.csv")
     print(len(M), "memories,", len(Q), "questions,", DIM, "dims")

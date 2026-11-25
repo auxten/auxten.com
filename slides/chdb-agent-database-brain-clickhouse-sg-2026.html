@@ -588,10 +588,10 @@ S3       100 MB + 400 PUTs        $0.004
        countIf(o.delivered > o.promised) AS late,
        round(100 * late / orders, 1) AS late_pct
 FROM memory AS m
-JOIN url('https://auxten.com/demos/clickh-sg/orders.parquet') AS o ON o.market = m.ref
+JOIN url('https://auxten.com/demos/clickh-sg/orders.csv') AS o ON o.market = m.ref
 WHERE m.kind = 'fact' AND m.status = 'active'
 GROUP BY market ORDER BY late_pct DESC</textarea><button class="run">Run<br><span style="font-size:14px;">⌘↵</span></button></div>
-      <div class="out" data-k="l" style="height:104px;"><table><tr><th>market</th><th>from_memory</th><th>orders</th><th>late</th><th>late_pct</th></tr><tr class=""><td>VN</td><td>Mei owns the Vietnam market since October.</td><td>3925</td><td>534</td><td>13.6</td></tr><tr class=""><td>SG</td><td>Mei owns the Singapore market since October.</td><td>5656</td><td>338</td><td>6</td></tr></table></div>
+      <div class="out" data-k="l" style="height:104px;"><table><tr><th>market</th><th>from_memory</th><th>orders</th><th>late</th><th>late_pct</th></tr><tr class=""><td>VN</td><td>Mei owns the Vietnam market since October.</td><td>1184</td><td>158</td><td>13.3</td></tr><tr class=""><td>SG</td><td>Mei owns the Singapore market since October.</td><td>1692</td><td>120</td><td>7.1</td></tr></table></div>
       <div class="meta"><span class="tag rec">recorded</span>waiting for the engine…</div>
     </div>
     <p style="position:absolute; top:606px; left:70px; width:1140px; font-size:19px;">Indonesia is missing on purpose: Mei owned it until September, so that row is <span class="mono">superseded</span>.</p>
