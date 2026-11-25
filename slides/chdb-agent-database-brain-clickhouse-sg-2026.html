@@ -238,6 +238,23 @@
   #hybrid tr.stale td { color:var(--red); }
   #hybrid tr.stale td:last-child { text-decoration:line-through; }
   #hybrid tr.stale td:first-child::after { content:"OLD"; display:table; margin-top:2px; background:var(--red); color:#fff; font-size:11px; font-weight:800; padding:0 5px; } #hybrid tr.hit td { background:#e8f5e9; }
+  .bcol { position:absolute; top:182px; display:grid; gap:10px; grid-auto-rows:74px; }
+  .bev, .brow { box-sizing:border-box; background:#fff; border:3px solid var(--ink); padding:8px 14px; height:74px; visibility:hidden; }
+  .bev { border-left-width:10px; font-size:17px; font-weight:700; line-height:1.2; padding:10px 14px; }
+  .bev b { display:block; font-family:"JetBrains Mono",monospace; font-size:14px; margin-bottom:3px; }
+  .bev.b { border-left-color:var(--blue); } .bev.o { border-left-color:var(--orange); } .bev.p { border-left-color:var(--purple); }
+  .brow { display:grid; grid-template-columns:50px 1fr; align-items:center; box-shadow:4px 4px 0 var(--ink); font-family:"JetBrains Mono",monospace; font-size:15px; font-weight:600; line-height:1.25; padding:4px 12px; transition:opacity .5s, background .5s; }
+  .brow .bid { font-size:18px; font-weight:800; } .brow .bk { font-size:13px; font-weight:800; color:#6d6d66; margin-bottom:1px; }
+  .brow em { font-style:normal; background:var(--green); color:#fff; padding:0 6px; } .brow i { font-style:normal; background:var(--red); color:#fff; padding:0 6px; opacity:0; transition:opacity .3s .9s; }
+  .brow .btx { background:linear-gradient(var(--red),var(--red)) 0 55%/0 2px no-repeat; transition:background-size .8s .9s, color .4s .9s; -webkit-box-decoration-break:slice; box-decoration-break:slice; }
+  .bev.in, .brow.in { visibility:visible; }
+  .bev.in { animation:bev-in .35s ease-out; } .brow.in { animation:brow-in .8s .25s cubic-bezier(.2,.8,.3,1) backwards; }
+  .brow.old .btx { background-size:100% 2px; color:var(--red); } .brow.old i { opacity:1; }
+  .ask .brow.old { opacity:.35; } .ask .brow:not(.old) { background:#e8f5e9; }
+  .bask { visibility:hidden; } .bask.in { visibility:visible; }
+  @keyframes bev-in { from { opacity:0; transform:translateY(-14px); } }
+  @keyframes brow-in { from { opacity:0; transform:translateX(-440px) scale(.55); } }
+  @media (prefers-reduced-motion: reduce) { .bev.in, .brow.in { animation:none; } .brow, .brow * { transition:none !important; } }
   #live .out td, #trace .out td { max-width:560px; }
   #context .ctx pre { white-space:pre-wrap; font-size:14.4px; line-height:1.36; }
   .demo textarea, .code, .mono, .demo .out { font-variant-ligatures:none; }
@@ -386,7 +403,21 @@
   <div class="foot" style="font-size:18px; padding:14px 70px;"><span>Recorded on native chDB 4.5.1 · MacBook M4 Pro</span><span class="y">timings on synthetic data</span></div>
 </section>
 
-<!-- ============ 08 · LIVE: MEANING VS WORDS ============ -->
+<!-- ============ 08 · HOW MEMORIES ARE BORN (animated, one key press per step) ============ -->
+<section id="s-born">
+  <div class="topbar"><span class="sec">PART 1 · RECALL</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:42px;">Memories arrive. Some stop being true.</h2>
+    <div class="label" style="position:absolute; top:150px; left:70px;">WHAT HAPPENED</div>
+    <div class="label" style="position:absolute; top:150px; left:510px;">WHAT THE BRAIN KEEPS</div>
+    <div class="bcol" style="left:70px; width:390px;"><div class="bev o" data-at="1"><b>6 May · MEETING</b><span>“Keep the weekly spreadsheet export.”</span></div><div class="bev b" data-at="2"><b>3 Jun · CHAT</b><span>“A long email on Friday, please.”</span></div><div class="bev o" data-at="3"><b>9 Sep · MEETING</b><span>“Stop it. Query the files directly.”</span></div><div class="bev p" data-at="4"><b>23 Sep · TOOL LOG</b><span>courier webhook timeout · ERR-4417</span></div><div class="bev b" data-at="5"><b>12 Oct · CHAT</b><span>“Three Slack bullets, Monday 9am.”</span></div></div>
+    <div class="bcol" style="left:510px; width:700px;"><div class="brow" data-at="1" data-old="3"><div class="bid">#18</div><div><div class="bk">decision · 2026-05-06 <i class="bold-old">OLD · superseded</i></div><span class="btx">Team decided to keep exporting orders to spreadsheets every week.</span></div></div><div class="brow" data-at="2" data-old="5"><div class="bid">#1</div><div><div class="bk">preference · 2026-06-03 <i class="bold-old">OLD · superseded</i></div><span class="btx">Mei wants weekly status updates as a long email on Friday afternoon.</span></div></div><div class="brow" data-at="3"><div class="bid">#19</div><div><div class="bk">decision · 2026-09-09 <em>replaces #18</em></div><span class="btx">Team decided to stop the weekly spreadsheet export and query the Parquet files directly.</span></div></div><div class="brow" data-at="4"><div class="bid">#24</div><div><div class="bk">incident · 2026-09-23</div><span class="btx">ERR-4417 was a courier webhook timeout; the fix was to raise the client timeout to 30 seconds.</span></div></div><div class="brow" data-at="5"><div class="bid">#2</div><div><div class="bk">preference · 2026-10-12 <em>replaces #1</em></div><span class="btx">Mei now prefers status updates as three bullets in Slack, posted before 9am on Monday.</span></div></div></div>
+    <span class="fragment" style="position:absolute;"></span><span class="fragment" style="position:absolute;"></span><span class="fragment" style="position:absolute;"></span><span class="fragment" style="position:absolute;"></span><span class="fragment" style="position:absolute;"></span>
+  </div>
+  <div class="punchbar bask" data-at="6" style="font-size:24px;">Nothing is deleted. <span class="y">The old row stays as history; recall reads status = 'active'.</span></div>
+</section>
+
+<!-- ============ 09 · LIVE: MEANING VS WORDS ============ -->
 <section id="s-hybrid">
   <div class="topbar"><span class="sec live">LIVE · IN THIS TAB</span><span class="pg"></span></div>
   <div class="frame">
@@ -405,7 +436,7 @@
   <div class="engine"><i></i><span class="es"></span></div>
 </section>
 
-<!-- ============ 09 · LIVE: ONE SQL → CONTEXT ============ -->
+<!-- ============ 10 · LIVE: ONE SQL → CONTEXT ============ -->
 <section id="s-context">
   <div class="topbar"><span class="sec live">LIVE · IN THIS TAB</span><span class="pg"></span></div>
   <div class="frame">
@@ -742,6 +773,15 @@ GROUP BY m.kind, m.text ORDER BY times DESC, m.text LIMIT 5</textarea><button cl
     if (pg) pg.textContent = i < shown ? String(i + 1).padStart(2, '0') + ' / ' + shown : 'B' + (i - shown + 1);
   });
   Reveal.initialize({ hash: true, controls: true, progress: true, slideNumber: false, center: false, transition: 'none', controlsTutorial: false, width: 1280, height: 720, margin: 0.04 });
+  // slide "s-born": each fragment is one step; the state is derived, so stepping back works too
+  function born() {
+    const s = document.getElementById('s-born'), n = 1 + s.querySelectorAll('.fragment.visible').length;
+    const here = s.classList.contains('present');
+    s.querySelectorAll('[data-at]').forEach(e => e.classList.toggle('in', here && n >= +e.dataset.at));
+    s.querySelectorAll('[data-old]').forEach(e => e.classList.toggle('old', here && n >= +e.dataset.old));
+    s.classList.toggle('ask', n >= 6);
+  }
+  ['ready', 'slidechanged', 'fragmentshown', 'fragmenthidden'].forEach(e => Reveal.on(e, born));
 </script>
 
 <script type="module">
@@ -1015,7 +1055,7 @@ WHERE tokens_so_far <= 120`;
     const t0 = performance.now();
     try {
       const j = await json(sql), ms = performance.now() - t0;
-      $(id, k).innerHTML = j.rows ? table(j.meta.map(m => m.name), j.data.slice(0, 5)) : '<p style="font-size:18px;">No rows yet. Run the recall slides first: every recall on slides 8 and 9 writes a trace row.</p>';
+      $(id, k).innerHTML = j.rows ? table(j.meta.map(m => m.name), j.data.slice(0, 5)) : '<p style="font-size:18px;">No rows yet. Run the recall slides first: every recall on slides 9 and 10 writes a trace row.</p>';
       metaOf(id).innerHTML = liveTag(ms);
       if (step) await log(step, 0, ms, []);
     } catch (e) { $(id, k).innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; metaOf(id).innerHTML = '<span class="tag">error</span>'; }
