@@ -255,10 +255,20 @@
   @keyframes bev-in { from { opacity:0; transform:translateY(-14px); } }
   @keyframes brow-in { from { opacity:0; transform:translateX(-440px) scale(.55); } }
   @media (prefers-reduced-motion: reduce) { .bev.in, .brow.in { animation:none; } .brow, .brow * { transition:none !important; } }
+  .demo .meta { display:flex; align-items:center; gap:10px; white-space:nowrap; min-height:34px; }
+  .demo .meta .tag { margin-right:0; }
+  .demo .ms { display:inline-block; min-width:92px; text-align:center; font-size:24px; line-height:1; font-weight:800; font-variant-numeric:tabular-nums; background:var(--yellow); color:var(--ink); border:3px solid var(--ink); padding:3px 8px; }
+  .demo .ms.done { background:var(--green); color:#fff; animation:ms-pop .45s ease-out; }
+  .demo .out { transition:none; } .demo.pending .out > * { opacity:.12; }
+  .demo.fresh .out tr, .demo.fresh .out pre { animation:row-in .45s ease-out backwards; }
+  .demo.fresh .out tr:nth-child(2) { animation-delay:.12s; } .demo.fresh .out tr:nth-child(3) { animation-delay:.24s; } .demo.fresh .out tr:nth-child(4) { animation-delay:.36s; } .demo.fresh .out tr:nth-child(n+5) { animation-delay:.48s; }
+  @keyframes row-in { from { opacity:0; transform:translateX(-26px); } }
+  @keyframes ms-pop { 35% { transform:scale(1.28); } }
+  @media (prefers-reduced-motion: reduce) { .demo.fresh .out *, .demo .ms.done { animation:none; } }
   #live .out td, #trace .out td { max-width:560px; }
   #context .ctx pre { white-space:pre-wrap; font-size:14.4px; line-height:1.36; }
   .demo textarea, .code, .mono, .demo .out { font-variant-ligatures:none; }
-  #context .meta { margin-top:16px; }
+  #context .meta { margin-top:14px; }
   .reveal .slides a { color:inherit; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:3px; }
   .reveal .slides .sticker a, .reveal .slides .foot a { text-decoration:none; }
   .demo .ed { box-shadow:6px 6px 0 var(--yellow); }
@@ -447,7 +457,7 @@
         <div class="ed" style="grid-template-columns:1fr;"><textarea spellcheck="false" style="height:446px; font-size:12.2px; line-height:1.4; padding:10px 14px; white-space:pre; overflow:auto;"></textarea></div>
         <div>
           <div style="display:flex; justify-content:space-between; align-items:center;"><div class="label" style="margin-bottom:0; color:var(--green);">WHAT THE MODEL GETS</div><button class="run" style="border:3px solid var(--ink); padding:2px 14px; font-size:16px;">Run ⌘↵</button></div>
-          <div class="out ctx" data-k="c" style="margin-top:8px; height:318px; background:#fffbe6; overflow:auto;"><pre>[task 2026-11-18] Open: draft the Vietnam launch readout for Priya by Friday 27 November.
+          <div class="out ctx" data-k="c" style="margin-top:8px; height:306px; background:#fffbe6; overflow:auto;"><pre>[task 2026-11-18] Open: draft the Vietnam launch readout for Priya by Friday 27 November.
 [procedure 2026-07-08] Before sending numbers to Priya, reconcile them with the finance extract.
 [decision 2026-10-20] From November the Vietnam launch budget is tracked separately from Singapore.
 [fact 2026-02-14] Mei's manager is Priya, and Priya reads only the first paragraph.
@@ -628,7 +638,7 @@ GROUP BY market ORDER BY late_pct DESC</textarea><button class="run">Run<br><spa
       <div class="out" data-k="l" style="height:104px;"><table><tr><th>market</th><th>from_memory</th><th>orders</th><th>late</th><th>late_pct</th></tr><tr class=""><td>VN</td><td>Mei owns the Vietnam market since October.</td><td>1184</td><td>158</td><td>13.3</td></tr><tr class=""><td>SG</td><td>Mei owns the Singapore market since October.</td><td>1692</td><td>120</td><td>7.1</td></tr></table></div>
       <div class="meta"><span class="tag rec">recorded</span>waiting for the engine…</div>
     </div>
-    <p style="position:absolute; top:606px; left:70px; width:1140px; font-size:19px;">Indonesia is missing on purpose: Mei owned it until September, so that row is <span class="mono">superseded</span>.</p>
+    <p style="position:absolute; top:622px; left:70px; width:1140px; font-size:19px;">Indonesia is missing on purpose: Mei owned it until September, so that row is <span class="mono">superseded</span>.</p>
   </div>
   <div class="engine"><i></i><span class="es"></span></div>
 </section>
@@ -971,13 +981,40 @@ GROUP BY m.kind, m.text ORDER BY times DESC, m.text LIMIT 5</textarea><button cl
   const json = async sql => JSON.parse((await eng.db.query(sql, 'JSONCompact')).text());
   const log = (step, question, ms, ids) => eng.db.query(
     `INSERT INTO trace VALUES (toDateTime(${Math.floor(Date.now() / 1000)}), '${step}', ${question}, ${Math.round(ms)}, [${ids.join(',')}])`);
-  const liveTag = ms => `<span class="tag live">live</span>${ms < 1000 ? ms.toFixed(0) + ' ms' : (ms / 1000).toFixed(1) + ' s'} · ClickHouse ${esc(eng.version)} in this tab`;
+  const undim = id => document.getElementById(id).classList.remove('pending');
+  const fail = (id, e) => { undim(id); metaOf(id).innerHTML = `<span class="tag">error</span>${esc(e.message).slice(0, 160)}`; };
+  // Show a finished run: rows slide in, numbers count up to the measured values.
+  const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function land(id, ms, rest) {
+    const el = document.getElementById(id), m = metaOf(id), N = 1100;
+    undim(id);
+    el.classList.remove('fresh'); void el.offsetWidth; el.classList.add('fresh');
+    m.innerHTML = `<span class="tag live">live</span><b class="ms"></b><span>${rest}</span>`;
+    const big = m.querySelector('.ms');
+    const fmt = v => ms < 1000 ? Math.round(v) + ' ms' : (v / 1000).toFixed(1) + ' s';
+    const cells = [...el.querySelectorAll('.out td')].filter(c => /^\d+(\.\d+)?$/.test(c.textContent))
+      .map(c => [c, c.textContent, (c.textContent.split('.')[1] || '').length]);
+    let over = false;
+    const finish = () => { if (over) return; over = true; big.textContent = fmt(ms); big.classList.add('done'); cells.forEach(([c, t]) => { c.textContent = t; }); };
+    if (STILL) return finish();
+    const t0 = performance.now();
+    const tick = () => {
+      if (over) return;
+      const k = Math.min(1, (performance.now() - t0) / N), f = 1 - (1 - k) ** 3;
+      if (k >= 1) return finish();
+      big.textContent = fmt(ms * f);
+      cells.forEach(([c, t, d]) => { c.textContent = (+t * f).toFixed(d); });
+      requestAnimationFrame(tick);
+    };
+    tick();
+    setTimeout(finish, N + 200); // a hidden tab gets no animation frames
+  }
   const table = (cols, rows, cls) => `<table><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>${rows.map((r, i) => `<tr class="${cls ? cls(r, i) : ''}">${r.map(v => `<td>${esc(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</table>`;
   const $ = (id, k) => document.querySelector(`#${id} [data-k="${k}"]`);
   const metaOf = id => document.querySelector(`#${id} .meta`);
   async function ready(id) {
     try { await boot(); return true; }
-    catch (e) { metaOf(id).innerHTML = unavailable(e, 'recorded'); return false; }
+    catch (e) { undim(id); metaOf(id).innerHTML = unavailable(e, 'recorded'); return false; }
   }
 
   const recallSql = n => `WITH (SELECT emb   FROM question WHERE id = ${n}) AS q,
@@ -1005,12 +1042,13 @@ FROM (
   FROM fused JOIN memory USING (id) ORDER BY score DESC, id)
 WHERE tokens_so_far <= 120`;
 
+  let autoTimer;
   const picked = { hybrid: 2, context: 4 };
   async function runHybrid(n) {
     if (!await ready('hybrid')) return; // keep the recorded question and answer together
     picked.hybrid = n; mark('hybrid');
     try { await showHybrid(n); }
-    catch (e) { metaOf('hybrid').innerHTML = `<span class="tag">error</span>${esc(e.message).slice(0, 160)}`; }
+    catch (e) { fail('hybrid', e); }
   }
   async function showHybrid(n) {
     const t0 = performance.now();
@@ -1028,7 +1066,7 @@ WHERE tokens_so_far <= 120`;
     $('hybrid', 'v').innerHTML = table(['dist', 'memory'], v.data.map(r => [r[2], r[3]]), (_, i) => stale(v.data[i]));
     $('hybrid', 't').innerHTML = table(['hits', 'memory'], t.data.map(r => [r[2], r[3]]), (_, i) => stale(t.data[i]));
     $('hybrid', 'f').innerHTML = table(['kind', 'date', 'memory'], f.data.map(r => r.slice(1)), (_, i) => i ? '' : 'hit');
-    metaOf('hybrid').innerHTML = `<span class="tag live">live</span>${ms.toFixed(0)} ms · 312 memories · struck out = no longer true (superseded)`;
+    land('hybrid', ms, '312 memories · struck out = no longer true');
     await log('hybrid', n, ms, f.data.map(r => r[0]));
   }
   async function runContext(sql, n) {
@@ -1038,9 +1076,9 @@ WHERE tokens_so_far <= 120`;
       const j = await json(sql);
       const ms = performance.now() - t0, [ctx, ids, tokens] = j.data[0];
       $('context', 'c').innerHTML = `<pre>${esc(ctx)}</pre>`;
-      metaOf('context').innerHTML = `<span class="tag live">live</span>${ms.toFixed(0)} ms` + (tokens === undefined ? '' : ` · ${ids.length} memories · ≈ ${tokens} of 120 tokens`);
+      land('context', ms, tokens === undefined ? '' : `${ids.length} memories · ≈ ${tokens}/120 tokens`);
       if (Array.isArray(ids)) await log('context', n, ms, ids);
-    } catch (e) { $('context', 'c').innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; metaOf('context').innerHTML = '<span class="tag">error</span>'; }
+    } catch (e) { $('context', 'c').innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; fail('context', { message: '' }); }
   }
   async function pickContext(n) {
     if (!await ready('context')) return;
@@ -1057,9 +1095,9 @@ WHERE tokens_so_far <= 120`;
     try {
       const j = await json(sql), ms = performance.now() - t0;
       $(id, k).innerHTML = j.rows ? table(j.meta.map(m => m.name), j.data.slice(0, 5)) : '<p style="font-size:18px;">No rows yet. Run the recall slides first: every recall on slides 9 and 10 writes a trace row.</p>';
-      metaOf(id).innerHTML = liveTag(ms);
+      land(id, ms, 'ClickHouse ' + esc(eng.version) + ' in this tab');
       if (step) await log(step, 0, ms, []);
-    } catch (e) { $(id, k).innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; metaOf(id).innerHTML = '<span class="tag">error</span>'; }
+    } catch (e) { $(id, k).innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; fail(id, { message: '' }); }
   }
 
   function mark(id) { document.querySelectorAll(`.qbar[data-for="${id}"] button`).forEach(b => b.classList.toggle('on', +b.dataset.n === picked[id])); }
@@ -1067,7 +1105,7 @@ WHERE tokens_so_far <= 120`;
     bar.innerHTML = Q.map(([n, t]) => `<button data-n="${n}">${esc(t)}</button>`).join('');
     bar.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
-      b.blur(); // keep space and arrow keys for the slides
+      clearTimeout(autoTimer); b.blur(); // keep space and arrow keys for the slides
       bar.dataset.for === 'hybrid' ? runHybrid(+b.dataset.n) : pickContext(+b.dataset.n);
     });
   });
@@ -1078,9 +1116,9 @@ WHERE tokens_so_far <= 120`;
   };
   for (const [id, fn] of Object.entries(RUN)) {
     const demo = document.getElementById(id);
-    demo.querySelector('.run').addEventListener('click', e => { e.currentTarget.blur(); fn(); });
+    demo.querySelector('.run').addEventListener('click', e => { clearTimeout(autoTimer); e.currentTarget.blur(); fn(); });
     demo.querySelector('textarea').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); fn(); }
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); clearTimeout(autoTimer); fn(); }
       if (e.key === 'Escape') e.target.blur();
       e.stopPropagation();
     });
@@ -1088,12 +1126,18 @@ WHERE tokens_so_far <= 120`;
   document.querySelector('#context textarea').value = recallSql(4);
   mark('hybrid'); mark('context');
 
-  // Each live slide runs once by itself when it is first shown; buttons re-run it.
-  const AUTO = { 's-hybrid': () => runHybrid(2), 's-context': () => pickContext(4), 's-live': RUN.live, 's-trace': RUN.trace };
-  const done = new Set();
+  // Each time a live slide is shown: hold for a second, then run by itself.
+  const AUTO = { 's-hybrid': () => runHybrid(picked.hybrid), 's-context': RUN.context, 's-live': RUN.live, 's-trace': RUN.trace };
   function onSlide(el) {
-    if (!el || !AUTO[el.id] || (done.has(el.id) && el.id !== 's-trace')) return;
-    done.add(el.id); AUTO[el.id]();
+    clearTimeout(autoTimer);
+    document.querySelectorAll('.demo.pending').forEach(d => d.classList.remove('pending'));
+    if (!el || !AUTO[el.id]) return;
+    if (eng.state === 'ready') { // otherwise keep the recorded result readable
+      const d = el.querySelector('.demo');
+      d.classList.remove('fresh'); d.classList.add('pending');
+      d.querySelector('.meta').innerHTML = '<span class="tag">ready</span><b class="ms">0 ms</b>';
+    }
+    autoTimer = setTimeout(AUTO[el.id], 1000);
   }
   Reveal.on('slidechanged', e => onSlide(e.currentSlide));
   Reveal.on('ready', e => onSlide(e.currentSlide));
