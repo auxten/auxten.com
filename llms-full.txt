@@ -80,6 +80,7 @@ Real name: Pengcheng Wang (王鹏程). 'auxten' was just a random string I tried
 
 ## Conference Talks
 
+- **ClickHouse Meetup Singapore 2026** (26 November 2026): Giving Your AI Agent a Database Brain — recall agent memory in one SQL (HNSW, inverted index, filters, token budget), keep one durable chDB object per user in your own object storage, and connect it to live data, with live chDB WebAssembly demos in the slides (Slides: https://auxten.com/slides/chdb-agent-database-brain-clickhouse-sg-2026.html)
 - **NODES 2026** (12 November 2026, online): Agent Memory Beyond Vectors: Queryable Context Graphs for Reliable AI Systems — why vector similarity alone is not enough for agent memory, and how an event log plus a context graph (ClickHouse, chDB, Neo4j) makes a data agent's answers traceable and correctable (Slides: https://auxten.com/slides/agent-memory-beyond-vectors-nodes-2026.html)
 - **ClickHouse Internal Talk 2026** (28 October 2026): What is chDB, and what can you use it for? — embedded ClickHouse use cases (CI, Python data, ML, AI agents) and new features (minimal-copy Pandas/Arrow, WebAssembly, Pandas-compatible API, pg_chdb), with live chDB WebAssembly demos in the slides (Slides: https://auxten.com/slides/chdb-what-is-chdb-2026.html)
 - **The AI-Native Workplace Summit 2026** (16 September 2026): From Vibe Coding to Verifiable Agents: Memory, Traces, and Feedback Loops (Slides: https://auxten.com/slides/verifiable-agents-ai-native-workplace-2026.html)

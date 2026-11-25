@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giving Your AI Agent a Database Brain — Singapore, 2026-11-26</title>
+<meta name="description" content="Recall agent memory in one SQL, keep one database per user in your own bucket, connect it to live data. Live chDB demos in the slides.">
+<link rel="canonical" href="https://auxten.com/slides/chdb-agent-database-brain-clickhouse-sg-2026.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Giving Your AI Agent a Database Brain">
+<meta property="og:description" content="Recall agent memory in one SQL, keep one database per user in your own bucket, connect it to live data. Live chDB demos in the slides.">
+<meta property="og:url" content="https://auxten.com/slides/chdb-agent-database-brain-clickhouse-sg-2026.html">
+<meta property="og:image" content="https://auxten.com/head.jpg">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fdfdf6;
+    --ink: #161616;
+    --yellow: #fadb14;
+    --orange: #e65100;
+    --blue: #1565c0;
+    --green: #2e7d32;
+    --red: #c62828;
+    --purple: #6a1b9a;
+  }
+
+  html, body, .reveal, .reveal .slides, .reveal .slides section { background: var(--paper); }
+
+  .reveal {
+    color: var(--ink);
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-size: 30px;
+  }
+  .reveal .slides section {
+    box-sizing: border-box; height: 720px; padding: 0; text-align: left; overflow: hidden;
+  }
+  .reveal .slides section::before {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(#00000012 1.5px, transparent 1.5px);
+    background-size: 26px 26px; pointer-events: none;
+  }
+  .frame { position: absolute; inset: 0; box-sizing: border-box; padding: 60px 70px; }
+
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: 92px; font-weight: 900; line-height: 0.98; letter-spacing: -3px; color: var(--ink); }
+  h2 { font-size: 50px; font-weight: 900; line-height: 1.04; letter-spacing: -1.5px; color: var(--ink); margin-top: 40px; }
+  h3 { font-size: 26px; font-weight: 900; color: var(--ink); }
+  p  { font-size: 25px; font-weight: 600; line-height: 1.35; color: #3c3c38; }
+  .mono { font-family: "JetBrains Mono", Menlo, monospace; }
+  .muted { color: #6d6d66; }
+  .hl { background: var(--yellow); padding: 0 10px; }
+
+  .topbar { position: absolute; top: 30px; left: 70px; right: 70px; display: flex; justify-content: space-between; align-items: center; z-index: 5; }
+  .topbar .sec { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
+    background: var(--ink); color: #fff; padding: 6px 14px; letter-spacing: 1px; }
+  .topbar .sec.live { background: var(--red); }
+  .topbar .pg { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 700;
+    background: #fff; border: 3px solid var(--ink); padding: 3px 12px; }
+
+  .sticker { display: inline-block; background: var(--yellow); border: 4px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink); padding: 12px 24px; font-weight: 900; }
+  .sticker.white { background: #fff; }
+  .box { background: var(--ink); color: var(--yellow); padding: 0 18px; display: inline-block; }
+
+  .card { box-sizing: border-box; background: #fff; border: 4px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink); padding: 20px 24px; }
+  .card.b { border-color: var(--blue);   box-shadow: 7px 7px 0 var(--blue); }
+  .card.o { border-color: var(--orange); box-shadow: 7px 7px 0 var(--orange); }
+  .card.g { border-color: var(--green);  box-shadow: 7px 7px 0 var(--green); }
+  .card.p { border-color: var(--purple); box-shadow: 7px 7px 0 var(--purple); }
+  .card.r { border-color: var(--red);    box-shadow: 7px 7px 0 var(--red); }
+  .card.dark { background: var(--ink); color: #fff; box-shadow: 8px 8px 0 var(--yellow); }
+  .card h3 { font-size: 24px; letter-spacing: 0.5px; }
+  .card.b h3 { color: var(--blue); } .card.o h3 { color: var(--orange); } .card.g h3 { color: var(--green); }
+  .card.p h3 { color: var(--purple); } .card.r h3 { color: var(--red); }
+  .card .m { font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; color: #3c3c38; margin-top: 6px; line-height: 1.45; }
+  .card .t { font-size: 20px; font-weight: 700; color: #3c3c38; margin-top: 8px; line-height: 1.35; }
+  .card.dark .m, .card.dark .t { color: #cfcfc6; }
+
+  .code { box-sizing: border-box; background: var(--ink); border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--yellow); padding: 20px 26px;
+    font-family: "JetBrains Mono", monospace; font-weight: 500; color: #f6f6f0; font-size: 20px; line-height: 1.6; white-space: pre; }
+  .code .kw { color: var(--yellow); font-weight: 700; }
+  .code .st { color: #8be28b; }
+  .code .cm { color: #8a8a7f; }
+  .code .fn { color: #7db8ff; }
+  .code .bad { color: #ff8a80; }
+  .code .line { display: block; }
+  .code .l-g { border-left: 7px solid #4caf50; padding-left: 12px; margin-left: -19px; }
+  .code .l-o { border-left: 7px solid var(--orange); padding-left: 12px; margin-left: -19px; }
+  .code .l-b { border-left: 7px solid #4d94ff; padding-left: 12px; margin-left: -19px; }
+  .code.light { background: #fff; color: var(--ink); box-shadow: 8px 8px 0 var(--ink); }
+  .code.light .kw { color: var(--blue); } .code.light .st { color: var(--green); } .code.light .cm { color: #8a8a7f; }
+
+  .label { font-family: "JetBrains Mono", monospace; font-size: 16px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+  .foot { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 70px; font-size: 23px; font-weight: 800; z-index: 4; }
+  .foot .y { color: var(--yellow); }
+
+  .punchbar { position: absolute; left: 70px; right: 70px; bottom: 50px; background: var(--ink); color: #fff;
+    border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--yellow);
+    padding: 16px 26px; font-size: 28px; font-weight: 900; z-index: 4; }
+  .punchbar .y { color: var(--yellow); }
+
+  .frame-img { background: #fff; border: 4px solid var(--ink); box-shadow: 10px 10px 0 var(--ink); padding: 12px; }
+  .frame-img img { display: block; width: 100%; height: auto; }
+
+  .rows { display: grid; gap: 14px; }
+  .rows .row { display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start;
+    font-size: 23px; font-weight: 700; line-height: 1.3; }
+  .rows .sq { width: 16px; height: 16px; background: var(--orange); border: 3px solid var(--ink); margin-top: 6px; }
+  .rows .sq.x { background: var(--red); }
+  .rows .sq.ok { background: var(--green); }
+  .rows .sq.b { background: var(--blue); }
+
+  .stat { box-sizing: border-box; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    padding: 18px 20px; text-align: center; }
+  .stat .num { font-size: 60px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
+  .stat .lab { font-size: 18px; font-weight: 700; color: #55554f; margin-top: 10px; line-height: 1.3; }
+  .stat.red .num { color: var(--red); } .stat.green .num { color: var(--green); } .stat.ylw .num { color: var(--orange); } .stat.blue .num { color: var(--blue); }
+
+  .chat { background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); }
+  .chat .bar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 4px solid var(--ink);
+    font-family: "JetBrains Mono", monospace; font-size: 16px; font-weight: 700; background: var(--yellow); }
+  .chat .bar i { width: 12px; height: 12px; border: 2.5px solid var(--ink); display: inline-block; background: #fff; }
+  .chat .body { padding: 16px; display: grid; gap: 12px; }
+  .bub { max-width: 88%; border: 3px solid var(--ink); padding: 10px 14px; font-size: 18px; font-weight: 700; line-height: 1.35; }
+  .bub.user { justify-self: end; background: #eef4ff; border-color: var(--blue); }
+  .bub.agent { justify-self: start; background: #fffbe6; }
+  .bub .m { font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; display: block; margin-top: 6px; color: #3c3c38; }
+
+  .logo-pol { background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center; }
+  .reveal img { margin: 0; border: 0; box-shadow: none; max-width: none; max-height: none; }
+
+  .svgwrap { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .z2 { position: relative; z-index: 2; }
+
+  /* ---------- hub (recurring main visual) ---------- */
+  .hubnode { position: absolute; width: 330px; box-sizing: border-box; background: #fff; border: 4px solid var(--ink);
+    box-shadow: 7px 7px 0 var(--ink); padding: 10px 16px; z-index: 2; transition: none; }
+  .hubnode h3 { font-size: 22px; }
+  .hubnode .m { font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; color: #55554f; margin-top: 2px; }
+  .hubnode.dim { opacity: 0.28; box-shadow: 4px 4px 0 #9a9a90; border-color: #9a9a90; }
+  .hubnode.on.u { border-color: var(--blue); box-shadow: 7px 7px 0 var(--blue); }
+  .hubnode.on.u h3 { color: var(--blue); }
+  .hubnode.on.w { border-color: var(--orange); box-shadow: 7px 7px 0 var(--orange); }
+  .hubnode.on.w h3 { color: var(--orange); }
+  .hubcore { position: absolute; left: 500px; top: 360px; width: 280px; z-index: 2; text-align: center; }
+  .hubcol { position: absolute; top: 150px; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 800; letter-spacing: 1.5px; padding: 4px 12px; z-index: 2; }
+  .hubcol.dim { opacity: 0.3; }
+
+  /* ---------- live demo ---------- */
+  .demo { position: absolute; z-index: 3; }
+  .demo .ed { display: grid; grid-template-columns: 1fr auto; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--yellow); background: var(--ink); }
+  .demo textarea { box-sizing: border-box; width: 100%; border: 0; outline: 0; resize: none; background: var(--ink); color: #f6f6f0;
+    font-family: "JetBrains Mono", monospace; font-size: 19px; line-height: 1.5; padding: 14px 18px; font-weight: 500; }
+  .demo button.run { border: 0; border-left: 4px solid var(--ink); background: var(--yellow); color: var(--ink); font-family: "Inter";
+    font-weight: 900; font-size: 22px; padding: 0 22px; cursor: pointer; }
+  .demo button.run:hover { background: #ffe94d; }
+  .demo .out { margin-top: 22px; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); padding: 12px 14px; overflow: hidden; }
+  .demo .out table { border-collapse: collapse; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; width: 100%; }
+  .demo .out th { text-align: left; background: var(--ink); color: var(--yellow); padding: 5px 10px; font-weight: 800; }
+  .demo .out td { padding: 4px 10px; border-bottom: 2px solid #ececdf; white-space: nowrap; max-width: 360px; overflow: hidden; text-overflow: ellipsis; }
+  .demo .out td.n { text-align: right; }
+  .demo .out pre { overflow-x: auto; line-height: 1.2; margin: 0; font-family: "JetBrains Mono", monospace; font-size: 17px; font-weight: 600; white-space: pre; }
+  .demo[data-format] .out pre { font-size: 15px; line-height: 1.15; }
+  .demo .out .err { color: var(--red); font-family: "JetBrains Mono", monospace; font-size: 16px; white-space: pre-wrap; }
+  .demo .meta { margin-top: 10px; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 700; color: #55554f; }
+  .demo .meta .tag { display: inline-block; padding: 2px 8px; border: 2.5px solid var(--ink); margin-right: 8px; background: #fff; }
+  .demo .meta .tag.live { background: var(--green); color: #fff; border-color: var(--green); }
+  .demo .meta .tag.rec { background: #ececdf; }
+
+  .engine { position: absolute; right: 70px; bottom: 30px; z-index: 6; cursor: pointer; font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 800;
+    background: #fff; border: 3px solid var(--ink); padding: 5px 12px; display: flex; align-items: center; gap: 8px; }
+  .engine i { width: 12px; height: 12px; border: 2.5px solid var(--ink); background: #bdbdb4; display: inline-block; }
+  .engine.ready i { background: var(--green); }
+  .engine.loading i { background: var(--yellow); }
+  .engine.off i { background: var(--red); }
+  .demo .meta button.why, .demo .meta a.why { all: unset; cursor: pointer; color: var(--red); text-decoration: underline; }
+
+  /* Diagnostics panel: lives outside the scaled slide so it stays readable at any window size. */
+  .diag { position: fixed; right: 16px; bottom: 16px; z-index: 100; width: min(760px, calc(100vw - 32px)); max-height: 75vh;
+    display: none; flex-direction: column; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink);
+    font-family: "JetBrains Mono", monospace; color: var(--ink); }
+  .diag.open { display: flex; }
+  .diag header { display: flex; align-items: center; gap: 10px; background: var(--ink); color: var(--yellow); padding: 8px 12px; font-weight: 800; font-size: 14px; }
+  .diag header span { flex: 1; }
+  .diag button { font: inherit; font-weight: 800; font-size: 13px; border: 2.5px solid var(--ink); background: var(--yellow); color: var(--ink); padding: 3px 10px; cursor: pointer; }
+  .diag .hint { padding: 12px 14px; font-family: "Inter", sans-serif; font-size: 15px; font-weight: 600; line-height: 1.45; border-bottom: 3px solid var(--ink); background: #fffbe6; }
+  .diag .hint a { color: var(--red); font-weight: 800; word-break: break-all; }
+  .diag pre { margin: 0; padding: 12px 14px; overflow: auto; font-size: 12px; line-height: 1.45; white-space: pre-wrap; word-break: break-all; }
+
+  .drop { position: absolute; z-index: 3; border: 5px dashed var(--ink); background: #fffbe6; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; gap: 12px; }
+  .drop.over { background: var(--yellow); }
+  .drop .big { font-size: 30px; font-weight: 900; }
+  .drop button { font-family: "Inter"; font-size: 19px; font-weight: 800; border: 3px solid var(--ink); background: #fff; padding: 6px 16px; cursor: pointer; box-shadow: 4px 4px 0 var(--ink); }
+
+  /* ---------- misc ---------- */
+  .tl { position: absolute; left: 70px; right: 70px; top: 300px; height: 6px; background: var(--ink); }
+  .tl .dot { position: absolute; top: -13px; width: 24px; height: 24px; background: var(--yellow); border: 4px solid var(--ink); box-sizing: border-box; }
+  .tl .ev { position: absolute; top: 34px; width: 230px; margin-left: -12px; }
+  .tl .ev .yr { font-family: "JetBrains Mono", monospace; font-size: 22px; font-weight: 900; color: var(--orange); }
+  .tl .ev .tx { font-size: 20px; font-weight: 700; line-height: 1.3; margin-top: 6px; }
+
+  .bars { display: grid; gap: 12px; }
+  .bars .b { display: grid; grid-template-columns: 150px 1fr 110px; gap: 14px; align-items: center; font-weight: 800; font-size: 21px; }
+  .bars .b .fill { height: 34px; border: 3px solid var(--ink); background: #d7d7cc; box-sizing: border-box; }
+  .bars .b .fill.win { background: var(--green); }
+  .bars .b .fill.lose { background: var(--red); }
+  .bars .b .v { font-family: "JetBrains Mono", monospace; font-size: 20px; }
+
+  table.cmp { border-collapse: collapse; font-size: 19px; font-weight: 700; background: #fff; border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); }
+  table.cmp th { background: var(--ink); color: var(--yellow); text-align: left; padding: 8px 14px; font-family: "JetBrains Mono", monospace; font-size: 17px; }
+  table.cmp td { padding: 8px 14px; border-top: 2px solid #ececdf; vertical-align: top; }
+  table.cmp tr.us td { background: #fffbe6; }
+
+  .langs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; }
+  .lang { background: #fff; border: 4px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); height: 108px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px; font-weight: 800; font-size: 18px; }
+  .lang img { height: 44px; width: auto; }
+  .lang .txt { font-family: "JetBrains Mono", monospace; font-size: 28px; font-weight: 900; height: 44px; display: flex; align-items: center; }
+
+  .qbar { display:flex; gap:14px; z-index:4; }
+  .qbar button { flex:1; font-family:"Inter"; font-weight:800; font-size:16px; line-height:1.25; text-align:left; border:3px solid var(--ink); background:#fff; color:var(--ink); padding:7px 12px; cursor:pointer; box-shadow:4px 4px 0 var(--ink); }
+  .qbar button.on { background:var(--yellow); }
+  .demo .out td.wrap { white-space:normal; max-width:none; }
+  #hybrid .out table, #live .out table, #trace .out table { font-size:14.5px; }
+  #hybrid .out, #live .out, #trace .out { padding:8px 10px; }
+  #hybrid .out td { padding:3px 8px; white-space:normal; max-width:none; line-height:1.22; vertical-align:top; }
+  #hybrid .out table { font-size:15.5px; }
+  #hybrid tr.stale td { color:var(--red); text-decoration:line-through; } #hybrid tr.hit td { background:#e8f5e9; }
+  #live .out td, #trace .out td { max-width:560px; }
+  #context .ctx pre { white-space:pre-wrap; font-size:14.4px; line-height:1.36; }
+  .demo textarea, .code, .mono, .demo .out { font-variant-ligatures:none; }
+  #context .meta { margin-top:16px; }
+  .reveal .slides a { color:inherit; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:3px; }
+  .reveal .slides .sticker a, .reveal .slides .foot a { text-decoration:none; }
+  .demo .ed { box-shadow:6px 6px 0 var(--yellow); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ 01 · TITLE ============ -->
+<section>
+  <div class="frame">
+    <span class="sticker" style="position:absolute; top:64px; left:70px; transform:rotate(-2deg); font-size:24px;"><a href="https://luma.com/clickh-k5ti" target="_blank" rel="noopener">See What Your Agent Did</a> · Singapore · 26 Nov 2026</span>
+    <div class="logo-pol" style="position:absolute; top:64px; right:70px; width:150px; height:150px; transform:rotate(2deg);"><img src="logos/chdb-light.png" alt="chDB" style="width:110px;"></div>
+    <h1 style="position:absolute; top:200px; left:70px; font-size:88px;">Giving Your AI Agent<br>a <span class="box">Database Brain</span></h1>
+    <div class="sticker white mono" style="position:absolute; top:470px; left:70px; font-size:24px; box-shadow:8px 8px 0 var(--orange);">recall it in one SQL · keep it in your bucket · connect it to live data</div>
+  </div>
+  <div class="foot"><span>Auxten Wang · <span class="y">ClickHouse</span> · Creator of chDB</span><span>@auxten</span></div>
+</section>
+
+<!-- ============ 02 · ABOUT ============ -->
+<section>
+  <div class="topbar"><span class="sec">ABOUT</span><span class="pg"></span></div>
+  <div class="frame">
+    <div style="display:flex; gap:70px; align-items:center; margin-top:90px;">
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:24px; margin-bottom:30px;">
+          <div class="logo-pol" style="width:120px; height:120px; transform:rotate(-2deg); overflow:hidden; padding:0;"><img src="logos/head.jpg" alt="Auxten Wang" style="width:112px; height:112px; object-fit:cover;"></div>
+          <div><h2 style="font-size:46px; margin-top:0;">Auxten Wang</h2><p class="mono" style="font-size:21px; margin-top:6px;"><strong>@auxten</strong> · auxten.com</p></div>
+        </div>
+        <div class="rows">
+          <div class="row"><span class="sq"></span><span>Started <strong>chDB</strong> as a side project in 2023</span></div>
+          <div class="row"><span class="sq"></span><span>chDB <strong>joined ClickHouse</strong> in 2024</span></div>
+          <div class="row"><span class="sq"></span><span>Today: embedded ClickHouse — Python, browser, agents</span></div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:34px; align-items:center;">
+        <div class="logo-pol" style="width:230px; height:230px; transform:rotate(2deg);"><img src="logos/chdb-light.png" alt="chDB" style="width:180px;"></div>
+        <img src="logos/clickhouse-logo-black.svg" alt="ClickHouse" style="width:230px;">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 · A MILLION BRAINS ============ -->
+<section>
+  <div class="topbar"><span class="sec">THE PROBLEM</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>A million users need <span class="hl">a million brains</span></h2>
+    <p style="position:absolute; top:172px; left:70px; width:1140px;">Every organization and every user expects the agent to remember <em>them</em>, and only them.</p>
+    <div style="position:absolute; top:240px; left:70px; right:70px; display:grid; grid-template-columns:1fr 1fr; gap:30px 34px;">
+      <div class="card b"><h3>ISOLATED</h3><div class="t">My memory must never show up in your prompt.</div></div>
+      <div class="card o"><h3>CHEAP WHEN IDLE</h3><div class="t">Most brains are asleep most of the day.</div></div>
+      <div class="card g"><h3>SEARCHABLE</h3><div class="t">By meaning, by exact word, by time, by status.</div></div>
+      <div class="card p"><h3>PORTABLE</h3><div class="t">Laptop, sandbox, any cloud. Same state.</div></div>
+    </div>
+  </div>
+  <div class="punchbar">Today: a vector store + a Postgres + a log pipeline, <span class="y">shared by everyone.</span></div>
+</section>
+
+<!-- ============ 04 · MAP ============ -->
+<section>
+  <div class="topbar"><span class="sec">THE PLAN</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>A database brain does three things</h2>
+    <div style="position:absolute; top:210px; left:70px; right:70px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:34px;">
+      <div class="card b" style="height:300px;"><div class="label">PART 1</div><h3 style="font-size:40px;">RECALL</h3><div class="t" style="font-size:23px;">One SQL finds the right memories and builds the context.</div><div class="m" style="margin-top:20px;">vector index<br>inverted index<br>filters · ranking · budget</div></div>
+      <div class="card o" style="height:300px;"><div class="label">PART 2</div><h3 style="font-size:40px;">KEEP</h3><div class="t" style="font-size:23px;">One object per org and user, in your own bucket.</div><div class="m" style="margin-top:20px;">S3 · R2 · MinIO · GCS · Azure<br>compressed · encrypted<br>MicroVM when awake</div></div>
+      <div class="card g" style="height:300px;"><div class="label">PART 3</div><h3 style="font-size:40px;">CONNECT</h3><div class="t" style="font-size:23px;">A gateway in front, live data sources behind.</div><div class="m" style="margin-top:20px;">route to the right brain<br>join memory with live data<br>every step leaves a row</div></div>
+    </div>
+  </div>
+  <div class="foot"><span>The live slides run <span class="y">ClickHouse inside this browser tab</span></span><span></span></div>
+</section>
+
+<!-- ============ 05 · CHDB ============ -->
+<section>
+  <div class="topbar"><span class="sec">THE ENGINE</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>chDB: ClickHouse <span class="hl">inside your process</span></h2>
+    <div style="position:absolute; top:190px; left:70px; width:560px;">
+      <div class="card o" style="padding:20px 22px;"><h3>Your agent's process</h3>
+        <div style="display:flex; gap:14px; margin-top:16px; align-items:center; white-space:nowrap;">
+          <div class="card" style="padding:12px 12px; box-shadow:4px 4px 0 var(--ink);"><h3 style="font-size:19px;">agent code</h3></div>
+          <div class="mono" style="font-size:16px; font-weight:800; text-align:center; line-height:1.2;">———→<br><span class="muted">function call</span></div>
+          <div class="card dark" style="padding:12px 12px; box-shadow:4px 4px 0 var(--yellow);"><h3 style="color:var(--yellow); font-size:18px;">ClickHouse engine</h3></div>
+        </div>
+        <div class="m" style="margin-top:18px;">no server · no port · pip install chdb</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:38px;">
+        <div class="stat ylw"><div class="num">4.3M</div><div class="lab">PyPI downloads<br>last 30 days</div></div>
+        <div class="stat blue"><div class="num" style="font-size:40px; padding:10px 0;">Apache 2.0</div><div class="lab">Python · Node · Go · Rust<br>browser (WASM)</div></div>
+      </div>
+    </div>
+    <div style="position:absolute; top:190px; left:700px; width:510px;">
+      <div class="label" style="color:var(--orange);">NEW SINCE PYCON SINGAPORE IN JUNE</div>
+      <div class="rows" style="gap:20px;">
+        <div class="row"><span class="sq"></span><span><strong>ChDBTool</strong> — a read-only SQL tool for agents <span class="muted mono" style="font-size:17px;">4.2 · beta</span></span></div>
+        <div class="row"><span class="sq"></span><span><strong>chdb.durable</strong> — the database lives in your bucket <span class="muted mono" style="font-size:17px;">4.4</span></span></div>
+        <div class="row"><span class="sq"></span><span><strong>Polars</strong> in and out <span class="muted mono" style="font-size:17px;">4.5</span></span></div>
+        <div class="row"><span class="sq"></span><span><span class="mono" style="font-size:20px; background:#eee; padding:1px 8px;">uvx chdb "SELECT 1"</span> <span class="muted mono" style="font-size:17px;">4.5</span></span></div>
+        <div class="row"><span class="sq"></span><span><strong>PyArrow</strong> results, straight from the query <span class="muted mono" style="font-size:17px;">4.5.1</span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Same engine, same SQL as ClickHouse</span><span class="y">downloads: pypistats, 25 Nov 2026</span></div>
+</section>
+
+<!-- ============ 06 · MEMORY IS A ROW ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 1 · RECALL</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Memory is a row, not a markdown file</h2>
+    <div class="code" style="position:absolute; top:174px; left:70px; width:780px; font-size:18px; line-height:1.5; padding:16px 26px;"><span class="line"><span class="kw">CREATE TABLE</span> memory (</span><span class="line l-g">  id UInt32, kind LowCardinality(String),</span><span class="line l-g">  status LowCardinality(String), ts Date, ref String,</span><span class="line l-g">  text String, emb Array(Float32),</span><span class="line">&nbsp;</span><span class="line l-b">  <span class="kw">INDEX</span> meaning emb <span class="kw">TYPE</span> <span class="fn">vector_similarity</span>(</span><span class="line l-b">      <span class="st">'hnsw'</span>, <span class="st">'cosineDistance'</span>, 128),</span><span class="line">&nbsp;</span><span class="line l-o">  <span class="kw">INDEX</span> words text <span class="kw">TYPE</span> <span class="fn">text</span>(</span><span class="line l-o">      tokenizer = splitByNonAlpha)</span><span class="line">)</span><span class="line"><span class="kw">ENGINE</span> = MergeTree <span class="kw">ORDER BY</span> (kind, id)</span></div>
+    <div style="position:absolute; top:174px; left:900px; width:310px; display:grid; gap:22px;">
+      <div class="card g" style="padding:12px 18px;"><h3>COLUMNS</h3><div class="t">who, what kind, when, still true?</div></div>
+      <div class="card b" style="padding:12px 18px;"><h3>HNSW INDEX</h3><div class="t">find it by meaning</div></div>
+      <div class="card o" style="padding:12px 18px;"><h3>INVERTED INDEX</h3><div class="t">find it by the exact word</div></div>
+    </div>
+  </div>
+  <div class="punchbar">One table. Meaning, words and rules <span class="y">in the same query.</span></div>
+</section>
+
+<!-- ============ 07 · TWO INDEXES ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 1 · RECALL</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Two indexes, one table</h2>
+    <div style="position:absolute; top:180px; left:70px; right:70px; display:grid; grid-template-columns:1fr 1fr; gap:45px;">
+      <div class="stat blue" style="padding:14px 18px;"><div class="label" style="color:var(--blue); margin-bottom:4px;">BY MEANING · HNSW</div><div class="num" style="font-size:50px;">28.8 → 6.7 ms</div><div class="lab">nearest 10 of 500,000 vectors, recall 0.94</div></div>
+      <div class="stat ylw" style="padding:14px 18px;"><div class="label" style="color:var(--orange); margin-bottom:4px;">BY WORD · INVERTED INDEX</div><div class="num" style="font-size:50px;">4.0 → 1.1 ms</div><div class="lab">one rare word in 500,000 rows</div></div>
+    </div>
+    <div class="label" style="position:absolute; top:358px; left:70px; margin:0;">BOTH · words narrow it, meaning ranks it</div>
+    <div class="code" style="position:absolute; top:390px; left:70px; width:610px; font-size:17.4px; line-height:1.55; padding:16px 22px;"><span class="kw">SELECT</span> text <span class="kw">FROM</span> memory
+<span class="kw">WHERE</span> <span class="fn">hasAnyTokens</span>(text, [<span class="st">'timeout'</span>])
+<span class="kw">ORDER BY</span> <span class="fn">cosineDistance</span>(emb, q)
+<span class="kw">LIMIT</span> 3
+<span class="kw">SETTINGS</span> vector_search_filter_strategy = <span class="st">'prefilter'</span></div>
+    <div class="card" style="position:absolute; top:390px; left:715px; width:495px; padding:14px 18px;">
+      <div class="m" style="font-size:14.5px; margin:0; line-height:1.42;"><strong>1</strong> For a courier timeout, check the region queue first, then replay the webhook from the console.<br><strong>2</strong> ERR-4417 was a courier webhook timeout; the fix was to raise the client timeout to 30 seconds.<br><strong>3</strong> Open: compare courier on-time rate in Singapore before and after the timeout fix.</div>
+    </div>
+  </div>
+  <div class="foot" style="font-size:18px; padding:14px 70px;"><span>Recorded on native chDB 4.5.1 · MacBook M4 Pro</span><span class="y">timings on synthetic data</span></div>
+</section>
+
+<!-- ============ 08 · LIVE: MEANING VS WORDS ============ -->
+<section id="s-hybrid">
+  <div class="topbar"><span class="sec live">LIVE · IN THIS TAB</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:42px;">Meaning finds the topic. Words find the fact.</h2>
+    <div class="qbar" data-for="hybrid" style="position:absolute; top:152px; left:70px; right:70px;"></div>
+    <div class="demo" id="hybrid" style="top:222px; left:70px; width:1140px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:28px;">
+        <div><div class="label" style="color:var(--blue); margin-bottom:0;">BY MEANING · cosineDistance, no filter</div><div class="out" data-k="v" style="margin-top:8px; height:204px;"><table><tr><th>dist</th><th>memory</th></tr><tr class=""><td>0.286</td><td>ERR-4147 was a duplicate payment callback and was closed without a code change.</td></tr><tr class=""><td>0.317</td><td>ERR-4417 was a courier webhook timeout; the fix was to raise the client timeout to 30 seconds.</td></tr><tr class=""><td>0.348</td><td>Payment retries doubled on 10 November after the bank changed its 3DS page.</td></tr><tr class=""><td>0.354</td><td>ERR-4471 was an expired signing certificate on the returns portal.</td></tr></table></div></div>
+        <div><div class="label" style="color:var(--orange); margin-bottom:0;">BY WORD · hasAnyTokens <span class="words muted">[4417]</span></div><div class="out" data-k="t" style="margin-top:8px; height:204px;"><table><tr><th>hits</th><th>memory</th></tr><tr class=""><td>1</td><td>ERR-4417 was a courier webhook timeout; the fix was to raise the client timeout to 30 seconds.</td></tr></table></div></div>
+      </div>
+      <div class="label" style="color:var(--green); margin:16px 0 0;">BOTH + RULES · status = 'active', rank fusion</div>
+      <div class="out" data-k="f" style="margin-top:8px; height:112px;"><table><tr><th>kind</th><th>date</th><th>memory</th></tr><tr class="hit"><td>incident</td><td>2026-09-23</td><td>ERR-4417 was a courier webhook timeout; the fix was to raise the client timeout to 30 seconds.</td></tr><tr class=""><td>incident</td><td>2026-08-30</td><td>ERR-4147 was a duplicate payment callback and was closed without a code change.</td></tr><tr class=""><td>incident</td><td>2026-11-10</td><td>Payment retries doubled on 10 November after the bank changed its 3DS page.</td></tr></table></div>
+      <div class="meta"><span class="tag rec">recorded</span>waiting for the engine…</div>
+    </div>
+  </div>
+  <div class="engine"><i></i><span class="es"></span></div>
+</section>
+
+<!-- ============ 09 · LIVE: ONE SQL → CONTEXT ============ -->
+<section id="s-context">
+  <div class="topbar"><span class="sec live">LIVE · IN THIS TAB</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:42px;">One SQL in. Prompt-ready context out.</h2>
+    <div class="qbar" data-for="context" style="position:absolute; top:152px; left:70px; right:70px;"></div>
+    <div class="demo" id="context" style="top:222px; left:70px; width:1140px;">
+      <div style="display:grid; grid-template-columns:650px 1fr; gap:28px; align-items:start;">
+        <div class="ed" style="grid-template-columns:1fr;"><textarea spellcheck="false" style="height:446px; font-size:12.2px; line-height:1.4; padding:10px 14px; white-space:pre; overflow:auto;"></textarea></div>
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center;"><div class="label" style="margin-bottom:0; color:var(--green);">WHAT THE MODEL GETS</div><button class="run" style="border:3px solid var(--ink); padding:2px 14px; font-size:16px;">Run ⌘↵</button></div>
+          <div class="out ctx" data-k="c" style="margin-top:8px; height:318px; background:#fffbe6; overflow:auto;"><pre>[task 2026-11-18] Open: draft the Vietnam launch readout for Priya by Friday 27 November.
+[procedure 2026-07-08] Before sending numbers to Priya, reconcile them with the finance extract.
+[decision 2026-10-20] From November the Vietnam launch budget is tracked separately from Singapore.
+[fact 2026-02-14] Mei's manager is Priya, and Priya reads only the first paragraph.
+[fact 2026-10-01] Mei owns the Vietnam market since October.
+[procedure 2026-08-12] To answer a late delivery question, look up the promised date, the carrier scan and the customer tier.</pre></div>
+          <div class="meta"><span class="tag rec">recorded</span>waiting for the engine…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="engine"><i></i><span class="es"></span></div>
+</section>
+
+<!-- ============ 10 · ONE OBJECT PER USER ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · KEEP</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>One object per user, <span class="hl">in a bucket you own</span></h2>
+    <div style="position:absolute; top:178px; left:70px; width:560px;">
+      <div class="label">COMPUTE · appears when needed</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+        <div class="card b" style="padding:12px 14px;"><h3 style="font-size:20px;">acme / mei</h3><div class="m" style="font-size:15px;">agent + chDB</div></div>
+        <div class="card b" style="padding:12px 14px;"><h3 style="font-size:20px;">acme / arun</h3><div class="m" style="font-size:15px;">agent + chDB</div></div>
+        <div class="card o" style="padding:12px 14px;"><h3 style="font-size:20px;">globex / li</h3><div class="m" style="font-size:15px;">agent + chDB</div></div>
+      </div>
+      <div class="mono" style="text-align:center; font-weight:800; font-size:18px; margin:16px 0 8px;">↕ flush · checkpoint · open</div>
+      <div class="label">STATE · your object storage</div>
+      <div class="code light" style="font-size:16.5px; line-height:1.48; padding:14px 18px;">s3://brains/<span class="kw">acme</span>/<span class="kw">mei</span>/
+   head.json        <span class="cm">who holds the lease</span>
+   wal/…            <span class="cm">statements since the base</span>
+   checkpoints/…    <span class="cm">compressed full backup</span>
+s3://brains/<span class="kw">acme</span>/<span class="kw">arun</span>/…
+s3://brains/<span class="st">globex</span>/<span class="st">li</span>/…</div>
+    </div>
+    <div style="position:absolute; top:178px; left:680px; width:530px;">
+      <table class="cmp" style="width:530px; font-size:17px;">
+        <tr><th></th><th>Durable Objects</th><th>chDB durable</th></tr>
+        <tr><td>Identity</td><td>named object</td><td>named object</td></tr>
+        <tr><td>Writer</td><td>one, single-threaded</td><td>one, lease + compare-and-swap</td></tr>
+        <tr><td>Engine</td><td>SQLite</td><td>ClickHouse MergeTree</td></tr>
+        <tr><td>State lives</td><td>on Cloudflare</td><td>S3 · R2 · MinIO · GCS · Azure</td></tr>
+        <tr><td>Compute</td><td>Workers</td><td>any process, any cloud</td></tr>
+        <tr><td>Routing</td><td>built in</td><td>you bring it → part 3</td></tr>
+        <tr class="us"><td>Source</td><td>platform</td><td>open source</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="punchbar" style="font-size:24px;">Same idea as Durable Objects. <span class="y">Open source, analytical, and you own every byte.</span></div>
+</section>
+
+<!-- ============ 11 · DURABLE CODE ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · KEEP</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:46px;">Say “I'll remember” only after <span class="hl mono" style="font-size:42px;">flush()</span></h2>
+    <div class="code" style="position:absolute; top:176px; left:70px; width:660px; font-size:16.8px; line-height:1.62; padding:20px 22px;"><span class="kw">from</span> chdb <span class="kw">import</span> durable
+
+org   = durable.<span class="fn">Namespace</span>(<span class="st">"s3://brains/acme"</span>, owner=<span class="st">"vm-A"</span>)
+brain = org.<span class="fn">open</span>(<span class="st">"mei"</span>) <span class="cm"># lease + restore</span>
+
+brain.<span class="fn">execute</span>(<span class="st">"INSERT INTO memory VALUES (…)"</span>)
+                        <span class="cm"># local, fast, not safe yet</span>
+brain.<span class="fn">flush</span>()           <span class="cm"># now it survives this VM</span>
+brain.<span class="fn">checkpoint</span>()      <span class="cm"># fold the log into a base</span>
+brain.<span class="fn">close</span>()           <span class="cm"># release the lease</span></div>
+    <div style="position:absolute; top:176px; left:760px; width:450px; display:grid; gap:22px;">
+      <div class="card r" style="padding:14px 18px;"><h3>A SECOND WRITER</h3><div class="m" style="font-size:15.5px;">LeaseHeld: object 'mei' is held by 'vm-A'</div></div>
+      <div class="card g" style="padding:14px 18px;"><h3>ANOTHER MACHINE, LATER</h3><div class="m" style="font-size:15.5px;">org.open("mei") → same rows,<br>HNSW and inverted index still in the plan</div></div>
+      <div class="card" style="padding:14px 18px;"><h3>READERS</h3><div class="m" style="font-size:15.5px;">read_only=True · no lease needed</div></div>
+    </div>
+    <p style="position:absolute; top:562px; left:70px; width:1140px; font-size:20px;">One writer is the point: a personal brain has one owner. The log replays SQL, so write literal values, not <span class="mono">now()</span>.</p>
+  </div>
+  <div class="foot" style="font-size:18px; padding:14px 70px;"><span>chdb.durable, chDB 4.4+ · <span class="y">pip install "chdb[durable]"</span></span><span>outputs recorded on 4.5.1, local S3-compatible endpoint</span></div>
+</section>
+
+<!-- ============ 12 · COMPRESSED + ENCRYPTED ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · KEEP</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Compressed, then encrypted, <span class="hl">by the engine</span></h2>
+    <div class="code" style="position:absolute; top:172px; left:70px; width:690px; font-size:16.5px; line-height:1.55; padding:16px 20px;"><span class="kw">CREATE TABLE</span> evidence (…, text String <span class="kw">CODEC</span>(<span class="fn">ZSTD</span>))
+<span class="kw">ENGINE</span> = MergeTree <span class="kw">ORDER BY</span> (kind, id)
+<span class="kw">SETTINGS</span> disk = <span class="fn">disk</span>(
+  <span class="kw">type</span> = <span class="st">encrypted</span>, algorithm = <span class="st">'AES_128_CTR'</span>, key = <span class="st">'&lt;org key&gt;'</span>,
+  disk = <span class="fn">disk</span>(<span class="kw">type</span> = <span class="st">s3_plain_rewritable</span>,
+              endpoint = <span class="st">'https://…/evidence/acme/mei/'</span>))</div>
+    <div style="position:absolute; top:396px; left:70px; width:690px; display:grid; grid-template-columns:1fr 1fr; gap:22px;">
+      <div class="card" style="padding:10px 16px;"><h3 style="font-size:19px;">IN THE BUCKET, PLAIN</h3><div class="m" style="font-size:15px;">…SECRETMEMO E849E8BB6F…</div></div>
+      <div class="card g" style="padding:10px 16px;"><h3 style="font-size:19px;">IN THE BUCKET, ENCRYPTED</h3><div class="m" style="font-size:15px;">454e 4302 0000 0095 1e89 8a69…</div></div>
+    </div>
+    <table class="cmp" style="position:absolute; top:172px; left:810px; width:400px; font-size:17px;">
+      <tr><th>2M rows</th><th>plain</th><th>AES</th></tr>
+      <tr><td>raw → on disk</td><td colspan="2">384 MB → 89 MB</td></tr>
+      <tr><td>extra size</td><td>–</td><td>64 B per file</td></tr>
+      <tr><td>recall-size read</td><td>2–4 ms</td><td>4–5 ms</td></tr>
+      <tr><td>one-org scan</td><td>8–9 ms</td><td>12–13 ms</td></tr>
+      <tr><td>full text scan</td><td>~40 ms</td><td>~64 ms</td></tr>
+      <tr><td>write + merge</td><td>3.8 s</td><td>4.5 s</td></tr>
+    </table>
+    <div class="rows" style="position:absolute; top:516px; left:70px; right:70px; gap:8px;">
+      <div class="row" style="font-size:20px;"><span class="sq ok"></span><span>One key per org. With the wrong key the table does not open: <span class="mono" style="font-size:16px;">DATA_ENCRYPTION_ERROR</span>.</span></div>
+      <div class="row" style="font-size:20px;"><span class="sq x"></span><span><strong>This is a table on an encrypted S3 disk, not a durable object.</strong> Durable objects are stored as written: use SSE-KMS.</span></div>
+    </div>
+  </div>
+  <div class="foot" style="font-size:18px; padding:14px 70px;"><span>chDB 4.5.1 · M4 Pro · timings on local SSD, warm cache, synthetic text</span><span class="y">S3 latency not included</span></div>
+</section>
+
+<!-- ============ 13 · MICROVM ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 2 · KEEP</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Rent the body. <span class="hl">Keep the memory.</span></h2>
+    <div style="position:absolute; top:186px; left:70px; right:70px; display:flex; align-items:stretch; gap:14px;">
+      <div class="card" style="flex:1; padding:14px 16px;"><h3 style="font-size:21px;">1 · WAKE</h3><div class="t" style="font-size:18px;">MicroVM starts from a warm snapshot</div></div>
+      <div class="card b" style="flex:1; padding:14px 16px;"><h3 style="font-size:21px;">2 · OPEN</h3><div class="t" style="font-size:18px;">restore this user's object</div></div>
+      <div class="card g" style="flex:1; padding:14px 16px;"><h3 style="font-size:21px;">3 · THINK</h3><div class="t" style="font-size:18px;">recall and query in-process</div></div>
+      <div class="card o" style="flex:1; padding:14px 16px;"><h3 style="font-size:21px;">4 · FLUSH</h3><div class="t" style="font-size:18px;">state is safe in the bucket</div></div>
+      <div class="card r" style="flex:1; padding:14px 16px;"><h3 style="font-size:21px;">5 · GONE</h3><div class="t" style="font-size:18px;">terminate. 8 h max anyway</div></div>
+    </div>
+    <div style="position:absolute; top:376px; left:70px; width:420px; display:grid; gap:24px;">
+      <div class="stat green" style="padding:14px;"><div class="num" style="font-size:48px;">$0.0023</div><div class="lab">per month, an idle 100 MB brain (S3 only)</div></div>
+      <div class="stat ylw" style="padding:14px;"><div class="num" style="font-size:48px;">$0.13</div><div class="lab">per awake hour, 1 vCPU / 2 GB</div></div>
+    </div>
+    <div class="card dark" style="position:absolute; top:376px; left:540px; width:670px; padding:18px 24px;">
+      <h3 style="color:var(--yellow);">One active user, one month</h3>
+      <div class="m" style="font-size:17px; line-height:1.65; white-space:pre;">awake    20 sessions × 10 min     $0.42
+launch   20 × 2 GB snapshot read  $0.06
+S3       100 MB + 400 PUTs        $0.004
+<span style="color:var(--yellow); font-weight:800;">total                             ≈ $0.49</span>
+10,000 users, 5% active           ≈ $265</div>
+    </div>
+  </div>
+  <div class="foot" style="font-size:18px; padding:14px 70px;"><span>A model, not a bill · AWS price list, us-east-1, ARM, published 20–21 Nov 2026</span><span class="y">reference design · LLM calls not included</span></div>
+</section>
+
+<!-- ============ 14 · GATEWAY ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 3 · CONNECT · REFERENCE DESIGN</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Put a gateway in front: <span class="hl">one brain, many senses</span></h2>
+    <div class="svgwrap"><svg width="1280" height="720" viewBox="0 0 1280 720">
+      <g stroke="#161616" stroke-width="5" fill="none">
+        <path d="M 250 330 L 330 330"/><path d="M 560 330 L 650 330"/>
+        <path d="M 900 280 L 985 222"/><path d="M 900 315 L 985 318"/><path d="M 900 345 L 985 410"/><path d="M 900 385 L 985 500"/>
+        <path d="M 775 422 L 775 466"/>
+      </g>
+      <g fill="#161616"><path d="M 345 330 l -18 -9 v 18 z"/><path d="M 664 330 l -18 -9 v 18 z"/><path d="M 775 480 l -9 -18 h 18 z"/></g>
+    </svg></div>
+    <div class="card" style="position:absolute; top:270px; left:70px; width:180px; height:120px; padding:16px;"><h3>Agents</h3><div class="t" style="font-size:17px;">chat · Slack · cron · MCP</div></div>
+    <div class="card p" style="position:absolute; top:200px; left:345px; width:215px; height:260px; padding:16px 18px;"><h3>GATEWAY</h3><div class="m" style="font-size:16px; line-height:1.7;">who is asking?<br>→ org / user id<br>wake that VM<br>scoped creds<br>limits · log</div><div class="label" style="margin:10px 0 0; font-size:13px; color:var(--purple);">YOU BRING THIS</div></div>
+    <div class="card dark" style="position:absolute; top:222px; left:665px; width:235px; height:200px; padding:16px 18px;"><h3 style="color:var(--yellow);">MicroVM</h3><div class="m" style="font-size:17px; line-height:1.6;">agent + chDB<br>one user only<br>memory = local<br>one writer</div></div>
+    <div class="card o" style="position:absolute; top:482px; left:665px; width:235px; height:80px; padding:10px 18px;"><h3 style="font-size:20px;">Your bucket</h3><div class="m" style="font-size:15px;">brains/acme/mei/</div></div>
+    <div style="position:absolute; top:176px; left:985px; width:225px; display:grid; gap:17px;">
+      <div class="card b" style="padding:10px 16px; box-shadow:5px 5px 0 var(--blue);"><h3 style="font-size:19px;">Files &amp; lakes</h3><div class="m" style="font-size:14.5px; margin-top:2px;">s3() · iceberg() · file()</div></div>
+      <div class="card b" style="padding:10px 16px; box-shadow:5px 5px 0 var(--blue);"><h3 style="font-size:19px;">Databases</h3><div class="m" style="font-size:14.5px; margin-top:2px;">postgresql() · mysql() · mongodb()</div></div>
+      <div class="card b" style="padding:10px 16px; box-shadow:5px 5px 0 var(--blue);"><h3 style="font-size:19px;">APIs &amp; web</h3><div class="m" style="font-size:14.5px; margin-top:2px;">url()</div></div>
+      <div class="card b" style="padding:10px 16px; box-shadow:5px 5px 0 var(--blue);"><h3 style="font-size:19px;">ClickHouse Cloud</h3><div class="m" style="font-size:14.5px; margin-top:2px;">remoteSecure()</div></div>
+    </div>
+  </div>
+  <div class="punchbar" style="font-size:24px;">Isolation is layers: <span class="y">own bucket prefix + IAM, own VM, own key.</span> Not a WHERE clause.</div>
+</section>
+
+<!-- ============ 15 · LIVE: MEMORY + LIVE SOURCE ============ -->
+<section id="s-live">
+  <div class="topbar"><span class="sec live">LIVE · IN THIS TAB</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:42px;">Memory knows the question. The source knows today.</h2>
+    <p style="position:absolute; top:150px; left:70px; font-size:22px;">“How are <em>my</em> markets doing on late deliveries?” — memory knows which markets, and how “late” is counted.</p>
+    <div class="demo" id="live" style="top:204px; left:70px; width:1140px;">
+      <div class="ed"><textarea spellcheck="false" style="height:206px; font-size:17px; line-height:1.45;">SELECT m.ref AS market, any(m.text) AS from_memory, count() AS orders,
+       countIf(o.delivered > o.promised) AS late,
+       round(100 * late / orders, 1) AS late_pct
+FROM memory AS m
+JOIN url('https://auxten.com/demos/clickh-sg/orders.parquet') AS o ON o.market = m.ref
+WHERE m.kind = 'fact' AND m.status = 'active'
+GROUP BY market ORDER BY late_pct DESC</textarea><button class="run">Run<br><span style="font-size:14px;">⌘↵</span></button></div>
+      <div class="out" data-k="l" style="height:104px;"><table><tr><th>market</th><th>from_memory</th><th>orders</th><th>late</th><th>late_pct</th></tr><tr class=""><td>VN</td><td>Mei owns the Vietnam market since October.</td><td>3925</td><td>534</td><td>13.6</td></tr><tr class=""><td>SG</td><td>Mei owns the Singapore market since October.</td><td>5656</td><td>338</td><td>6</td></tr></table></div>
+      <div class="meta"><span class="tag rec">recorded</span>waiting for the engine…</div>
+    </div>
+    <p style="position:absolute; top:606px; left:70px; width:1140px; font-size:19px;">Indonesia is missing on purpose: Mei owned it until September, so that row is <span class="mono">superseded</span>.</p>
+  </div>
+  <div class="engine"><i></i><span class="es"></span></div>
+</section>
+
+<!-- ============ 16 · CHDBTOOL ============ -->
+<section>
+  <div class="topbar"><span class="sec">PART 3 · CONNECT</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>The tool you hand to the model</h2>
+    <div class="code" style="position:absolute; top:178px; left:70px; width:500px; font-size:18px; line-height:1.6;"><span class="kw">from</span> chdb.agents <span class="kw">import</span> ChDBTool
+
+tool = <span class="fn">ChDBTool</span>(
+    max_rows=3,
+    file_allowlist=[<span class="st">"./brain/"</span>],
+)
+specs = tool.<span class="fn">tool_specs</span>(<span class="st">"anthropic"</span>)
+tool.<span class="fn">call</span>(<span class="st">"run_select_query"</span>,
+          {<span class="st">"sql"</span>: sql})</div>
+    <div style="position:absolute; top:178px; left:620px; width:590px;">
+      <table class="cmp" style="width:590px; font-size:16.5px;">
+        <tr><th>the model tries</th><th>the model reads back</th></tr>
+        <tr><td class="mono">CREATE TABLE x …</td><td><strong style="color:var(--red);">READONLY</strong><br>Cannot execute query in readonly mode</td></tr>
+        <tr><td class="mono">file('/etc/passwd')</td><td><strong style="color:var(--red);">ALLOWLIST_DENIED</strong><br>source path not in file_allowlist</td></tr>
+        <tr><td class="mono">SELECT txt …</td><td><strong style="color:var(--orange);">UNKNOWN_IDENTIFIER</strong><br>Maybe you meant: ['text']</td></tr>
+        <tr><td class="mono">too many rows</td><td><strong style="color:var(--green);">truncated: true</strong><br>aggregate or filter instead of re-running</td></tr>
+      </table>
+    </div>
+    <p style="position:absolute; top:514px; left:70px; width:1140px; font-size:21px;"><strong>Read-only is not a sandbox.</strong> It guards against mistakes, not adversaries. The sandbox is the VM. An engine-level local-file restriction is coming; it is not in a release yet.</p>
+  </div>
+  <div class="foot" style="font-size:20px;"><span>Errors go back to the model as data, <span class="y">so it can fix its own SQL</span></span><span>beta · outputs recorded on 4.5.1</span></div>
+</section>
+
+<!-- ============ 17 · LIVE: TRACES ============ -->
+<section id="s-trace">
+  <div class="topbar"><span class="sec live">LIVE · IN THIS TAB</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2 style="font-size:42px;">Traces are rows too: what did this talk recall?</h2>
+    <div class="demo" id="trace" style="top:150px; left:70px; width:1140px;">
+      <div class="ed"><textarea spellcheck="false" style="height:158px; font-size:17px; line-height:1.45; overflow:hidden;">SELECT m.kind, m.text AS memory_used, count() AS times, groupUniqArray(t.step) AS steps
+FROM trace AS t
+ARRAY JOIN t.recalled AS id
+JOIN memory AS m ON m.id = id
+GROUP BY m.kind, m.text ORDER BY times DESC, m.text LIMIT 5</textarea><button class="run">Run<br><span style="font-size:14px;">⌘↵</span></button></div>
+      <div class="out" data-k="r" style="height:166px;"><table><tr><th>kind</th><th>memory_used</th><th>times</th><th>steps</th></tr><tr class=""><td>procedure</td><td>Before sending numbers to Priya, reconcile them with the finance extract.</td><td>1</td><td>context</td></tr><tr class=""><td>incident</td><td>ERR-4147 was a duplicate payment callback and was closed without a code change.</td><td>1</td><td>hybrid</td></tr><tr class=""><td>incident</td><td>ERR-4417 was a courier webhook timeout; the fix was to raise the client timeout to 30 seconds.</td><td>1</td><td>hybrid</td></tr><tr class=""><td>decision</td><td>From November the Vietnam launch budget is tracked separately from Singapore.</td><td>1</td><td>context</td></tr><tr class=""><td>fact</td><td>Mei owns the Vietnam market since October.</td><td>1</td><td>context</td></tr></table></div>
+      <div class="meta"><span class="tag rec">recorded</span>waiting for the engine…</div>
+    </div>
+  </div>
+  <div class="punchbar" style="font-size:24px; bottom:74px;">Langfuse keeps its traces in ClickHouse. <span class="y">Same rows, same SQL → next talk.</span></div>
+  <div class="engine"><i></i><span class="es"></span></div>
+</section>
+
+<!-- ============ 18 · LIMITS ============ -->
+<section>
+  <div class="topbar"><span class="sec">HONESTY</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Where this stops</h2>
+    <div class="rows" style="position:absolute; top:186px; left:70px; width:1140px; gap:20px;">
+      <div class="row"><span class="sq x"></span><span><strong>One writer per object.</strong> Great for a personal brain. A shared team memory belongs on a ClickHouse server.</span></div>
+      <div class="row"><span class="sq x"></span><span><strong>Not OLTP.</strong> Frequent point updates and transactions belong in Postgres.</span></div>
+      <div class="row"><span class="sq x"></span><span><strong>Durable V1 makes full checkpoints</strong> and does not clean up old ones. Keep one brain small.</span></div>
+      <div class="row"><span class="sq x"></span><span><strong>Durable V1 does not encrypt.</strong> The lease coordinates writers; IAM is the security.</span></div>
+      <div class="row"><span class="sq x"></span><span><strong>The gateway is yours to build.</strong> chDB gives you the object, not the router.</span></div>
+      <div class="row"><span class="sq x"></span><span><strong>The browser demo is exact search.</strong> The HNSW index runs in native chDB.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 19 · TAKEAWAYS ============ -->
+<section>
+  <div class="topbar"><span class="sec">TAKEAWAYS</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Three things to take home</h2>
+    <div style="position:absolute; top:196px; left:70px; right:70px; display:grid; gap:28px;">
+      <div class="card b" style="display:flex; gap:26px; align-items:center;"><h3 style="font-size:52px;">1</h3><div><h3>Recall is a query.</h3><div class="t">Meaning, words, rules and a token budget, in one SQL.</div></div></div>
+      <div class="card o" style="display:flex; gap:26px; align-items:center;"><h3 style="font-size:52px;">2</h3><div><h3>Give every user their own brain.</h3><div class="t">An object in your bucket. Compute only while it is thinking.</div></div></div>
+      <div class="card g" style="display:flex; gap:26px; align-items:center;"><h3 style="font-size:52px;">3</h3><div><h3>Memory is worth more next to live data.</h3><div class="t">Same engine, same query, and every step leaves a row.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 · THANKS ============ -->
+<section>
+  <div class="frame">
+    <h1 style="position:absolute; top:120px; left:70px; font-size:104px;">Thank you.</h1>
+    <div class="sticker" style="position:absolute; top:270px; left:70px; transform:rotate(-1.5deg); font-size:32px;">pip install "chdb[durable]"</div>
+    <div class="rows mono" style="position:absolute; top:390px; left:70px; width:720px; gap:12px;">
+      <div class="row" style="font-size:20px;"><span class="sq"></span><span><a href="https://github.com/chdb-io/chdb" target="_blank" rel="noopener">github.com/chdb-io/chdb</a></span></div>
+      <div class="row" style="font-size:20px;"><span class="sq"></span><span><a href="https://github.com/chdb-io/cookbook/tree/main/durable-agent-memory" target="_blank" rel="noopener">github.com/chdb-io/cookbook → durable-agent-memory</a></span></div>
+      <div class="row" style="font-size:20px;"><span class="sq"></span><span><a href="https://github.com/chdb-io/cookbook/tree/main/lambda-microvms" target="_blank" rel="noopener">github.com/chdb-io/cookbook → lambda-microvms</a></span></div>
+      <div class="row" style="font-size:20px;"><span class="sq"></span><span><a href="https://wasm.chdb.io" target="_blank" rel="noopener">wasm.chdb.io</a></span></div>
+    </div>
+    <div style="position:absolute; top:130px; right:80px; width:300px; text-align:center;">
+      <div class="logo-pol" style="width:300px; height:300px;"><img src="logos/qr-brain-clickhouse-sg-2026.svg" alt="QR code to these slides" style="width:270px; height:270px;"></div>
+      <p class="mono" style="font-size:17px; margin-top:18px;"><a href="https://auxten.com/slides/chdb-agent-database-brain-clickhouse-sg-2026.html">these slides, demos included</a></p>
+    </div>
+  </div>
+  <div class="foot"><span>@auxten · <a href="https://auxten.com" target="_blank" rel="noopener">auxten.com</a></span><span class="y">Next: Ilya Verbitskiy, inside the agent with Langfuse</span></div>
+</section>
+
+<!-- ============ B1 · COMPARISON ============ -->
+<section>
+  <div class="topbar"><span class="sec">BACKUP</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Where agent memory can live</h2>
+    <table class="cmp" style="position:absolute; top:180px; left:70px; width:1140px; font-size:19px;">
+      <tr><th></th><th>compute</th><th>durability</th><th>analytics</th><th>writers</th></tr>
+      <tr><td>SQLite in an agent framework</td><td>in-process</td><td>one local file</td><td>row store</td><td>one process</td></tr>
+      <tr><td>SQLite + Litestream</td><td>in-process</td><td>log streamed to object storage</td><td>row store</td><td>one process</td></tr>
+      <tr><td>Postgres + pgvector, managed memory</td><td>remote service</td><td>handled by the service</td><td>OLTP + vectors</td><td>many</td></tr>
+      <tr><td>Cloudflare Durable Objects</td><td>platform</td><td>platform</td><td>application state</td><td>one per object</td></tr>
+      <tr><td>DuckDB or plain chDB on disk</td><td>in-process</td><td>one local disk</td><td>full columnar</td><td>one process</td></tr>
+      <tr class="us"><td>chDB durable</td><td>in-process</td><td>your object storage, explicit flush</td><td>full columnar</td><td>one per object, by lease</td></tr>
+    </table>
+  </div>
+  <div class="foot" style="font-size:19px;"><span>From the <a href="https://github.com/chdb-io/cookbook/tree/main/durable-agent-memory" target="_blank" rel="noopener">chDB cookbook: durable-agent-memory</a></span></div>
+</section>
+
+<!-- ============ B2 · LOCAL VS REMOTE ============ -->
+<section>
+  <div class="topbar"><span class="sec">BACKUP</span><span class="pg"></span></div>
+  <div class="frame">
+    <h2>Local call vs remote call</h2>
+    <div class="bars" style="position:absolute; top:220px; left:70px; width:1140px;">
+      <div class="b"><span>local p50</span><div class="fill win" style="width:0.5%; min-width:4px;"></div><span class="v">1.1 ms</span></div>
+      <div class="b"><span>local p99</span><div class="fill win" style="width:0.5%; min-width:4px;"></div><span class="v">2.8 ms</span></div>
+      <div class="b"><span>remote p50</span><div class="fill lose" style="width:3.2%;"></div><span class="v">63 ms</span></div>
+      <div class="b"><span>remote p99</span><div class="fill lose" style="width:22.5%;"></div><span class="v">450 ms</span></div>
+      <div class="b"><span>p99, 2% errors</span><div class="fill lose" style="width:100%;"></div><span class="v">2,000 ms</span></div>
+    </div>
+    <p style="position:absolute; top:500px; left:70px; width:1140px;">The network in this benchmark is <strong>simulated</strong>. Run it with your own numbers: <a class="mono" href="https://github.com/auxten/agent-local-vs-remote" target="_blank" rel="noopener">github.com/auxten/agent-local-vs-remote</a></p>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  const pages = document.querySelectorAll('.reveal .slides > section');
+  const shown = pages.length - 2; // the last two are backup
+  pages.forEach((s, i) => {
+    const pg = s.querySelector('.topbar .pg');
+    if (pg) pg.textContent = i < shown ? String(i + 1).padStart(2, '0') + ' / ' + shown : 'B' + (i - shown + 1);
+  });
+  Reveal.initialize({ hash: true, controls: true, progress: true, slideNumber: false, center: false, transition: 'none', controlsTutorial: false, width: 1280, height: 720, margin: 0.04 });
+</script>
+
+<script type="module">
+  // ---------- live chDB engine (chdb-wasm 0.4.0, single-threaded bundle, vendored) ----------
+  const BASE = 'vendor/chdb-wasm-0.4.0/';
+  const PARTS = ['chdb.wasm.gz.part-aa', 'chdb.wasm.gz.part-ab'];
+  const GZ_TOTAL = 28596224;
+  const eng = { db: null, version: '', state: 'idle', note: '' };
+  // Boot trace for remote debugging: clicking the engine chip copies a report (see report()).
+  const diag = { t0: 0, stage: 'not started', steps: [], bytes: 0, error: null };
+  function step(name) {
+    diag.stage = name;
+    diag.steps.push(((performance.now() - diag.t0) / 1000).toFixed(1) + 's ' + name);
+    console.info('[chdb-deck] ' + name);
+  }
+
+  function paint() {
+    const label = {
+      idle: 'engine: idle',
+      loading: 'engine: loading ' + eng.note,
+      ready: 'engine: ready · ClickHouse ' + eng.version + ' · in this tab',
+      off: 'engine: offline · click for details',
+    }[eng.state];
+    document.querySelectorAll('.engine').forEach(el => {
+      el.className = 'engine ' + eng.state;
+      el.querySelector('.es').textContent = label;
+      el.title = eng.state === 'off' ? diag.stage + ': ' + eng.note : 'click for engine diagnostics';
+    });
+  }
+
+  function memory64() {
+    try { return WebAssembly.validate(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 5, 3, 1, 4, 1])); }
+    catch { return false; }
+  }
+
+  // try/catch_all: native wasm exception handling, which the chdb build needs.
+  const EH_PROBE = [0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 8, 1, 6, 0, 6, 64, 25, 11, 11];
+  function probe(bytes) {
+    try { return WebAssembly.validate(new Uint8Array(bytes)); }
+    catch (e) { return 'error: ' + e.message; }
+  }
+
+  let booting = null;
+  function boot() {
+    if (booting) return booting;
+    booting = (async () => {
+      diag.t0 = performance.now();
+      step('feature check');
+      if (location.protocol === 'file:') throw new Error('open over http(s) to run the engine');
+      if (typeof WebAssembly === 'undefined') throw new Error('WebAssembly is disabled in this browser');
+      if (!memory64()) throw new Error('this browser lacks 64-bit WebAssembly memory');
+      step('download');
+      eng.state = 'loading'; eng.note = '0%'; paint();
+      let loaded = 0;
+      const blobs = await Promise.all(PARTS.map(async p => {
+        const resp = await fetch(BASE + p);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status + ' for ' + p);
+        const reader = resp.body.getReader(), chunks = [];
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value); loaded += value.length; diag.bytes = loaded;
+          eng.note = Math.min(99, Math.round(loaded * 100 / GZ_TOTAL)) + '%'; paint();
+        }
+        return new Blob(chunks);
+      }));
+      step('unpack');
+      eng.note = 'unpacking'; paint();
+      const wasm = await new Response(new Blob(blobs).stream().pipeThrough(new DecompressionStream('gzip'))).blob();
+      const wasmUrl = URL.createObjectURL(new Blob([wasm], { type: 'application/wasm' }));
+      step('start worker (' + wasm.size + ' bytes wasm)');
+      eng.note = 'starting'; paint();
+      const { AsyncChdb } = await import('./' + BASE + 'index.js');
+      // A worker that fails to load never answers; don't wait forever.
+      eng.db = await Promise.race([
+        AsyncChdb.create({ moduleUrl: new URL(BASE + 'chdb.mjs', location.href).href, wasmUrl }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('engine worker did not start within 90 s')), 90000)),
+      ]);
+      step('first query');
+      eng.version = (await eng.db.query('SELECT version()', 'TabSeparated')).text().trim();
+      step('load the demo brain');
+      eng.note = 'loading memories'; paint();
+      await loadBrain(eng.db);
+      step('ready');
+      eng.state = 'ready'; paint();
+      return eng.db;
+    })().catch(e => {
+      diag.error = (e && (e.stack || e.message)) || String(e);
+      console.error('[chdb-deck] engine failed during "' + diag.stage + '"', e);
+      eng.state = 'off'; eng.note = (e && e.message) || String(e); paint(); throw e;
+    });
+    return booting;
+  }
+
+  async function report() {
+    const lines = [
+      'chDB deck diagnostics · ' + new Date().toISOString(),
+      'page: ' + location.href,
+      'ua: ' + navigator.userAgent,
+    ];
+    try {
+      const h = await navigator.userAgentData?.getHighEntropyValues(['fullVersionList', 'platformVersion', 'architecture']);
+      if (h) lines.push('browser: ' + h.fullVersionList.map(b => b.brand + ' ' + b.version).join(', ') +
+        ' · ' + navigator.userAgentData.platform + ' ' + h.platformVersion + ' ' + h.architecture);
+    } catch {}
+    lines.push(
+      `engine: ${eng.state} · stage: ${diag.stage} · downloaded ${diag.bytes} / ${GZ_TOTAL} bytes`,
+      'steps: ' + (diag.steps.join(' → ') || 'none'),
+      'error: ' + (diag.error || 'none'),
+      `WebAssembly: ${typeof WebAssembly} · memory64: ${memory64()} · exceptions: ${probe(EH_PROBE)} · BigInt64Array: ${typeof BigInt64Array}`,
+      `DecompressionStream: ${typeof DecompressionStream} · Worker: ${typeof Worker} · crossOriginIsolated: ${self.crossOriginIsolated}`,
+      `cores: ${navigator.hardwareConcurrency} · deviceMemory: ${navigator.deviceMemory ?? '?'} GB · network: ${navigator.connection?.effectiveType ?? '?'}`,
+    );
+    return lines.join('\n');
+  }
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  // What went wrong, in words a viewer can act on without reading the raw report.
+  const ONLINE = 'https://auxten.com/slides/chdb-agent-database-brain-clickhouse-sg-2026.html';
+  function hint() {
+    const online = ONLINE + location.hash;
+    if (location.protocol === 'file:')
+      return `You are viewing a downloaded copy of the deck. The engine can't load from a local file. Open the online version instead: <a href="${esc(online)}">${esc(online)}</a>`;
+    const s = diag.stage;
+    if (eng.state === 'ready') return 'The engine is running in this tab. Nothing is wrong.';
+    if (eng.state !== 'off') return 'The engine is still loading (about 29 MB the first time). Wait for the chip to turn green.';
+    if (s === 'feature check') return `This browser can't run the engine: ${esc(eng.note)}. It needs a recent Chrome, Edge, Firefox or Safari with WebAssembly enabled.`;
+    if (s === 'download') return 'Downloading the engine (about 29 MB from auxten.com) failed. A proxy, VPN, firewall or ad blocker may be blocking it. Try another network or an Incognito window.';
+    if (s === 'unpack') return 'The engine downloaded but could not be unpacked. The tab probably ran out of memory: close other tabs and reload.';
+    return 'The engine downloaded but did not start. A browser extension or a company browser policy may be blocking it. Try an Incognito window with extensions off.';
+  }
+
+  const panel = document.createElement('div');
+  panel.className = 'diag';
+  panel.innerHTML = '<header><span>engine diagnostics</span><button class="copy">copy</button><button class="close">close</button></header><div class="hint"></div><pre></pre>';
+  document.body.appendChild(panel);
+  // Keep reveal.js from treating keys and clicks inside the panel as slide navigation.
+  panel.addEventListener('keydown', e => e.stopPropagation());
+  panel.querySelector('.close').addEventListener('click', () => panel.classList.remove('open'));
+  panel.querySelector('.copy').addEventListener('click', async e => {
+    const text = panel.querySelector('pre').textContent;
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'copied'; }
+    catch {
+      const r = document.createRange(); r.selectNodeContents(panel.querySelector('pre'));
+      getSelection().removeAllRanges(); getSelection().addRange(r);
+      e.target.textContent = 'selected — press Cmd+C';
+    }
+    setTimeout(() => { e.target.textContent = 'copy'; }, 3000);
+  });
+  async function showDiag() {
+    const text = await report();
+    console.log(text);
+    panel.querySelector('.hint').innerHTML = hint();
+    panel.querySelector('pre').textContent = text;
+    panel.classList.add('open');
+  }
+  document.querySelectorAll('.engine').forEach(el => el.addEventListener('click', showDiag));
+  document.addEventListener('click', e => { if (e.target.closest('button.why')) { e.preventDefault(); showDiag(); } });
+
+
+  function unavailable(e, tag) {
+    const why = location.protocol === 'file:'
+      ? `this is a downloaded copy · <a class="why" href="${esc(ONLINE + location.hash)}">open the online deck</a> to run it live`
+      : `engine unavailable · <button class="why">show details</button>`;
+    return `<span class="tag rec">${tag}</span>${why}`;
+  }
+
+  // ---------- the demo brain: 312 synthetic memories, real embeddings, exact search in this tab ----------
+  const Q = [
+    [1, 'How should I send Mei the weekly update?'],
+    [2, 'What was ERR-4417 and how was it fixed?'],
+    [3, 'A courier call is timing out again. What do we know?'],
+    [4, 'What do I need before I write the Vietnam readout for Priya?'],
+  ];
+  async function loadBrain(db) {
+    for (const n of ['memory', 'questions']) {
+      const r = await fetch('../demos/clickh-sg/' + n + '.parquet');
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' for ' + n + '.parquet');
+      await db.registerFile(n + '.parquet', new File([await r.blob()], n + '.parquet'));
+    }
+    await db.query(`CREATE TABLE memory ENGINE = Memory AS SELECT * FROM file('memory.parquet')`);
+    await db.query(`CREATE TABLE question ENGINE = Memory AS SELECT * FROM file('questions.parquet')`);
+    await db.query('CREATE TABLE trace (ts DateTime, step String, question UInt8, ms UInt32, recalled Array(UInt32)) ENGINE = Memory');
+  }
+  const json = async sql => JSON.parse((await eng.db.query(sql, 'JSONCompact')).text());
+  const log = (step, question, ms, ids) => eng.db.query(
+    `INSERT INTO trace VALUES (toDateTime(${Math.floor(Date.now() / 1000)}), '${step}', ${question}, ${Math.round(ms)}, [${ids.join(',')}])`);
+  const liveTag = ms => `<span class="tag live">live</span>${ms < 1000 ? ms.toFixed(0) + ' ms' : (ms / 1000).toFixed(1) + ' s'} · ClickHouse ${esc(eng.version)} in this tab`;
+  const table = (cols, rows, cls) => `<table><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr>${rows.map((r, i) => `<tr class="${cls ? cls(r, i) : ''}">${r.map(v => `<td>${esc(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</table>`;
+  const $ = (id, k) => document.querySelector(`#${id} [data-k="${k}"]`);
+  const metaOf = id => document.querySelector(`#${id} .meta`);
+  async function ready(id) {
+    try { await boot(); return true; }
+    catch (e) { metaOf(id).innerHTML = unavailable(e, 'recorded'); return false; }
+  }
+
+  const recallSql = n => `WITH (SELECT emb   FROM question WHERE id = ${n}) AS q,
+     (SELECT words FROM question WHERE id = ${n}) AS w,
+  by_meaning AS (
+    SELECT id, row_number() OVER (ORDER BY d) AS r FROM (
+      SELECT id, cosineDistance(emb, q) AS d FROM memory
+      WHERE status = 'active' AND kind != 'history'
+      ORDER BY d LIMIT 20)),
+  by_words AS (
+    SELECT id, row_number() OVER (ORDER BY hits DESC, ts DESC) AS r FROM (
+      SELECT id, ts, length(arrayIntersect(tokens(text), w)) AS hits
+      FROM memory WHERE status = 'active' AND kind != 'history'
+        AND hasAnyTokens(text, w) ORDER BY hits DESC, ts DESC LIMIT 20)),
+  fused AS (
+    SELECT id, sum(1 / (60 + r)) AS score
+    FROM (SELECT * FROM by_meaning UNION ALL SELECT * FROM by_words)
+    GROUP BY id)
+SELECT arrayStringConcat(groupArray(line), '\\n') AS context,
+       groupArray(id) AS ids, max(tokens_so_far) AS tokens
+FROM (
+  SELECT id, concat('[', kind, ' ', toString(ts), '] ', text) AS line,
+         sum(intDiv(length(text), 4))
+           OVER (ORDER BY score DESC, id) AS tokens_so_far
+  FROM fused JOIN memory USING (id) ORDER BY score DESC, id)
+WHERE tokens_so_far <= 120`;
+
+  const picked = { hybrid: 2, context: 4 };
+  async function runHybrid(n) {
+    if (!await ready('hybrid')) return; // keep the recorded question and answer together
+    picked.hybrid = n; mark('hybrid');
+    try { await showHybrid(n); }
+    catch (e) { metaOf('hybrid').innerHTML = `<span class="tag">error</span>${esc(e.message).slice(0, 160)}`; }
+  }
+  async function showHybrid(n) {
+    const t0 = performance.now();
+    const q = `(SELECT emb FROM question WHERE id = ${n})`, w = `(SELECT words FROM question WHERE id = ${n})`;
+    const v = await json(`WITH ${q} AS q SELECT id, status, round(cosineDistance(emb, q), 3) AS dist, text FROM memory WHERE kind != 'history' ORDER BY dist LIMIT 4`);
+    const t = await json(`WITH ${w} AS w SELECT id, status, length(arrayIntersect(tokens(text), w)) AS hits, text FROM memory WHERE kind != 'history' AND hasAnyTokens(text, w) ORDER BY hits DESC, ts DESC LIMIT 4`);
+    const f = await json(`WITH ${q} AS q, ${w} AS w,
+      a AS (SELECT id, row_number() OVER (ORDER BY d) AS r FROM (SELECT id, cosineDistance(emb, q) AS d FROM memory WHERE status = 'active' AND kind != 'history' ORDER BY d LIMIT 20)),
+      b AS (SELECT id, row_number() OVER (ORDER BY hits DESC, ts DESC) AS r FROM (SELECT id, ts, length(arrayIntersect(tokens(text), w)) AS hits FROM memory WHERE status = 'active' AND kind != 'history' AND hasAnyTokens(text, w) ORDER BY hits DESC, ts DESC LIMIT 20))
+      SELECT id, kind, toString(ts) AS date, text FROM (SELECT id, sum(1 / (60 + r)) AS score FROM (SELECT * FROM a UNION ALL SELECT * FROM b) GROUP BY id) AS fused JOIN memory USING (id) ORDER BY score DESC, id LIMIT 3`);
+    const ms = performance.now() - t0;
+    const words = (await json(`SELECT arrayStringConcat(words, ', ') FROM question WHERE id = ${n}`)).data[0][0];
+    document.querySelector('#hybrid .words').textContent = '[' + words + ']';
+    const stale = r => r[1] === 'superseded' ? 'stale' : '';
+    $('hybrid', 'v').innerHTML = table(['dist', 'memory'], v.data.map(r => [r[2], r[3]]), (_, i) => stale(v.data[i]));
+    $('hybrid', 't').innerHTML = table(['hits', 'memory'], t.data.map(r => [r[2], r[3]]), (_, i) => stale(t.data[i]));
+    $('hybrid', 'f').innerHTML = table(['kind', 'date', 'memory'], f.data.map(r => r.slice(1)), (_, i) => i ? '' : 'hit');
+    metaOf('hybrid').innerHTML = `<span class="tag live">live</span>${ms.toFixed(0)} ms · exact search over 312 memories · red = superseded`;
+    await log('hybrid', n, ms, f.data.map(r => r[0]));
+  }
+  async function runContext(sql, n) {
+    if (!await ready('context')) return;
+    const t0 = performance.now();
+    try {
+      const j = await json(sql);
+      const ms = performance.now() - t0, [ctx, ids, tokens] = j.data[0];
+      $('context', 'c').innerHTML = `<pre>${esc(ctx)}</pre>`;
+      metaOf('context').innerHTML = `<span class="tag live">live</span>${ms.toFixed(0)} ms` + (tokens === undefined ? '' : ` · ${ids.length} memories · ≈ ${tokens} of 120 tokens`);
+      if (Array.isArray(ids)) await log('context', n, ms, ids);
+    } catch (e) { $('context', 'c').innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; metaOf('context').innerHTML = '<span class="tag">error</span>'; }
+  }
+  async function pickContext(n) {
+    if (!await ready('context')) return;
+    picked.context = n; mark('context');
+    document.querySelector('#context textarea').value = recallSql(n);
+    return runContext(recallSql(n), n);
+  }
+  async function runTable(id, k, step) {
+    if (!await ready(id)) return;
+    // the SQL on screen names the public URL; a local or preview copy reads its own file instead
+    const sql = document.querySelector(`#${id} textarea`).value.trim().replace(/;\s*$/, '').replaceAll('https://auxten.com/', location.origin + '/');
+    metaOf(id).innerHTML = '<span class="tag">running…</span>';
+    const t0 = performance.now();
+    try {
+      const j = await json(sql), ms = performance.now() - t0;
+      $(id, k).innerHTML = j.rows ? table(j.meta.map(m => m.name), j.data.slice(0, 5)) : '<p style="font-size:18px;">No rows yet. Run the recall slides first: every recall on slides 8 and 9 writes a trace row.</p>';
+      metaOf(id).innerHTML = liveTag(ms);
+      if (step) await log(step, 0, ms, []);
+    } catch (e) { $(id, k).innerHTML = `<div class="err">${esc(e.message).slice(0, 500)}</div>`; metaOf(id).innerHTML = '<span class="tag">error</span>'; }
+  }
+
+  function mark(id) { document.querySelectorAll(`.qbar[data-for="${id}"] button`).forEach(b => b.classList.toggle('on', +b.dataset.n === picked[id])); }
+  document.querySelectorAll('.qbar').forEach(bar => {
+    bar.innerHTML = Q.map(([n, t]) => `<button data-n="${n}">${esc(t)}</button>`).join('');
+    bar.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      b.blur(); // keep space and arrow keys for the slides
+      bar.dataset.for === 'hybrid' ? runHybrid(+b.dataset.n) : pickContext(+b.dataset.n);
+    });
+  });
+  const RUN = {
+    context: () => runContext(document.querySelector('#context textarea').value.trim().replace(/;\s*$/, ''), picked.context),
+    live: () => runTable('live', 'l', 'live source'),
+    trace: () => runTable('trace', 'r'),
+  };
+  for (const [id, fn] of Object.entries(RUN)) {
+    const demo = document.getElementById(id);
+    demo.querySelector('.run').addEventListener('click', e => { e.currentTarget.blur(); fn(); });
+    demo.querySelector('textarea').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); fn(); }
+      if (e.key === 'Escape') e.target.blur();
+      e.stopPropagation();
+    });
+  }
+  document.querySelector('#context textarea').value = recallSql(4);
+  mark('hybrid'); mark('context');
+
+  // Each live slide runs once by itself when it is first shown; buttons re-run it.
+  const AUTO = { 's-hybrid': () => runHybrid(2), 's-context': () => pickContext(4), 's-live': RUN.live, 's-trace': RUN.trace };
+  const done = new Set();
+  function onSlide(el) {
+    if (!el || !AUTO[el.id] || (done.has(el.id) && el.id !== 's-trace')) return;
+    done.add(el.id); AUTO[el.id]();
+  }
+  Reveal.on('slidechanged', e => onSlide(e.currentSlide));
+  Reveal.on('ready', e => onSlide(e.currentSlide));
+  if (Reveal.isReady()) onSlide(Reveal.getCurrentSlide());
+
+  paint();
+  boot().catch(() => {});
+</script>
+</body>
+</html>
