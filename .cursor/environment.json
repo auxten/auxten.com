@@ -1,0 +1,17 @@
+{
+  "name": "auxten.com",
+  "user": "ubuntu",
+  "install": "python3 -m pip install --user --quiet markdown && npm install --prefix remotion/chdb-agent-database-brain-pycon-sg-2026 --no-audit --no-fund && npx -y wrangler@4.131.0 --version",
+  "terminals": [
+    {
+      "name": "site",
+      "command": "npx -y wrangler@4.131.0 pages dev . --port 8788 --ip 0.0.0.0 --compatibility-date=2026-09-10"
+    }
+  ],
+  "ports": [
+    {
+      "name": "site",
+      "port": 8788
+    }
+  ]
+}
